@@ -96,6 +96,51 @@ class WebAuth(object):
         else:
             return "https://steamcommunity.com/login/rendercaptcha/?gid=%s" % self.captcha_gid
 
+    def save_captcha_image(self, dest_dir=None):
+        """Download the pending captcha PNG to a local file and return the path.
+
+        Fetches ``https://steamcommunity.com/login/rendercaptcha/?gid=<gid>``
+        using this WebAuth's session (already carries any cookies /
+        headers Steam expects), writes the response bytes to
+        ``<dest_dir>/steam_captcha_<gid>.png``, and returns the local
+        ``pathlib.Path``.
+
+        ``dest_dir`` defaults to the system tmp directory
+        (``tempfile.gettempdir()`` — ``/tmp`` on macOS/Linux).  Pass an
+        explicit dir if you want the file somewhere persistent.
+
+        Returns ``None`` when there's no active captcha challenge
+        (``captcha_gid == -1``) so callers can guard with a truthy
+        check.
+
+        Typical usage from an interactive login handler::
+
+            try:
+                auth.login(password=..., captcha=captcha_text)
+            except CaptchaRequired:
+                path = auth.save_captcha_image()
+                print(f"Captcha needed — open  file://{path}")
+                captcha_text = input("Captcha text: ")
+                # retry
+        """
+        if self.captcha_gid == -1:
+            return None
+
+        import pathlib
+        import tempfile
+
+        dest_dir = pathlib.Path(dest_dir) if dest_dir else pathlib.Path(tempfile.gettempdir())
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        path = dest_dir / ("steam_captcha_%s.png" % self.captcha_gid)
+
+        try:
+            resp = self.session.get(self.captcha_url, timeout=15)
+        except requests.exceptions.RequestException as e:
+            raise HTTPError(str(e))
+        resp.raise_for_status()
+        path.write_bytes(resp.content)
+        return path
+
     def get_rsa_key(self, username):
         """Get rsa key for a given username
 

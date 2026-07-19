@@ -172,9 +172,14 @@ def main() -> int:
         auth = wa.WebAuth(u, p)
         twofactor_code = ''
         email_code = ''
+        captcha = ''
         while True:
             try:
-                auth.login(twofactor_code=twofactor_code, email_code=email_code)
+                auth.login(
+                    twofactor_code=twofactor_code,
+                    email_code=email_code,
+                    captcha=captcha,
+                )
                 return
             except wa.TwoFactorCodeRequired:
                 if not expect_success and twofactor_code:
@@ -188,6 +193,45 @@ def main() -> int:
                 email_code = input(
                     'Steam Guard email code (5 chars, from the email Steam sent): '
                 ).strip()
+            except wa.CaptchaRequired:
+                # Steam's anti-abuse gate — usually triggered by too many
+                # failed logins recently.  Download the challenge PNG to a
+                # tmp file so the user can open it locally with one
+                # click, type the characters, retry.  The scrubbers wipe
+                # the captcha field from the request body before write
+                # so the correct answer never ends up in the cassette.
+                path = auth.save_captcha_image()
+                print()
+                print(f'  Captcha required — image saved:')
+                print(f'    file://{path}')
+                print(f'    or run:  open {path}')
+                captcha = input('  Captcha text: ').strip()
+            except wa.CaptchaRequiredLoginIncorrect:
+                if not expect_success:
+                    # FAIL path with a wrong password + captcha demand —
+                    # we're recording the incorrect-password flow, so
+                    # bailing here is the intended terminal state.
+                    raise
+                path = auth.save_captcha_image()
+                print()
+                print(f'  Captcha wrong AND password wrong — reload both.')
+                print(f'    file://{path}')
+                captcha = input('  Captcha text: ').strip()
+                new_pw = getpass('  Password (fresh — no echo): ')
+                auth = wa.WebAuth(u, new_pw)
+            except wa.LoginIncorrect as exc:
+                # ``LoginIncorrect`` from a null-body response fires when
+                # Steam's anti-abuse cooldown is still active — often
+                # right after a captcha solve.  Prompt to wait rather
+                # than looping and re-triggering the cooldown timer.
+                msg = str(exc)
+                if 'unexpected dologin body' in msg or 'NoneType' in msg:
+                    print()
+                    print('  Steam returned an empty response — rate-limit cooldown is active.')
+                    print('  Wait 30-60 minutes with no login attempts, then re-run this script.')
+                    print('  Every retry NOW extends the cooldown timer.')
+                    raise SystemExit(1)
+                raise
 
     @anon_vcr.use_cassette('webauth_user_pass_only_success.yaml')
     def _rec_success(u: str, p: str) -> None:
