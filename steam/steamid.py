@@ -298,6 +298,34 @@ class SteamID(intBase):
 
         return True
 
+    # ─── static factory methods ───────────────────────────────────
+    # These delegate to the module-level implementations defined
+    # further down the file.  The class-body ``@staticmethod``
+    # declarations expose them as ``SteamID.from_X(...)`` (visible
+    # to type-checkers, discoverable via ``help()`` / IDE) while
+    # the module-level ``from_X`` names stay live so callers can
+    # still ``from steam.steamid import from_invite_code``.
+    #
+    # The implementations sit outside the class because they were
+    # originally module-level utilities; splitting the declaration
+    # here from the body below keeps the diff-versus-upstream
+    # small and avoids duplicating ~150 lines.  The body-level
+    # ``from_invite_code(...)`` reference resolves at call time via
+    # module-globals lookup — the ``@staticmethod`` name shadowing
+    # doesn't matter because a staticmethod's own name is not in
+    # its execution scope.
+    @staticmethod
+    def from_invite_code(code, universe=EUniverse.Public):
+        return from_invite_code(code, universe)
+
+    @staticmethod
+    def from_csgo_friend_code(code, universe=EUniverse.Public):
+        return from_csgo_friend_code(code, universe)
+
+    @staticmethod
+    def from_url(url, http_timeout=30):
+        return from_url(url, http_timeout)
+
 
 def make_steam64(id=0, *args, **kwargs):
     """
@@ -488,7 +516,6 @@ def from_invite_code(code, universe=EUniverse.Public):
     if 0 < accountid < 2**32:
         return SteamID(accountid, EType.Individual, EUniverse(universe), 1)
 
-SteamID.from_invite_code = staticmethod(from_invite_code)
 
 def from_csgo_friend_code(code, universe=EUniverse.Public):
     """
@@ -501,7 +528,7 @@ def from_csgo_friend_code(code, universe=EUniverse.Public):
     :return: SteamID instance
     :rtype: :class:`.SteamID` or :class:`None`
     """
-    if not re.match(r'^['+_csgofrcode_chars+'\-]{10}$', code):
+    if not re.match(r'^['+_csgofrcode_chars+r'\-]{10}$', code):
         return None
 
     code = ('AAAA-' + code).replace('-', '')
@@ -524,7 +551,6 @@ def from_csgo_friend_code(code, universe=EUniverse.Public):
 
     return SteamID(accountid, EType.Individual, EUniverse(universe), 1)
 
-SteamID.from_csgo_friend_code = staticmethod(from_csgo_friend_code)
 
 def steam64_from_url(url, http_timeout=30):
     """
@@ -574,7 +600,7 @@ def steam64_from_url(url, http_timeout=30):
         # group profiles
         else:
             text = web.get(match.group('clean_url'), timeout=http_timeout).text
-            data_match = re.search("OpenGroupChat\( *'(?P<steamid>\d+)'", text)
+            data_match = re.search(r"OpenGroupChat\( *'(?P<steamid>\d+)'", text)
 
             if data_match:
                 return int(data_match.group('steamid'))
@@ -603,5 +629,3 @@ def from_url(url, http_timeout=30):
         return SteamID(steam64)
 
     return None
-
-SteamID.from_url = staticmethod(from_url)

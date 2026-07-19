@@ -20,13 +20,12 @@ from time import time
 from io import open
 from getpass import getpass
 import logging
-import six
 
 from eventemitter import EventEmitter
 from steam.enums import EResult, EOSType, EPersonaState
 from steam.enums.emsg import EMsg
 from steam.core.cm import CMClient
-from steam.core.msg import MsgProto
+from steam.core.msg import Msg, MsgProto
 from steam.core.crypto import sha1_hash
 from steam.steamid import SteamID
 from steam.exceptions import SteamError
@@ -34,10 +33,7 @@ from steam.client.builtins import BuiltinBase
 from steam.utils import ip4_from_int, ip4_to_int
 from steam.utils.proto import proto_fill_from_dict
 
-if six.PY2:
-    _cli_input = raw_input
-else:
-    _cli_input = input
+_cli_input = input
 
 
 class SteamClient(CMClient, BuiltinBase):
@@ -105,8 +101,12 @@ class SteamClient(CMClient, BuiltinBase):
 
         emsg, msg = result
 
-        # emit job events
-        if msg.proto:
+        # emit job events.  ``isinstance`` narrows the ``Msg | MsgProto``
+        # union — MsgProto's header is ``CMsgProtoBufHeader`` and carries
+        # the ``jobid_target`` snake-case name Steam uses on protobuf
+        # messages; Msg's header is a ``MsgHdr`` / ``ExtendedMsgHdr``
+        # struct with the legacy ``targetJobID`` camelcase name.
+        if isinstance(msg, MsgProto):
             jobid = msg.header.jobid_target
         else:
             jobid = msg.header.targetJobID
@@ -117,8 +117,16 @@ class SteamClient(CMClient, BuiltinBase):
                 msg.parse()
             self.emit(jobid, msg)
 
-        # emit UMs
+        # emit UMs — service-method messages are ALWAYS protobuf-wrapped
+        # so this branch only ever sees a ``MsgProto`` in practice.
+        # The ``isinstance`` narrow makes that explicit to type-checkers
+        # (which can't statically tie ``emsg in {ServiceMethod, …}`` to
+        # a specific message flavour).
         if emsg in (EMsg.ServiceMethod, EMsg.ServiceMethodResponse, EMsg.ServiceMethodSendToClient):
+            assert isinstance(msg, MsgProto), (
+                "ServiceMethod-family messages are always protobuf-wrapped; "
+                "got %r" % type(msg).__name__
+            )
             if msg.body is None and self.count_listeners(msg.header.target_job_name):
                 msg.parse()
             self.emit(msg.header.target_job_name, msg)
@@ -269,7 +277,7 @@ class SteamClient(CMClient, BuiltinBase):
 
         return self.connect(delay=delay_seconds, retry=retry)
 
-    def wait_msg(self, event, timeout=None, raises=None):
+    def wait_msg(self, event, timeout=None, raises: bool = False):
         """Wait for a message, similiar to :meth:`.wait_event`
 
         :param event: event id

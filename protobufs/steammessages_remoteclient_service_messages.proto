@@ -1,0 +1,299 @@
+syntax = "proto2";
+enum ECLientTaskListType {
+	k_EClientTask_DownloadClip = 1;
+}
+
+message CRemoteClient_CreateSession_Request {
+}
+
+message CRemoteClient_CreateSession_Response {
+	optional fixed64 session_id = 1;
+	optional int32 euniverse = 2;
+}
+
+message CRemoteClient_DeleteSession_Notification {
+	optional fixed64 session_id = 1;
+}
+
+message CRemoteClient_StartPairing_Request {
+	optional fixed64 session_id = 1;
+}
+
+message CRemoteClient_StartPairing_Response {
+	optional uint32 pin = 1;
+}
+
+message CRemoteClient_SetPairingInfo_Request {
+	optional fixed64 session_id = 1;
+	optional fixed64 device_id = 2;
+	optional bytes request = 3;
+}
+
+message CRemoteClient_SetPairingInfo_Response {
+}
+
+message CRemoteClient_GetPairingInfo_Request {
+	optional uint32 pin = 1;
+}
+
+message CRemoteClient_GetPairingInfo_Response {
+	optional fixed64 session_id = 1;
+	optional fixed64 device_id = 2;
+	optional bytes request = 3;
+}
+
+message CRemoteClient_CancelPairing_Request {
+	optional fixed64 session_id = 1;
+}
+
+message CRemoteClient_CancelPairing_Response {
+}
+
+message CRemoteClient_CancelPairing_Notification {
+	optional fixed64 session_id = 1;
+}
+
+message CRemoteClient_RegisterStatusUpdate_Notification {
+	optional fixed64 session_id = 1;
+	optional fixed64 steamid = 2;
+	optional fixed64 device_id = 3;
+	optional bool disable_polling = 4;
+}
+
+message CRemoteClient_UnregisterStatusUpdate_Notification {
+	optional fixed64 session_id = 1;
+	optional fixed64 steamid = 2;
+}
+
+message CRemoteClient_DeviceDetails {
+	optional string device_friendly_name = 1;
+	optional int32 os_type = 2;
+	optional uint32 gaming_device_type = 3;
+}
+
+message CRemoteClient_Online_Notification {
+	optional fixed64 steamid = 1;
+	optional fixed64 remote_client_id = 2;
+	optional .CRemoteClient_DeviceDetails device_details = 3;
+}
+
+message CRemoteClient_Offline_Notification {
+	optional fixed64 session_id = 1;
+	optional fixed64 steamid = 2;
+	optional fixed64 remote_client_id = 3;
+}
+
+message CRemoteClient_ClientLogin {
+	optional fixed64 remote_client_id = 1;
+	optional fixed64 token_id = 2;
+	optional .CRemoteClient_DeviceDetails device_details = 3;
+}
+
+message CRemoteClient_ClientDetails {
+	optional fixed64 remote_client_id = 1;
+	optional .CRemoteClient_DeviceDetails device_details = 2;
+	optional uint64 last_seen = 4;
+	optional string city = 5;
+	optional string state = 6;
+	optional string country = 7;
+	optional bool is_online = 8;
+}
+
+message CRemoteClient_GetRecentClients_Request {
+}
+
+message CRemoteClient_GetRecentClients_Response {
+	repeated .CRemoteClient_ClientDetails clients = 1;
+}
+
+message CRemoteClient_Task {
+	optional .ECLientTaskListType type = 1 [default = k_EClientTask_DownloadClip];
+	optional fixed64 task_id = 2;
+	optional string url = 3;
+	optional int64 file_id = 4;
+}
+
+message CRemoteClient_AddClientTask_Request {
+	optional fixed64 remote_client_id = 1;
+	optional .CRemoteClient_Task task = 2;
+}
+
+message CRemoteClient_AddClientTask_Response {
+}
+
+message CRemoteClient_TaskList_Notification {
+	optional fixed64 remote_client_id = 1;
+	repeated .CRemoteClient_Task tasklist = 2;
+}
+
+message CRemoteClient_MarkTaskComplete_Request {
+	optional fixed64 remote_client_id = 1;
+	optional fixed64 task_id = 2;
+	optional string content_id = 3;
+}
+
+message CRemoteClient_MarkTaskComplete_Response {
+}
+
+message CRemoteClient_RemotePacket_Notification {
+	optional fixed64 session_id = 1;
+	optional fixed64 steamid = 2;
+	optional bytes payload = 4;
+}
+
+message CRemoteClient_ReplyPacket_Notification {
+	optional fixed64 session_id = 1;
+	optional bytes payload = 2;
+}
+
+message CRemoteClient_GetReplies_Request {
+	optional fixed64 session_id = 1;
+}
+
+message CRemoteClient_GetReplies_Response {
+	repeated bytes payload = 1;
+}
+
+message CRemoteClient_AllocateRelayServer_Request {
+	optional uint32 cellid = 1;
+	optional string credentials = 2;
+}
+
+message CRemoteClient_AllocateRelayServer_Response {
+	optional string relay_server = 1;
+}
+
+message CRemoteClient_AllocateSDR_Request {
+	optional uint32 appid = 1;
+}
+
+message CRemoteClient_AllocateSDR_Response {
+}
+
+message CRemoteClient_EnableSteamBroadcast_Notification {
+}
+
+message CRemoteClient_DisableSteamBroadcast_Notification {
+}
+
+message CRemoteClient_SteamBroadcast_Notification {
+	optional fixed64 steamid = 1;
+	optional fixed64 clientid = 2;
+	optional bytes payload = 3;
+}
+
+message CRemoteClient_SteamToSteam_Notification {
+	optional fixed64 steamid = 1;
+	optional fixed64 src_clientid = 2;
+	optional fixed64 dst_clientid = 3;
+	optional uint32 secretid = 4;
+	optional bytes encrypted_payload = 5;
+}
+
+message CRemotePlay_SessionStarted_Request {
+	optional uint32 host_account_id = 1;
+	optional uint32 client_account_id = 2;
+	optional uint32 appid = 3;
+	optional int32 device_form_factor = 4;
+	optional bool remote_play_together = 5;
+	optional bool guest_session = 6;
+}
+
+message CRemotePlay_SessionStarted_Response {
+	optional fixed64 record_id = 1;
+}
+
+message CRemotePlay_SessionStopped_Notification {
+	optional fixed64 record_id = 1;
+	optional bool used_x264 = 2;
+	optional bool used_h264 = 3;
+	optional bool used_hevc = 4;
+}
+
+message CRemotePlayTogether_Notification {
+	message Player {
+		optional fixed64 steamid = 1;
+		optional uint32 guestid = 2;
+		optional bytes avatar_hash = 3;
+		optional bool keyboard_enabled = 4;
+		optional bool mouse_enabled = 5;
+		optional bool controller_enabled = 6;
+	}
+
+	message ControllerSlot_obsolete {
+		optional uint32 slotid = 1;
+		optional fixed64 steamid = 2;
+	}
+
+	message ControllerSlot {
+		optional uint32 slotid = 1;
+		optional .CRemotePlayTogether_Notification.Player player = 2;
+		optional int32 controller_type = 3;
+	}
+
+	message GroupUpdated {
+		optional fixed64 host_steamid = 1;
+		optional fixed64 host_clientid = 2;
+		repeated fixed64 players_obsolete = 3;
+		optional fixed64 host_gameid = 4;
+		repeated .CRemotePlayTogether_Notification.ControllerSlot_obsolete controller_slots_obsolete = 5;
+		optional bool has_new_players = 6;
+		repeated .CRemotePlayTogether_Notification.Player player_slots = 7;
+		repeated .CRemotePlayTogether_Notification.ControllerSlot controller_slots = 8;
+	}
+
+	optional fixed64 steamid = 1;
+
+	oneof Message {
+		.CRemotePlayTogether_Notification.GroupUpdated group_updated = 2;
+	}
+}
+
+message CRemoteClient_CreateRemotePlayTogetherInvitation_Request {
+	optional uint32 appid = 1;
+	optional string launch_parameters = 2;
+}
+
+message CRemoteClient_CreateRemotePlayTogetherInvitation_Response {
+	optional string invitation_code = 1;
+}
+
+message CRemoteClient_DeleteRemotePlayTogetherInvitation_Request {
+	optional string invitation_code = 1;
+}
+
+message CRemoteClient_DeleteRemotePlayTogetherInvitation_Response {
+}
+
+message CRemoteClient_LookupRemotePlayTogetherInvitation_Request {
+	optional string invitation_code = 1;
+}
+
+message CRemoteClient_LookupRemotePlayTogetherInvitation_Response {
+	optional string invitation_url = 1;
+}
+
+message CCMRemoteClient_ClientMessage {
+	oneof Message {
+		.CRemoteClient_CreateSession_Request create_session_request = 1;
+		.CRemoteClient_StartPairing_Request start_pairing_request = 2;
+		.CRemoteClient_SetPairingInfo_Request set_pairing_info_request = 3;
+		.CRemoteClient_CancelPairing_Request cancel_pairing_request = 4;
+		.CRemoteClient_RegisterStatusUpdate_Notification register_status_update = 5;
+		.CRemoteClient_UnregisterStatusUpdate_Notification unregister_status_update = 6;
+		.CRemoteClient_RemotePacket_Notification remote_packet = 7;
+	}
+}
+
+message CCMRemoteClient_ServerMessage {
+	optional int32 result = 1;
+
+	oneof Message {
+		.CRemoteClient_CreateSession_Response create_session_response = 2;
+		.CRemoteClient_StartPairing_Response start_pairing_response = 3;
+		.CRemoteClient_SetPairingInfo_Response set_pairing_info_response = 4;
+		.CRemoteClient_CancelPairing_Response cancel_pairing_response = 5;
+		.CRemoteClient_GetReplies_Response reply_packet = 6;
+		.CRemoteClient_Offline_Notification offline = 7;
+	}
+}

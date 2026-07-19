@@ -1,0 +1,216 @@
+syntax = "proto2";
+import "enums.proto";
+import "steammessages_base.proto";
+import "webuimessages_base.proto";
+
+option optimize_for = SPEED;
+option py_generic_services = true;
+
+message CMsgFactoryResetState {
+	optional bool is_running = 1;
+	optional int32 progress = 2;
+	optional bool is_restart_pending = 3;
+	optional fixed32 rtime_estimated_completion = 4;
+}
+
+message CSteamOSManagerState {
+	optional bool is_service_available = 1;
+	optional string os_version = 2;
+	optional bool is_mandatory_update_available = 3;
+	optional bool is_status_led_control_available = 5;
+	optional .CMsgFactoryResetState factory_reset_state = 6;
+	optional bool is_tdp_limit_available = 7;
+	optional int32 tdp_limit_min = 8;
+	optional int32 tdp_limit_max = 9;
+	optional bool is_cec_available = 10;
+	optional bool is_wifi_debug_supported = 11;
+	optional bool is_wifi_debug_force_disabled = 12;
+	optional bool is_wifi_force_wpa_supplicant_supported = 13;
+	optional bool is_manual_gpu_clock_available = 14;
+	optional int32 manual_gpu_clock_min = 15;
+	optional int32 manual_gpu_clock_max = 16;
+	repeated string platform_performance_profiles_available = 17;
+	optional string platform_performance_profile_default = 18;
+	optional bool is_charge_limit_available = 20;
+	optional int32 charge_limit_min = 21;
+	optional int32 charge_limit_max = 22;
+	optional int32 charge_limit_default = 23;
+	optional bool is_screen_reader_supported = 24;
+	repeated string screen_reader_locales_available = 25;
+	optional string screen_reader_locale_default = 26;
+	optional bool is_system_tracing_available = 27;
+	optional bool is_vrs_available = 28;
+	optional bool is_wifi_driver_reload_available = 29;
+	optional bool is_password_change_supported = 30;
+	optional bool is_session_management_supported = 31;
+	repeated string desktop_sessions_available = 32;
+	optional string desktop_session_default = 33;
+	optional bool is_extended_cec_available = 34;
+	optional bool is_extended_cec_wake_device_supported = 35;
+}
+
+message CSteamOSManager_GetState_Request {
+}
+
+message CSteamOSManager_GetState_Response {
+	optional .CSteamOSManagerState state = 1;
+}
+
+message CSteamOSManager_StateChanged_Notification {
+}
+
+message CSteamOSManager_IsTelemetryHelperAvailable_Request {
+	optional .ESLSHelper etype = 1 [default = k_ESLSHelper_Invalid];
+}
+
+message CSteamOSManager_IsTelemetryHelperAvailable_Response {
+	optional bool available = 1;
+}
+
+message CSteamOSManager_OptOutOfSideloadedClient_Request {
+}
+
+message CSteamOSManager_OptOutOfSideloadedClient_Response {
+}
+
+message CSteamOSManager_ApplyMandatoryUpdate_Request {
+}
+
+message CSteamOSManager_ApplyMandatoryUpdate_Response {
+}
+
+message CSteamOSManager_FactoryReset_Request {
+	optional bool reset_os = 1;
+	optional bool reset_user_data = 2;
+}
+
+message CSteamOSManager_FactoryReset_Response {
+}
+
+message CSteamOSManager_RefreshScreenReaderAutoLocale_Request {
+}
+
+message CSteamOSManager_RefreshScreenReaderAutoLocale_Response {
+}
+
+message CSteamOS_SetUserPassword_Request {
+	optional string current_password = 1;
+	optional string new_password = 2;
+}
+
+message CSteamOS_SetUserPassword_Response {
+}
+
+message CSteamOS_GetUserHasPassword_Request {
+}
+
+message CSteamOS_GetUserHasPassword_Response {
+	optional bool has_password = 1;
+}
+
+message CSteamOSManager_PrepareFactoryImageTest_Request {
+	optional bool factory_reset = 1;
+}
+
+message CSteamOSManager_PrepareFactoryImageTest_Response {
+}
+
+message CSteamOSManager_SwitchToDesktop_Request {
+}
+
+message CSteamOSManager_SwitchToDesktop_Response {
+}
+
+message CSteamOSManager_SetDefaultDesktopSession_Request {
+	optional string session_name = 1;
+}
+
+message CSteamOSManager_SetDefaultDesktopSession_Response {
+}
+
+message CSteamOSManager_GetSteamVRPaths_Request {
+}
+
+message CSteamVRPathRecord {
+	optional string path = 1;
+	optional string version = 2;
+}
+
+message CSteamOSManager_GetSteamVRPaths_Response {
+	optional string active_path = 1;
+	optional .CSteamVRPathRecord default_path = 2;
+	optional string main_lowerdir_path = 3;
+	optional string rel_lowerdir_path = 4;
+	repeated .CSteamVRPathRecord sideloaded_paths = 5;
+}
+
+message CSteamOSManager_SetSteamVRPath_Request {
+	optional string path = 1;
+}
+
+message CSteamOSManager_SetSteamVRPath_Response {
+}
+
+message CSteamOSSLSPlugin {
+	optional .ESLSHelper etype = 1 [default = k_ESLSHelper_Invalid];
+	optional bool is_available = 2;
+	optional bool is_enabled = 3;
+}
+
+message CSteamOSSLSState {
+	optional bool is_available = 1;
+	optional bool is_enabled = 2;
+	repeated .CSteamOSSLSPlugin plugins = 3;
+}
+
+message CSteamOSSLS_GetState_Request {
+}
+
+message CSteamOSSLS_GetState_Response {
+	optional .CSteamOSSLSState state = 1;
+}
+
+message CSteamOSSLS_StateChanged_Notification {
+}
+
+message CSteamOSSLS_SetEnabled_Request {
+	optional bool enabled = 1;
+}
+
+message CSteamOSSLS_SetEnabled_Response {
+}
+
+message CSteamOSSLS_SetPluginEnabled_Request {
+	optional .ESLSHelper etype = 1 [default = k_ESLSHelper_Invalid];
+	optional bool enabled = 2;
+}
+
+message CSteamOSSLS_SetPluginEnabled_Response {
+}
+
+service SteamOSManager {
+	option (webui_service_execution_site) = k_EClientExecutionSiteSteamUI;
+
+	rpc GetState (.CSteamOSManager_GetState_Request) returns (.CSteamOSManager_GetState_Response);
+	rpc NotifyStateChanged (.CSteamOSManager_StateChanged_Notification) returns (.WebUINoResponse);
+	rpc OptOutOfSideloadedClient (.CSteamOSManager_OptOutOfSideloadedClient_Request) returns (.CSteamOSManager_OptOutOfSideloadedClient_Response);
+	rpc ApplyMandatoryUpdate (.CSteamOSManager_ApplyMandatoryUpdate_Request) returns (.CSteamOSManager_ApplyMandatoryUpdate_Response);
+	rpc FactoryReset (.CSteamOSManager_FactoryReset_Request) returns (.CSteamOSManager_FactoryReset_Response);
+	rpc PrepareFactoryImageTest (.CSteamOSManager_PrepareFactoryImageTest_Request) returns (.CSteamOSManager_PrepareFactoryImageTest_Response);
+	rpc RefreshScreenReaderAutoLocale (.CSteamOSManager_RefreshScreenReaderAutoLocale_Request) returns (.CSteamOSManager_RefreshScreenReaderAutoLocale_Response);
+	rpc SetUserPassword (.CSteamOS_SetUserPassword_Request) returns (.CSteamOS_SetUserPassword_Response);
+	rpc GetUserHasPassword (.CSteamOS_GetUserHasPassword_Request) returns (.CSteamOS_GetUserHasPassword_Response);
+	rpc SwitchToDesktop (.CSteamOSManager_SwitchToDesktop_Request) returns (.CSteamOSManager_SwitchToDesktop_Response);
+	rpc SetDefaultDesktopSession (.CSteamOSManager_SetDefaultDesktopSession_Request) returns (.CSteamOSManager_SetDefaultDesktopSession_Response);
+	rpc GetSteamVRPaths (.CSteamOSManager_GetSteamVRPaths_Request) returns (.CSteamOSManager_GetSteamVRPaths_Response);
+	rpc SetSteamVRPath (.CSteamOSManager_SetSteamVRPath_Request) returns (.CSteamOSManager_SetSteamVRPath_Response);
+}
+
+service SteamOSSLS {
+	option (webui_service_execution_site) = k_EClientExecutionSiteSteamUI;
+
+	rpc GetState (.CSteamOSSLS_GetState_Request) returns (.CSteamOSSLS_GetState_Response);
+	rpc NotifyStateChanged (.CSteamOSSLS_StateChanged_Notification) returns (.WebUINoResponse);
+	rpc SetEnabled (.CSteamOSSLS_SetEnabled_Request) returns (.CSteamOSSLS_SetEnabled_Response);
+	rpc SetPluginEnabled (.CSteamOSSLS_SetPluginEnabled_Request) returns (.CSteamOSSLS_SetPluginEnabled_Response);
+}

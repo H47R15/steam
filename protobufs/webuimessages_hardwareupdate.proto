@@ -1,0 +1,99 @@
+syntax = "proto2";
+import "enums.proto";
+import "steammessages_base.proto";
+import "webuimessages_base.proto";
+
+option optimize_for = SPEED;
+option py_generic_services = true;
+
+enum EHardwareUpdateDeviceType {
+	Triton_BL = 0;
+	Proteus_BL = 1;
+	Triton_USB = 2;
+	Triton_BLE = 3;
+	Triton_ESB = 4;
+	Proteus_USB = 5;
+	Nereid_USB = 6;
+}
+
+enum EHardwareUpdatePriority {
+	Low = 0;
+	Normal = 1;
+	Suggested = 2;
+	Required = 3;
+}
+
+message CHardwareUpdate_GetState_Request {
+}
+
+message CHardwareUpdate_GetState_Response {
+	optional bool is_updater_supported = 1;
+	optional bool has_seen_controllers = 2;
+}
+
+message CHardwareUpdate_StateChanged_Notification {
+}
+
+message CHardwareUpdate_CheckForUpdates_Request {
+}
+
+message CMsgAvailableHardwareUpdate {
+	optional .EHardwareUpdateDeviceType etype = 1 [default = Triton_BL];
+	optional string serial_number = 3;
+	optional uint64 current_ts = 4;
+	optional uint64 update_ts = 5;
+	optional .EHardwareUpdatePriority priority = 6 [default = Low];
+	optional bool is_downgrade = 7;
+}
+
+message CHardwareUpdate_CheckForUpdates_Response {
+	repeated .CMsgAvailableHardwareUpdate updates = 1;
+}
+
+message CHardwareUpdate_Update_Request {
+	optional string serial_number = 1;
+	optional bool update_all = 2;
+}
+
+message CHardwareUpdate_Update_Response {
+}
+
+message CHardwareUpdate_UpdateProgress_Notification {
+	optional int32 progress = 1;
+}
+
+message CHardwareUpdate_UpdateStateChanged_Notification {
+}
+
+message CHardwareUpdate_PrepForUpdate_Request {
+	optional string serial_number = 1;
+}
+
+message CHardwareUpdate_PrepForUpdate_Response {
+}
+
+message CHardwareUpdate_EnumerateDevices_Request {
+}
+
+message CHardwareUpdate_EnumerateDevices_Response {
+	message Device {
+		optional .EHardwareUpdateDeviceType etype = 1 [default = Triton_BL];
+		optional string serial_number = 2;
+		optional uint64 current_ts = 3;
+	}
+
+	repeated .CHardwareUpdate_EnumerateDevices_Response.Device devices = 1;
+}
+
+service HardwareUpdate {
+	option (webui_service_execution_site) = k_EClientExecutionSiteSteamUI;
+
+	rpc GetState (.CHardwareUpdate_GetState_Request) returns (.CHardwareUpdate_GetState_Response);
+	rpc NotifyStateChanged (.CHardwareUpdate_StateChanged_Notification) returns (.WebUINoResponse);
+	rpc EnumerateDevices (.CHardwareUpdate_EnumerateDevices_Request) returns (.CHardwareUpdate_EnumerateDevices_Response);
+	rpc CheckForUpdates (.CHardwareUpdate_CheckForUpdates_Request) returns (.CHardwareUpdate_CheckForUpdates_Response);
+	rpc PrepForUpdate (.CHardwareUpdate_PrepForUpdate_Request) returns (.CHardwareUpdate_PrepForUpdate_Response);
+	rpc Update (.CHardwareUpdate_Update_Request) returns (.CHardwareUpdate_Update_Response);
+	rpc NotifyUpdateProgress (.CHardwareUpdate_UpdateProgress_Notification) returns (.WebUINoResponse);
+	rpc NotifyUpdateStateChanged (.CHardwareUpdate_UpdateStateChanged_Notification) returns (.WebUINoResponse);
+}

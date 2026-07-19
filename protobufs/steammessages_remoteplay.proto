@@ -106,6 +106,17 @@ enum EStreamControlMessage {
 	k_EStreamControlSetBitrateOverride = 135;
 	k_EStreamControlShowOnScreenKeyboard = 136;
 	k_EStreamControlControllerConfigMsg = 137;
+	k_EStreamControlControllerPersonalizationUpdate = 138;
+	k_EStreamControlEnableNeptuneData_OBSOLETE = 139;
+	k_EStreamControlDisableNeptuneData_OBSOLETE = 140;
+	k_EStreamControlStartNeptuneData_OBSOLETE = 141;
+	k_EStreamControlStopNeptuneData_OBSOLETE = 142;
+	k_EStreamControlPauseControllerInput = 143;
+	k_EStreamControlResumeControllerInput = 144;
+	k_EStreamControlVRConnectionReady = 145;
+	k_EStreamControlSetCursorScale = 146;
+	k_EStreamControlCaptureFailed = 147;
+	k_EStreamControlVideoOverflow = 148;
 }
 
 enum EStreamVersion {
@@ -129,8 +140,8 @@ enum EStreamVideoCodec {
 	k_EStreamVideoCodecVP9 = 3;
 	k_EStreamVideoCodecH264 = 4;
 	k_EStreamVideoCodecHEVC = 5;
-	k_EStreamVideoCodecORBX1 = 6;
-	k_EStreamVideoCodecORBX2 = 7;
+	k_EStreamVideoCodecAV1 = 8;
+	k_EStreamVideoCodecPyrowave = 9;
 }
 
 enum EStreamQualityPreference {
@@ -151,6 +162,7 @@ enum EStreamColorspace {
 	k_EStreamColorspace_BT601_Full = 2;
 	k_EStreamColorspace_BT709 = 3;
 	k_EStreamColorspace_BT709_Full = 4;
+	k_EStreamColorspace_HDR10 = 5;
 }
 
 enum EStreamP2PScope {
@@ -166,10 +178,17 @@ enum EStreamHostPlayAudioPreference {
 	k_EStreamHostPlayAudioAlways = 1;
 }
 
+enum EStreamHostDisplaySetting {
+	k_EStreamHostDisplaySettingNone = 0;
+	k_EStreamHostDisplaySettingClient = 1;
+	k_EStreamHostDisplaySettingCustom = 2;
+}
+
 enum EStreamingDataType {
 	k_EStreamingAudioData = 0;
 	k_EStreamingVideoData = 1;
 	k_EStreamingMicrophoneData = 2;
+	k_EStreamingNeptuneData_OBSOLETE = 3;
 }
 
 enum EStreamMouseButton {
@@ -204,6 +223,14 @@ enum EStreamActivity {
 	k_EStreamActivityDesktop = 3;
 	k_EStreamActivitySecureDesktop = 4;
 	k_EStreamActivityMusic = 5;
+}
+
+enum ECaptureFailedReason {
+	k_ECaptureFailedReasonNone = 0;
+	k_ECaptureFailedReasonUnknown = 1;
+	k_ECaptureFailedReasonPipewireRequired = 2;
+	k_ECaptureFailedReasonPipewirePermissions = 3;
+	k_ECaptureFailedReasonMacOSPermissions = 4;
 }
 
 enum EStreamDataMessage {
@@ -362,12 +389,19 @@ message CStreamVideoMode {
 	optional uint32 refresh_rate_denominator = 5;
 }
 
+message CStreamVideoLimit {
+	optional .EStreamVideoCodec codec = 1 [default = k_EStreamVideoCodecNone];
+	optional .CStreamVideoMode mode = 2;
+	optional int32 bitrate_kbps = 3;
+	optional int32 burst_bitrate_kbps = 4;
+}
+
 message CStreamingClientCaps {
 	optional string system_info = 1;
 	optional bool system_can_suspend = 2;
 	optional int32 maximum_decode_bitrate_kbps = 3;
 	optional int32 maximum_burst_bitrate_kbps = 4;
-	optional bool supports_video_hevc = 5;
+	optional bool supports_video_hevc_OBSOLETE = 5;
 	optional bool disable_steam_store = 6;
 	optional bool disable_client_cursor = 7;
 	optional bool disable_intel_hardware_encoding = 8;
@@ -376,15 +410,18 @@ message CStreamingClientCaps {
 	optional int32 form_factor = 11;
 	optional bool has_on_screen_keyboard = 12;
 	repeated .EStreamColorspace supported_colorspaces = 13;
+	repeated .EStreamAudioCodec supported_audio_codecs = 14;
+	repeated .EStreamVideoCodec supported_video_codecs = 15;
+	optional bool can_toggle_fullscreen = 16;
 }
 
 message CStreamingClientConfig {
 	optional .EStreamQualityPreference quality = 1 [default = k_EStreamQualityBalanced];
-	optional uint32 maximum_resolution_x = 2;
-	optional uint32 maximum_resolution_y = 3;
-	optional uint32 maximum_framerate_numerator = 4;
-	optional uint32 maximum_framerate_denominator = 5;
-	optional int32 maximum_bitrate_kbps = 6 [default = -1];
+	optional uint32 desired_resolution_x = 2;
+	optional uint32 desired_resolution_y = 3;
+	optional uint32 desired_framerate_numerator = 4;
+	optional uint32 desired_framerate_denominator = 5;
+	optional int32 desired_bitrate_kbps = 6 [default = -1];
 	optional bool enable_hardware_decoding = 7 [default = true];
 	optional bool enable_performance_overlay = 8 [default = false];
 	optional bool enable_video_streaming = 9 [default = true];
@@ -395,27 +432,47 @@ message CStreamingClientConfig {
 	optional bool enable_performance_icons = 14 [default = true];
 	optional bool enable_microphone_streaming = 15 [default = false];
 	optional string controller_overlay_hotkey = 16;
-	optional bool enable_touch_controller = 17 [default = false];
+	optional bool enable_touch_controller_OBSOLETE = 17 [default = false];
 	optional .EStreamP2PScope p2p_scope = 19 [default = k_EStreamP2PScopeAutomatic];
+	optional bool enable_audio_uncompressed = 20 [default = false];
+	optional .CStreamVideoLimit display_limit = 21;
+	optional .CStreamVideoLimit quality_limit = 22;
+	optional .CStreamVideoLimit runtime_limit = 23;
+	repeated .CStreamVideoLimit decoder_limit = 24;
+	optional bool enable_unreliable_fec = 25 [default = false];
+	optional bool enable_video_av1 = 26 [default = false];
+	optional bool windowed = 27;
+	optional float window_pixel_density = 28;
+	optional int32 window_width = 29;
+	optional int32 window_height = 30;
+	optional int32 window_position_x = 31;
+	optional int32 window_position_y = 32;
+	optional int32 window_frame_offset_x = 33;
+	optional int32 window_frame_offset_y = 34;
+	optional bool enable_video_pyrowave = 35 [default = false];
 }
 
 message CStreamingServerConfig {
-	optional bool change_desktop_resolution = 1;
-	optional bool dynamically_adjust_resolution = 2;
-	optional bool enable_capture_nvfbc = 3;
-	optional bool enable_hardware_encoding_nvidia = 4;
-	optional bool enable_hardware_encoding_amd = 5;
-	optional bool enable_hardware_encoding_intel = 6;
-	optional int32 software_encoding_threads = 7;
-	optional bool enable_traffic_priority = 8;
-	optional .EStreamHostPlayAudioPreference host_play_audio = 9 [default = k_EStreamHostPlayAudioDefault];
+	optional .EStreamHostPlayAudioPreference host_play_audio = 1 [default = k_EStreamHostPlayAudioDefault];
+	optional string custom_display_device = 2;
+	optional .EStreamHostDisplaySetting display_resolution_setting = 3 [default = k_EStreamHostDisplaySettingNone];
+	optional int32 custom_display_resolution_x = 4;
+	optional int32 custom_display_resolution_y = 5;
+	optional .EStreamHostDisplaySetting display_refresh_rate_setting = 6 [default = k_EStreamHostDisplaySettingNone];
+	optional string custom_display_refresh_rate = 7;
+	optional .EStreamHostDisplaySetting display_hdr_setting = 8 [default = k_EStreamHostDisplaySettingNone];
+	optional bool custom_display_hdr = 9;
+	optional bool enable_capture_nvfbc = 10;
+	optional bool enable_hardware_encoding = 11;
+	optional int32 software_encoding_threads = 12;
+	optional bool enable_traffic_priority = 13;
 }
 
 message CNegotiatedConfig {
 	optional bool reliable_data = 1;
 	optional .EStreamAudioCodec selected_audio_codec = 2 [default = k_EStreamAudioCodecNone];
 	optional .EStreamVideoCodec selected_video_codec = 3 [default = k_EStreamVideoCodecNone];
-	repeated .CStreamVideoMode available_video_modes = 4;
+	repeated .CStreamVideoMode available_video_modes_OBSOLETE = 4;
 	optional bool enable_remote_hid = 5;
 	optional bool enable_touch_input = 6;
 	optional bool disable_client_cursor = 7;
@@ -427,6 +484,8 @@ message CNegotiationInitMsg {
 	repeated .EStreamVideoCodec supported_video_codecs = 3;
 	optional bool supports_remote_hid = 4;
 	optional bool supports_touch_input = 5;
+	optional int32 os_type = 6;
+	optional int32 gaming_device_type = 7;
 }
 
 message CNegotiationSetConfigMsg {
@@ -507,6 +566,7 @@ message CInputTouchFingerUpMsg {
 	optional uint64 fingerid = 2;
 	optional float x_normalized = 3;
 	optional float y_normalized = 4;
+	optional bool canceled = 5;
 }
 
 message CInputMouseMotionMsg {
@@ -520,6 +580,7 @@ message CInputMouseMotionMsg {
 message CInputMouseWheelMsg {
 	optional uint32 input_mark = 1;
 	required .EStreamMouseWheelDirection direction = 2 [default = k_EStreamMouseWheelUp];
+	optional float amount = 3 [default = 1];
 }
 
 message CInputMouseDownMsg {
@@ -535,11 +596,15 @@ message CInputMouseUpMsg {
 message CInputKeyDownMsg {
 	optional uint32 input_mark = 1;
 	required uint32 scancode = 2;
+	optional uint32 modifiers = 3;
+	optional uint32 keycode = 4;
 }
 
 message CInputKeyUpMsg {
 	optional uint32 input_mark = 1;
 	required uint32 scancode = 2;
+	optional uint32 modifiers = 3;
+	optional uint32 keycode = 4;
 }
 
 message CInputTextMsg {
@@ -571,6 +636,7 @@ message CSetFlashStateMsg {
 message CShowCursorMsg {
 	optional float x_normalized = 1;
 	optional float y_normalized = 2;
+	optional bool locked = 3;
 }
 
 message CHideCursorMsg {
@@ -593,6 +659,10 @@ message CSetCursorImageMsg {
 	optional bytes image = 6;
 }
 
+message CSetCursorScaleMsg {
+	optional float scale = 1;
+}
+
 message CVideoDecoderInfoMsg {
 	optional string info = 1;
 	optional int32 threads = 2;
@@ -612,6 +682,12 @@ message CEnableHighResCaptureMsg {
 }
 
 message CDisableHighResCaptureMsg {
+}
+
+message CPauseControllerInputMsg {
+}
+
+message CResumeControllerInputMsg {
 }
 
 message CToggleMagnificationMsg {
@@ -774,6 +850,7 @@ message CRemotePlayTogetherGroupUpdateMsg {
 	optional string miniprofile_location = 3;
 	optional string game_name = 4;
 	optional string avatar_location = 5;
+	optional bool direct_input = 6;
 }
 
 message CSetInputTemporarilyDisabledMsg {
@@ -789,6 +866,25 @@ message CSetBitrateOverrideMsg {
 }
 
 message CShowOnScreenKeyboardMsg {
+}
+
+message CControllerPersonalizationUpdateMsg {
+	optional string controller_path = 1;
+	optional string controller_name = 2;
+	optional bool reverse_diamond_button_layout = 3;
+}
+
+message CVRConnectionReady {
+	optional string connect_params = 1;
+}
+
+message CCaptureFailedMsg {
+	optional .ECaptureFailedReason reason = 1 [default = k_ECaptureFailedReasonNone];
+}
+
+message CStreamVideoOverflowMsg {
+	optional uint32 first_frame_id = 1;
+	optional uint32 last_frame_id = 2;
 }
 
 message CStreamDataLostMsg {
@@ -845,6 +941,7 @@ message CStreamingSessionStats {
 	optional float frame_loss_percentage = 1;
 	optional float average_network_time_ms = 2;
 	optional float stddev_network_time_ms = 3;
+	optional string test_data = 4;
 }
 
 message CDebugDumpMsg {

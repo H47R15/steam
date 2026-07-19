@@ -1,8 +1,6 @@
 """Classes to (de)serialize various struct messages"""
 import struct
-import six
 import vdf
-from six.moves import range
 from steam.enums import EResult, EUniverse
 from steam.enums.emsg import EMsg
 from steam.utils.binary import StructReader
@@ -26,8 +24,7 @@ class StructMessageMeta(type):
 
         return cls
 
-@six.add_metaclass(StructMessageMeta)
-class StructMessage:
+class StructMessage(metaclass=StructMessageMeta):
     def __init__(self, data=None):
         if data: self.load(data)
 
@@ -278,7 +275,7 @@ class ClientMarketingMessageUpdate2(StructMessage):
 
             length, m.id = buf.unpack("<IQ")
             m.url = buf.read_cstring().decode('utf-8')
-            m.flags = buf.unpack("<I")
+            m.flags, = buf.unpack("<I")
 
     def __str__(self):
         text = ["time: %s" % self.time,
@@ -350,7 +347,7 @@ class ClientChatEnter(StructMessage):
                           "enterResponse: %r" % self.enterResponse,
                           "numMembers: %r" % self.numMembers,
                           "chatRoomName: %s" % repr(self.chatRoomName),
-        ] + map(lambda x: "memberList: %s" % x, self.memberList))
+        ] + ["memberList: %s" % x for x in self.memberList])
 
 ##################################################################################################
 

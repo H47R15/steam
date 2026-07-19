@@ -1,5 +1,6 @@
 """Classes to (de)serialize message headers"""
 import struct
+from typing import Any, ClassVar
 from steam.enums.emsg import EMsg
 from steam.protobufs import steammessages_base_pb2
 from steam.protobufs import gc_pb2
@@ -7,10 +8,10 @@ from steam.utils.proto import set_proto_bit, clear_proto_bit
 
 
 class MsgHdr:
-    _size = struct.calcsize("<Iqq")
-    msg = EMsg.Invalid
-    targetJobID = -1
-    sourceJobID = -1
+    _size: ClassVar[int] = struct.calcsize("<Iqq")
+    msg: EMsg = EMsg.Invalid
+    targetJobID: int = -1
+    sourceJobID: int = -1
 
     def __init__(self, data=None):
         if data: self.load(data)
@@ -29,15 +30,15 @@ class MsgHdr:
                           ])
 
 class ExtendedMsgHdr:
-    _size = struct.calcsize("<IBHqqBqi")
-    msg = EMsg.Invalid
-    headerSize = 36
-    headerVersion = 2
-    targetJobID = -1
-    sourceJobID = -1
-    headerCanary = 239
-    steamID = -1
-    sessionID = -1
+    _size: ClassVar[int] = struct.calcsize("<IBHqqBqi")
+    msg: EMsg = EMsg.Invalid
+    headerSize: int = 36
+    headerVersion: int = 2
+    targetJobID: int = -1
+    sourceJobID: int = -1
+    headerCanary: int = 239
+    steamID: int = -1
+    sessionID: int = -1
 
     def __init__(self, data=None):
         if data: self.load(data)
@@ -83,8 +84,14 @@ class ExtendedMsgHdr:
 
 
 class MsgHdrProtoBuf:
-    _size = _fullsize = struct.calcsize("<II")
-    msg = EMsg.Invalid
+    _size: ClassVar[int] = struct.calcsize("<II")
+    _fullsize: int = struct.calcsize("<II")
+    msg: EMsg = EMsg.Invalid
+    #: The parsed protobuf header — see the ``.pyi`` stub at
+    #: ``steam/protobufs/steammessages_base_pb2.pyi`` for the field
+    #: surface (``jobid_target`` / ``jobid_source`` /
+    #: ``target_job_name`` / ``steamid`` / ``client_sessionid``).
+    proto: "steammessages_base_pb2.CMsgProtoBufHeader"
 
     def __init__(self, data=None):
         self.proto = steammessages_base_pb2.CMsgProtoBufHeader()

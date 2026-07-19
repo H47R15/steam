@@ -78,7 +78,7 @@ Reading a file directly from SteamPipe
 
 .. code:: python
 
-    >>> file_list = mycdn.iter_files(570, r'game\dota\gameinfo.gi')
+    >>> file_list = mycdn.iter_files(570, r'game\\dota\\gameinfo.gi')
     >>> myfile = next(file_list)
     <CDNDepotFile(570, 373301, 6397590570861788404, 'game\\dota\\gameinfo.gi', 6808)>
     >>> print(myfile.read(80).decode('utf-8'))
@@ -99,13 +99,14 @@ from collections import OrderedDict, deque
 from six import itervalues, iteritems
 from binascii import crc32, unhexlify
 from datetime import datetime
+from typing import Any, Optional
 import logging
 import struct
 
 import vdf
 from gevent.pool import Pool as GPool
 from cachetools import LRUCache
-from steam import webapi
+from steam.webapi import get as webapi_get
 from steam.exceptions import SteamError, ManifestError
 from steam.core.msg import MsgProto
 from steam.enums import EResult, EType
@@ -115,10 +116,7 @@ from steam.core.crypto import symmetric_decrypt, symmetric_decrypt_ecb
 from steam.core.manifest import DepotManifest, DepotFile
 from steam.protobufs.content_manifest_pb2 import ContentManifestPayload
 
-try:
-    import lzma
-except ImportError:
-    from backports import lzma
+import lzma
 
 def decrypt_manifest_gid_2(encrypted_gid, password):
     """Decrypt manifest gid v2 bytes
@@ -190,7 +188,7 @@ def get_content_servers_from_webapi(cell_id, num_servers=20):
     :rtype: :class:`list` [:class:`.ContentServer`]
     """
     params = {'cell_id': cell_id, 'max_servers': num_servers}
-    resp = webapi.get('IContentServerDirectoryService', 'GetServersForSteamPipe', params=params)
+    resp = webapi_get('IContentServerDirectoryService', 'GetServersForSteamPipe', params=params)
 
     servers = []
 
@@ -210,14 +208,18 @@ def get_content_servers_from_webapi(cell_id, num_servers=20):
 
 
 class ContentServer(object):
-    https = False
-    host = None
-    vhost = None
-    port = None
-    type = None
-    cell_id = 0
-    load = None
-    weighted_load = None
+    # Class-level defaults populated at ingest time (see
+    # ``get_content_servers_from_cs``).  Annotating as ``Optional[T]``
+    # rather than leaving inferred-from-``None`` so assignments like
+    # ``server.port = 443`` don't clash with the ``None`` initial.
+    https: bool = False
+    host: Optional[str] = None
+    vhost: Optional[str] = None
+    port: Optional[int] = None
+    type: Optional[str] = None
+    cell_id: int = 0
+    load: Optional[str] = None
+    weighted_load: Optional[str] = None
 
     def __repr__(self):
         return "<%s('%s://%s:%s', type=%s, cell_id=%s)>" % (
@@ -231,6 +233,15 @@ class ContentServer(object):
 
 
 class CDNDepotFile(DepotFile):
+    # ``self.manifest`` is set inside ``DepotFile.__init__`` and is
+    # always a ``CDNDepotManifest`` for the CDN-aware subclass (the
+    # ``isinstance`` guard below enforces it at runtime).  Declaring
+    # the concrete type here so accesses like
+    # ``self.manifest.app_id`` / ``self.manifest.cdn_client`` resolve
+    # against the CDN subclass's attributes rather than the base
+    # ``DepotManifest`` which doesn't carry them.
+    manifest: "CDNDepotManifest"
+
     def __init__(self, manifest, file_mapping):
         """File-like object proxy for content files located on SteamPipe
 
@@ -346,7 +357,7 @@ class CDNDepotFile(DepotFile):
         # we go to loop over chunks to determine which to download
         else:
             data = BytesIO()
-            start_offset = None
+            start_offset: Optional[int] = None
 
             # Manifest orders the chunks by offset in ascending order
             for chunk in self.chunks:
@@ -362,6 +373,13 @@ class CDNDepotFile(DepotFile):
                     if start_offset is None:
                         start_offset = chunk.offset
                     data.write(self._get_chunk(chunk))
+
+            # No overlapping chunks means the requested slice sits
+            # entirely outside the file body — return empty rather
+            # than crashing on ``self.offset - None``.
+            if start_offset is None:
+                self.offset = min(self.size, end_offset)
+                return b''
 
             data.seek(self.offset - start_offset)
             data = data.read(length)
@@ -399,8 +417,15 @@ class CDNDepotFile(DepotFile):
 
 
 class CDNDepotManifest(DepotManifest):
+    # Class-level declarations so Pylance sees these attributes on
+    # the type (used at ``self.manifest.cdn_client`` / ``.app_id``
+    # accesses inside ``CDNDepotFile``).  Populated in ``__init__``
+    # below; the annotations here are pure type-checker hints.
+    cdn_client: "CDNClient"
+    app_id: int
+
     DepotFileClass = CDNDepotFile
-    name = None  #: set only by :meth:`CDNClient.get_manifests`
+    name: Optional[str] = None  #: set only by :meth:`CDNClient.get_manifests`
 
     def __init__(self, cdn_client, app_id, data):
         """Holds manifest metadata and file list.
@@ -612,7 +637,13 @@ class CDNClient(object):
                 if data[2:3] != b'a':
                     raise SteamError("VZ: Invalid version: %s" % repr(data[2:3]))
 
-                vzfilter = lzma._decode_filter_properties(lzma.FILTER_LZMA1, data[7:12])
+                # ``_decode_filter_properties`` is a private stdlib
+                # helper — not exposed in typeshed but stable across
+                # py3.x releases.  Used here because Steam's VZ blob
+                # format packs the raw LZMA filter properties in
+                # bytes 7:12 and the public API can't consume them
+                # directly.
+                vzfilter = lzma._decode_filter_properties(lzma.FILTER_LZMA1, data[7:12])  # pyright: ignore[reportAttributeAccessIssue]
                 vzdec = lzma.LZMADecompressor(lzma.FORMAT_RAW, filters=[vzfilter])
                 checksum, decompressed_size = struct.unpack('<II', data[-10:-2])
                 # decompress_size is needed since lzma will sometime produce longer output
@@ -646,7 +677,13 @@ class CDNClient(object):
         :rtype: int
         """
 
-        body = {
+        # ``dict[str, Any]`` because the schema mixes ``int`` fields
+        # (``app_id`` / ``depot_id`` / ``manifest_id``) with ``str``
+        # ones (``app_branch`` / ``branch_password_hash``) — a narrower
+        # ``dict[str, int]`` (Pylance's default inference from the
+        # literal) would reject the later ``body['app_branch'] = ...``
+        # assignment.
+        body: dict[str, Any] = {
             "app_id":      int(app_id),
             "depot_id":    int(depot_id),
             "manifest_id": int(manifest_gid),
@@ -918,8 +955,15 @@ class CDNClient(object):
         wf = None if resp is None else resp.body.publishedfiledetails[0]
 
         if wf is None or wf.result != EResult.OK:
-            raise SteamError("Failed getting workshop file info",
-                              EResult.Timeout if resp is None else EResult(wf.result))
+            # ``wf`` is only ``None`` when ``resp`` is ``None`` (see
+            # the assignment above), so the ``else`` arm below is
+            # unreachable with ``wf is None``.  Splitting the ternary
+            # into a full ``if`` block lets Pylance narrow ``wf`` on
+            # the ``EResult(wf.result)`` branch.
+            if resp is None:
+                raise SteamError("Failed getting workshop file info", EResult.Timeout)
+            assert wf is not None
+            raise SteamError("Failed getting workshop file info", EResult(wf.result))
         elif not wf.hcontent_file:
             raise SteamError("Workshop file is not on SteamPipe", EResult.FileNotFound)
 
@@ -929,7 +973,13 @@ class CDNClient(object):
             manifest_code = self.get_manifest_request_code(app_id, ws_app_id, int(wf.hcontent_file))
             manifest = self.get_manifest(app_id, ws_app_id, wf.hcontent_file, manifest_request_code=manifest_code)
         except SteamError as exc:
-            return ManifestError("Failed to acquire manifest", app_id, depot_id, manifest_gid, exc)
+            # ``depot_id`` / ``manifest_gid`` were the parameter names
+            # of ``get_manifest_request_code`` — the local variables in
+            # THIS scope are ``ws_app_id`` (the depot id we pass in)
+            # and ``wf.hcontent_file`` (the manifest gid).  Original
+            # code referenced the undefined names, which would
+            # ``NameError`` on the exception path.
+            return ManifestError("Failed to acquire manifest", app_id, ws_app_id, wf.hcontent_file, exc)
 
         manifest.name = wf.title
         return manifest

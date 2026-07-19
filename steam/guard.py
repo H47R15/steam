@@ -65,11 +65,13 @@ Format of ``secrets.json`` file:
 import json
 import subprocess
 import struct
+from typing import Any, Optional, Protocol
+
 import requests
 from base64 import b64decode, b64encode
 from binascii import hexlify
 from time import time
-from steam import webapi
+from steam.webapi import post as webapi_post
 from steam.enums import ETwoFactorTokenType
 from steam.steamid import SteamID
 from steam.core.crypto import hmac_sha1, sha1_hash
@@ -78,14 +80,51 @@ from steam.webauth import MobileWebAuth
 from steam.utils.proto import proto_to_dict
 
 
+class _SteamAuthBackend(Protocol):
+    """Structural type for the ``backend`` accepted by :class:`SteamAuthenticator`.
+
+    In practice a :class:`.MobileWebAuth` (HTTP + WebAPI path) or a
+    :class:`.SteamClient` (unified messages path).  We only declare the
+    surface that ``SteamAuthenticator`` actually reaches for — importing
+    :class:`.SteamClient` here would drag the whole gevent-based client
+    stack into a module that is often used just for pure-Python code
+    generation (secrets on disk, ``get_code()`` only).
+    """
+
+    logged_on: bool
+    steam_id: "SteamID"
+
+    def send_um_and_wait(
+        self,
+        method_name: str,
+        params: Optional[dict] = ...,
+        timeout: float = ...,
+        raises: bool = ...,
+    ) -> Any: ...
+
+    def get_web_session(
+        self, language: str = ...
+    ) -> Optional[requests.Session]: ...
+
+    def post(self, url: str, data: Any = ...) -> requests.Response: ...
+
+
 class SteamAuthenticator(object):
     """Add/Remove authenticator from an account. Generate 2FA and confirmation codes."""
     _finalize_attempts = 5
-    backend = None               #: instance of :class:`.MobileWebAuth` or :class:`.SteamClient`
-    steam_time_offset = None     #: offset from steam server time
+    # ``backend`` is a real Optional — the class supports "offline" use where
+    # only pre-existing ``secrets`` are provided to compute codes.  All
+    # network-touching methods narrow via ``assert`` or ``isinstance`` before
+    # dereferencing ``self.backend``.
+    backend: Optional["_SteamAuthBackend"] = None  #: instance of :class:`.MobileWebAuth` or :class:`.SteamClient`
+    steam_time_offset: Optional[float] = None      #: offset from steam server time
     align_time_every = 0         #: how often to align time with Steam (``0`` never, otherwise interval in seconds)
-    _offset_last_check = 0
-    secrets = None               #: :class:`dict` with authenticator secrets
+    _offset_last_check: float = 0
+    # ``secrets`` is populated in ``__init__`` (``secrets or {}``); declare the
+    # instance-attribute type here so downstream ``self.secrets[key]`` /
+    # ``self.secrets.clear()`` sites see ``dict`` instead of the ``= None``
+    # class default that Pylance would otherwise infer.
+    secrets: dict               #: :class:`dict` with authenticator secrets
 
     def __init__(self, secrets=None, backend=None):
         """
@@ -141,6 +180,10 @@ class SteamAuthenticator(object):
 
     def _send_request(self, action, params):
         backend = self.backend
+        assert backend is not None, (
+            "SteamAuthenticator.backend must be set to send requests; "
+            "instantiate with SteamAuthenticator(secrets, backend=<MobileWebAuth|SteamClient>)"
+        )
 
         if isinstance(backend, MobileWebAuth):
             if not backend.logged_on:
@@ -150,7 +193,7 @@ class SteamAuthenticator(object):
             params['http_timeout'] = 10
 
             try:
-                resp = webapi.post('ITwoFactorService', action, 1, params=params)
+                resp = webapi_post('ITwoFactorService', action, 1, params=params)
             except requests.exceptions.RequestException as exp:
                 raise SteamAuthenticatorError("Error adding via WebAPI: %s" % str(exp))
 
@@ -185,6 +228,7 @@ class SteamAuthenticator(object):
         if not self.has_phone_number():
             raise SteamAuthenticatorError("Account doesn't have a verified phone number")
 
+        assert self.backend is not None, "backend must be set to add an authenticator"
         resp = self._send_request('AddAuthenticator', {
             'steamid': self.backend.steam_id,
             'authenticator_time': int(time()),
@@ -206,6 +250,7 @@ class SteamAuthenticator(object):
         :type activation_code: str
         :raises: :class:`SteamAuthenticatorError`
         """
+        assert self.backend is not None, "backend must be set to finalize an authenticator"
         resp = self._send_request('FinalizeAddAuthenticator', {
             'steamid': self.backend.steam_id,
             'authenticator_time': int(time()),
@@ -214,6 +259,12 @@ class SteamAuthenticator(object):
         })
 
         if resp['status'] != EResult.TwoFactorActivationCodeMismatch and resp.get('want_more', False) and self._finalize_attempts:
+            # ``add()`` populates ``steam_time_offset`` before ``finalize()`` is
+            # typically called, but defend against the offline / manual case
+            # where the offset was never set — a numeric ``+= 30`` needs a
+            # concrete float, not ``None``.
+            if self.steam_time_offset is None:
+                self.steam_time_offset = 0.0
             self.steam_time_offset += 30
             self._finalize_attempts -= 1
             self.finalize(activation_code)
@@ -240,11 +291,12 @@ class SteamAuthenticator(object):
         """
         if not self.secrets:
             raise SteamAuthenticatorError("No authenticator secrets available?")
-        if not isinstance(self.backend, MobileWebAuth):
+        backend = self.backend
+        if not isinstance(backend, MobileWebAuth):
             raise SteamAuthenticatorError("Only available via MobileWebAuth")
 
         resp = self._send_request('RemoveAuthenticator', {
-            'steamid': self.backend.steam_id,
+            'steamid': backend.steam_id,
             'revocation_code': revocation_code if revocation_code else self.revocation_code,
             'steamguard_scheme': 1,
         })
@@ -263,6 +315,7 @@ class SteamAuthenticator(object):
         :return: dict with status parameters
         :rtype: dict
         """
+        assert self.backend is not None, "backend must be set to query authenticator status"
         return self._send_request('QueryStatus', {'steamid': self.backend.steam_id})
 
     def create_emergency_codes(self, code=None):
@@ -294,19 +347,30 @@ class SteamAuthenticator(object):
 
         :raises: :class:`SteamAuthenticatorError`
         """
+        assert self.backend is not None, "backend must be set to destroy emergency codes"
         self._send_request('DestroyEmergencyCodes', {'steamid': self.backend.steam_id})
 
-    def _get_web_session(self):
+    def _get_web_session(self) -> requests.Session:
         """
         :return: authenticated web session
         :rtype: :class:`requests.Session`
         :raises: :class:`RuntimeError` when session is unavailable
         """
-        if isinstance(self.backend, MobileWebAuth):
-            return self.backend.session
+        backend = self.backend
+        assert backend is not None, "backend must be set to obtain a web session"
+
+        if isinstance(backend, MobileWebAuth):
+            # ``MobileWebAuth.__init__`` populates ``session`` via
+            # ``make_requests_session()`` — guard the None case explicitly so
+            # callers get a real ``requests.Session`` (their ``sess.post`` and
+            # ``sess.cookies.get`` sites otherwise crash with AttributeError).
+            session = backend.session
+            if session is None:
+                raise RuntimeError("MobileWebAuth session is not initialized")
+            return session
         else:
-            if self.backend.logged_on:
-                sess = self.backend.get_web_session()
+            if backend.logged_on:
+                sess = backend.get_web_session()
 
                 if sess is None:
                     raise RuntimeError("Failed to get a web session. Try again in a few minutes")
@@ -552,7 +616,7 @@ def get_time_offset():
     :rtype: :class:`int`, :class:`None`
     """
     try:
-        resp = webapi.post('ITwoFactorService', 'QueryTime', 1, params={'http_timeout': 10})
+        resp = webapi_post('ITwoFactorService', 'QueryTime', 1, params={'http_timeout': 10})
     except:
         return None
 

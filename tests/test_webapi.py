@@ -1,9 +1,9 @@
 import unittest
 import mock
 import vcr
+from vcr.record_mode import RecordMode
 
-from steam import webapi
-from steam.webapi import WebAPI
+from steam.webapi import WebAPI, get as webapi_get, post as webapi_post
 from steam.enums import EType, EUniverse
 
 # setup VCR
@@ -20,7 +20,7 @@ def scrub_resp(r):
 test_api_key = 'test_api_key'
 
 test_vcr = vcr.VCR(
-    record_mode='none',  # change to 'new_episodes' when recording
+    record_mode=RecordMode.NONE,  # change to RecordMode.NEW_EPISODES when recording
     serializer='yaml',
     filter_query_parameters=['key'],
     filter_post_data_parameters=['key'],
@@ -60,7 +60,7 @@ class TCwebapi(unittest.TestCase):
 
     @test_vcr.use_cassette('webapi.yaml')
     def test_get(self):
-        resp = webapi.get('ISteamUser', 'ResolveVanityURL', 1,
+        resp = webapi_get('ISteamUser', 'ResolveVanityURL', 1,
                            session=self.api.session, params={
                                'key': test_api_key,
                                'vanityurl': 'valve',
@@ -70,7 +70,7 @@ class TCwebapi(unittest.TestCase):
 
     @test_vcr.use_cassette('webapi.yaml')
     def test_post(self):
-        resp = webapi.post('ISteamRemoteStorage', 'GetPublishedFileDetails', 1,
+        resp = webapi_post('ISteamRemoteStorage', 'GetPublishedFileDetails', 1,
                            session=self.api.session, params={
                                'key': test_api_key,
                                'itemcount': 5,

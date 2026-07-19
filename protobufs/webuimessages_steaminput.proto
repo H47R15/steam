@@ -1,0 +1,420 @@
+syntax = "proto2";
+import "steammessages_base.proto";
+import "webuimessages_base.proto";
+
+option optimize_for = SPEED;
+option py_generic_services = true;
+
+enum ETritonPairType {
+	k_ETritonPairType_None = 0;
+	k_ETritonPairType_Wired = 1;
+	k_ETritonPairType_Wireless = 2;
+}
+
+enum ETritonConnectionType {
+	k_ETritonConnectionType_Unknown = 0;
+	k_ETritonConnectionType_Puck = 1;
+	k_ETritonConnectionType_Machine = 2;
+	k_ETritonConnectionType_USB = 3;
+	k_ETritonConnectionType_BT = 4;
+}
+
+message CSteamInputService_ControllerButtonStateChanged_Notification {
+	optional uint32 controller_index = 1;
+	optional bool dpad_up = 2;
+	optional bool dpad_down = 3;
+	optional bool dpad_left = 4;
+	optional bool dpad_right = 5;
+	optional bool button_south = 6;
+	optional bool button_east = 7;
+	optional bool button_west = 8;
+	optional bool button_north = 9;
+	optional bool button_back_view = 10;
+	optional bool button_start_options = 11;
+	optional bool button_steam = 12;
+	optional bool button_quick_access = 13;
+	optional bool button_mute_capture = 14;
+	optional bool left_stick_click = 15;
+	optional bool left_stick_touch = 16;
+	optional bool left_stick_deflect = 17;
+	optional bool right_stick_click = 18;
+	optional bool right_stick_touch = 19;
+	optional bool right_stick_deflect = 20;
+	optional bool center_trackpad_touch = 21;
+	optional bool center_trackpad_click = 22;
+	optional bool left_trackpad_touch = 23;
+	optional bool left_trackpad_click = 24;
+	optional bool right_trackpad_touch = 25;
+	optional bool right_trackpad_click = 26;
+	optional bool left_bumper = 27;
+	optional bool left_trigger = 28;
+	optional bool l4 = 29;
+	optional bool l5 = 30;
+	optional bool left_aux = 31;
+	optional bool right_bumper = 32;
+	optional bool right_trigger = 33;
+	optional bool r4 = 34;
+	optional bool r5 = 35;
+	optional bool right_aux = 36;
+	optional uint64 button_state_bits = 37;
+}
+
+message ControllerVector2 {
+	optional float x = 1;
+	optional float y = 2;
+}
+
+message ControllerVector3 {
+	optional float x = 1;
+	optional float y = 2;
+	optional float z = 3;
+}
+
+message ControllerQuaternion {
+	optional float w = 1;
+	optional float x = 2;
+	optional float y = 3;
+	optional float z = 4;
+}
+
+message ControllerGyroEulerAngles {
+	optional float pitch = 1;
+	optional float yaw = 2;
+	optional float roll = 3;
+}
+
+message CSteamInputService_ControllerAxesStateChange_Notification {
+	optional uint32 controller_index = 1;
+	optional .ControllerVector2 joystick_left = 2;
+	optional .ControllerVector2 joystick_right = 3;
+	optional .ControllerVector2 trackpad_left = 4;
+	optional .ControllerVector2 trackpad_right = 5;
+	optional .ControllerVector2 trackpad_center = 6;
+	optional float trackpad_pressure_left = 7;
+	optional float trackpad_pressure_right = 8;
+	optional float trigger_left = 9;
+	optional float trigger_right = 10;
+}
+
+message CSteamInputService_GyroQuaternionChanged_Notification {
+	optional uint32 controller_index = 1;
+	optional uint32 imu_index = 2;
+	optional .ControllerQuaternion gyro_raw_quaternion = 3;
+	optional .ControllerQuaternion gyro_filtered_quaternion = 4;
+	optional uint32 imu_sensor_delta_time = 5;
+	optional uint32 estimated_packet_rate = 6;
+}
+
+message CSteamInputService_GyroSpeedChanged_Notification {
+	optional uint32 controller_index = 1;
+	optional uint32 imu_index = 2;
+	optional .ControllerGyroEulerAngles gyro_raw_speed = 3;
+	optional .ControllerGyroEulerAngles gyro_filtered_speed = 4;
+}
+
+message CSteamInputService_GyroAccelerometerChanged_Notification {
+	optional uint32 controller_index = 1;
+	optional uint32 imu_index = 2;
+	optional .ControllerVector3 acceleromter_1g = 4;
+	optional .ControllerVector3 trusted_gravity_1g = 5;
+}
+
+message CSteamInputService_GyroCalibration_Notification {
+	optional uint32 controller_index = 1;
+	optional uint32 imu_index = 2;
+	optional float acceleromter_noise = 3;
+	optional float gyroscope_noise = 4;
+	optional float calibration_progress = 5;
+	optional uint32 calibration_state = 6;
+	optional float gyroscope_noise_tolerance = 7;
+	optional float accelerometer_noise_tolerance = 8;
+}
+
+message CSteamInputService_ControllerStateFlow_Request {
+	optional uint32 controller_index = 1;
+	optional uint32 flow_mode = 2;
+}
+
+message CSteamInputService_ControllerStateFlow_Response {
+}
+
+message CSteamInputService_GyroSoftwareCalibration_Request {
+	optional uint32 controller_index = 1;
+	optional int32 side = 2;
+}
+
+message CSteamInputService_GyroSoftwareCalibration_Response {
+}
+
+message CSteamInputService_PairDongleTritonConnected_Request {
+	optional uint32 controller_index = 1;
+	optional uint32 dongle_index = 2;
+	optional uint32 slot = 3;
+}
+
+message CSteamInputService_PairDongleTritonConnected_Response {
+}
+
+message CSteamInputService_SteamDonglesChanged_Notification {
+}
+
+message CSteamInputService_UnpairedTritonPluggedIn_Notification {
+	optional uint32 controller_index = 1;
+}
+
+message CSteamInputService_UnpairedTritonDocked_Notification {
+	optional uint32 docked_puck_index = 1;
+}
+
+message CSteamInputService_TritonUndocked_Notification {
+	optional uint32 docked_puck_index = 1;
+}
+
+message CSteamInputService_ControllerPairingChanged_Notification {
+	optional uint32 controller_index = 1;
+}
+
+message CSteamInputService_GetDongles_Request {
+	optional bool include_bonds = 1;
+}
+
+message CSteamInputService_GetDongles_Response {
+	message Dongle {
+		optional uint32 index = 1;
+		optional string dongle_serial_number = 2;
+		optional string paired_serial_number = 3;
+		optional bool paired = 4;
+		optional bool docked = 5;
+	}
+
+	optional bool steam_controller_v1 = 1;
+	repeated .CSteamInputService_GetDongles_Response.Dongle ibex_internal = 2;
+	repeated .CSteamInputService_GetDongles_Response.Dongle ibex_external = 3;
+}
+
+message CSteamInputService_ShouldTritonPairInOobe_Request {
+}
+
+message CSteamInputService_WaitInitialControllerStateEnumerated_Request {
+}
+
+message CSteamInputService_WaitInitialControllerStateEnumerated_Response {
+}
+
+message CSteamInputService_ShouldTritonPairInOobe_Response {
+	optional .ETritonPairType pair_type = 1 [default = k_ETritonPairType_None];
+	optional uint32 controller_index = 2;
+	optional uint32 dongle_index = 3;
+}
+
+message CControllerOriginKey {
+	optional int32 controller_type = 1;
+	optional int32 controller_style = 2;
+	optional int32 source = 3;
+	optional int32 input = 4;
+}
+
+message CControllerAccessibilityString {
+	optional .CControllerOriginKey key = 1;
+	optional string localized_string = 2;
+}
+
+message CSteamInputService_ControllerAccessibilityStrings_Request {
+}
+
+message CSteamInputService_ControllerAccessibilityStrings_Response {
+	repeated .CControllerAccessibilityString strings = 1;
+}
+
+message CSteamInputService_ControllerPowerMenu_Notification {
+	optional uint32 idx = 1;
+}
+
+message CSteamInputService_ControllerDisconnected_Notification {
+	optional uint32 controller_index = 1;
+}
+
+message CSteamInputService_GetTritonPairingInfo_Request {
+	optional uint32 controller_index = 1;
+}
+
+message CSteamInputService_GetTritonPairingInfo_Response {
+	message Slot {
+		optional string serial_number = 1;
+		optional bool active = 2;
+		optional .ETritonConnectionType type = 3 [default = k_ETritonConnectionType_Unknown];
+	}
+
+	repeated .CSteamInputService_GetTritonPairingInfo_Response.Slot slot = 1;
+	optional .ETritonConnectionType connection_type = 2 [default = k_ETritonConnectionType_Unknown];
+}
+
+message CSteamInputService_ForgetTritonPairingBond_Request {
+	optional uint32 controller_index = 1;
+	optional uint32 slot_index = 2;
+}
+
+message CSteamInputService_ForgetTritonPairingBond_Response {
+}
+
+message CSteamInputService_ForgetDonglePairingBond_Request {
+	optional uint32 dongle_index = 1;
+}
+
+message CSteamInputService_ForgetDonglePairingBond_Response {
+}
+
+message CSteamInputService_GetControllerName_Request {
+	optional string serial_number = 1;
+}
+
+message CSteamInputService_GetControllerName_Response {
+	optional string controller_name = 1;
+}
+
+message CSteamInputService_EnableDockedInput_Request {
+	optional uint32 controller_index = 1;
+	optional bool enable = 2;
+}
+
+message CSteamInputService_EnableDockedInput_Response {
+}
+
+message CSteamInputService_RawControllerDetailItem {
+	optional uint32 controller_index = 1;
+	optional bool initialized = 2;
+	optional uint32 controller_type = 3;
+	optional uint32 controller_style = 4;
+	optional uint32 xinput_index = 5;
+	optional bool is_wireless_steam_dongle = 6;
+	optional uint32 vendor_id = 7;
+	optional uint32 product_id = 8;
+	optional uint64 capabilities = 9;
+	optional uint32 firmware_version = 10;
+	optional string firmware_build_time = 11;
+	optional string serial_number = 12;
+	optional string cpu_id = 13;
+	optional string name = 14;
+	optional bool is_remote_device = 15;
+	optional bool is_bluetooth = 16;
+	optional bool has_touchscreen = 17;
+	repeated string mac_addr = 18;
+	optional uint32 battery_level = 19;
+	optional bool is_charging = 20;
+	optional float led_brightness = 21;
+	optional float led_saturation = 22;
+	optional int32 turn_on_sound = 23;
+	optional int32 turn_off_sound = 24;
+	optional int32 led_red = 25;
+	optional int32 led_green = 26;
+	optional int32 led_blue = 27;
+	optional int32 deadzone_left_stick = 28;
+	optional int32 deadzone_right_stick = 29;
+	optional bool haptics_enabled = 30;
+	optional bool gyro_sw_antidrift_enabled = 31;
+	optional bool gyro_one_euro_filter_enabled = 32;
+	optional int32 haptic_strength_left = 33;
+	optional int32 haptic_strength_right = 34;
+	optional float pad_pressure_curve_left = 35;
+	optional float pad_pressure_curve_right = 36;
+	optional bool left_stick_touch_disable_lpad = 37;
+	optional bool right_stick_touch_disable_rpad = 38;
+	optional int32 player_slot_led_setting = 39;
+	optional bool has_nintendo_layout = 40;
+	optional bool has_reversed_layout = 41;
+	optional bool has_universal_face_button_glyphs = 42;
+	optional float gyro_stationary_tolerance = 43;
+	optional float accel_stationary_tolerance = 44;
+	optional int32 aux_capsense_threshold = 45;
+	optional int32 aux_capsense_hysterisis = 46;
+	optional int32 rumble_setting = 47;
+	optional int32 triton_gyro_hw_cal = 48;
+	optional bool use_gyro_sw_biases = 49;
+}
+
+message CSteamInputService_ControllerListChanged_Notification {
+}
+
+message CSteamInputService_InitControllerList_Request {
+}
+
+message CSteamInputService_InitControllerList_Response {
+}
+
+message CSteamInputService_GetControllerList_Request {
+}
+
+message CSteamInputService_GetControllerList_Response {
+	repeated .CSteamInputService_RawControllerDetailItem controllers = 1;
+}
+
+message CSteamInputService_FirstSteamControllerConnection_Notification {
+}
+
+message CTritonQosStatus {
+	optional int32 period_ms = 1;
+	optional uint32 packets_sent = 2;
+	optional uint32 packet_retransmissions = 3;
+	optional uint32 interval_max_ms = 4;
+	optional int32 rssi_measure = 5;
+	optional uint32 reason = 6;
+	optional uint32 rf_channel = 7;
+	optional uint32 backup_channel = 8;
+}
+
+message CSteamInputService_TritonQos_Notification {
+	optional uint32 controller_index = 1;
+	optional .CTritonQosStatus status = 2;
+}
+
+message CSteamInputService_EnableQosStatus_Request {
+	optional uint32 controller_index = 1;
+	optional bool enable = 2;
+}
+
+message CSteamInputService_EnableQosStatus_Response {
+}
+
+message CSteamInputService_ControllerBatteryState_Notification {
+	optional uint32 controller_index = 1;
+	optional uint32 battery_level = 2;
+	optional bool charging = 3;
+}
+
+service SteamInputManager {
+	option (webui_service_execution_site) = k_EClientExecutionSiteClientdll;
+
+	rpc NotifyButtonStateChanged (.CSteamInputService_ControllerButtonStateChanged_Notification) returns (.WebUINoResponse);
+	rpc NotifyAxesStateChanged (.CSteamInputService_ControllerAxesStateChange_Notification) returns (.WebUINoResponse);
+	rpc NotifyGyroQuaternionStateChanged (.CSteamInputService_GyroQuaternionChanged_Notification) returns (.WebUINoResponse);
+	rpc NotifyGyroSpeedStateChanged (.CSteamInputService_GyroSpeedChanged_Notification) returns (.WebUINoResponse);
+	rpc NotifyGyroAccelerometerStateChanged (.CSteamInputService_GyroAccelerometerChanged_Notification) returns (.WebUINoResponse);
+	rpc NotifyGyroCalibrationStateChanged (.CSteamInputService_GyroCalibration_Notification) returns (.WebUINoResponse);
+	rpc NotifyControllerPowerMenu (.CSteamInputService_ControllerPowerMenu_Notification) returns (.WebUINoResponse);
+	rpc NotifyUnpairedTritonPluggedIn (.CSteamInputService_UnpairedTritonPluggedIn_Notification) returns (.WebUINoResponse);
+	rpc NotifyUnpairedTritonDocked (.CSteamInputService_UnpairedTritonDocked_Notification) returns (.WebUINoResponse);
+	rpc NotifyTritonUndocked (.CSteamInputService_TritonUndocked_Notification) returns (.WebUINoResponse);
+	rpc NotifySteamDonglesChanged (.CSteamInputService_SteamDonglesChanged_Notification) returns (.WebUINoResponse);
+	rpc NotifyControllerDisconnected (.CSteamInputService_ControllerDisconnected_Notification) returns (.WebUINoResponse);
+	rpc NotifyControllerPairingChanged (.CSteamInputService_ControllerPairingChanged_Notification) returns (.WebUINoResponse);
+	rpc NotifyControllerListChanged (.CSteamInputService_ControllerListChanged_Notification) returns (.WebUINoResponse);
+	rpc NotifyControllerBatteryState (.CSteamInputService_ControllerBatteryState_Notification) returns (.WebUINoResponse);
+	rpc NotifyFirstSteamControllerConnection (.CSteamInputService_FirstSteamControllerConnection_Notification) returns (.WebUINoResponse);
+	rpc NotifyTritonQos (.CSteamInputService_TritonQos_Notification) returns (.WebUINoResponse);
+	rpc StartControllerStateFlow (.CSteamInputService_ControllerStateFlow_Request) returns (.CSteamInputService_ControllerStateFlow_Response);
+	rpc EndControllerStateFlow (.CSteamInputService_ControllerStateFlow_Request) returns (.CSteamInputService_ControllerStateFlow_Response);
+	rpc GetControllerAccessibilityStrings (.CSteamInputService_ControllerAccessibilityStrings_Request) returns (.CSteamInputService_ControllerAccessibilityStrings_Response);
+	rpc StartGyroSoftwareCalibration (.CSteamInputService_GyroSoftwareCalibration_Request) returns (.CSteamInputService_GyroSoftwareCalibration_Response);
+	rpc CancelGyroSoftwareCalibration (.CSteamInputService_GyroSoftwareCalibration_Request) returns (.CSteamInputService_GyroSoftwareCalibration_Response);
+	rpc PairDongleTritonConnected (.CSteamInputService_PairDongleTritonConnected_Request) returns (.CSteamInputService_PairDongleTritonConnected_Response);
+	rpc GetDongles (.CSteamInputService_GetDongles_Request) returns (.CSteamInputService_GetDongles_Response);
+	rpc ShouldTritonPairInOobe (.CSteamInputService_ShouldTritonPairInOobe_Request) returns (.CSteamInputService_ShouldTritonPairInOobe_Response);
+	rpc WaitInitialControllerStateEnumerated (.CSteamInputService_WaitInitialControllerStateEnumerated_Request) returns (.CSteamInputService_WaitInitialControllerStateEnumerated_Response);
+	rpc GetTritonPairingInfo (.CSteamInputService_GetTritonPairingInfo_Request) returns (.CSteamInputService_GetTritonPairingInfo_Response);
+	rpc ForgetTritonPairingBond (.CSteamInputService_ForgetTritonPairingBond_Request) returns (.CSteamInputService_ForgetTritonPairingBond_Response);
+	rpc ForgetDonglePairingBond (.CSteamInputService_ForgetDonglePairingBond_Request) returns (.CSteamInputService_ForgetDonglePairingBond_Response);
+	rpc GetControllerName (.CSteamInputService_GetControllerName_Request) returns (.CSteamInputService_GetControllerName_Response);
+	rpc GetControllerList (.CSteamInputService_GetControllerList_Request) returns (.CSteamInputService_GetControllerList_Response);
+	rpc EnableDockedInput (.CSteamInputService_EnableDockedInput_Request) returns (.CSteamInputService_EnableDockedInput_Response);
+	rpc EnableQosStatus (.CSteamInputService_EnableQosStatus_Request) returns (.CSteamInputService_EnableQosStatus_Response);
+}

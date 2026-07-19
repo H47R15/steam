@@ -22,9 +22,14 @@ message CMsgClientRichPresenceRequest {
 }
 
 message CMsgClientRichPresenceInfo {
+	message KV {
+		optional string key = 1;
+		optional string value = 2;
+	}
+
 	message RichPresence {
 		optional fixed64 steamid_user = 1;
-		optional bytes rich_presence_kv = 2;
+		repeated .CMsgClientRichPresenceInfo.KV rich_presense = 3;
 	}
 
 	repeated .CMsgClientRichPresenceInfo.RichPresence rich_presence = 1;
@@ -45,66 +50,6 @@ message CMsgClientCheckFileSignatureResponse {
 	optional uint32 filesize = 8;
 	optional uint32 getlasterror = 9;
 	optional uint32 evalvesignaturecheckdetail = 10;
-}
-
-message CMsgClientReadMachineAuth {
-	optional string filename = 1;
-	optional uint32 offset = 2;
-	optional uint32 cubtoread = 3;
-}
-
-message CMsgClientReadMachineAuthResponse {
-	optional string filename = 1;
-	optional uint32 eresult = 2;
-	optional uint32 filesize = 3;
-	optional bytes sha_file = 4;
-	optional uint32 getlasterror = 5;
-	optional uint32 offset = 6;
-	optional uint32 cubread = 7;
-	optional bytes bytes_read = 8;
-	optional string filename_sentry = 9;
-}
-
-message CMsgClientUpdateMachineAuth {
-	optional string filename = 1;
-	optional uint32 offset = 2;
-	optional uint32 cubtowrite = 3;
-	optional bytes bytes = 4;
-	optional uint32 otp_type = 5;
-	optional string otp_identifier = 6;
-	optional bytes otp_sharedsecret = 7;
-	optional uint32 otp_timedrift = 8;
-}
-
-message CMsgClientUpdateMachineAuthResponse {
-	optional string filename = 1;
-	optional uint32 eresult = 2;
-	optional uint32 filesize = 3;
-	optional bytes sha_file = 4;
-	optional uint32 getlasterror = 5;
-	optional uint32 offset = 6;
-	optional uint32 cubwrote = 7;
-	optional int32 otp_type = 8;
-	optional uint32 otp_value = 9;
-	optional string otp_identifier = 10;
-}
-
-message CMsgClientRequestMachineAuth {
-	optional string filename = 1;
-	optional uint32 eresult_sentryfile = 2;
-	optional uint32 filesize = 3;
-	optional bytes sha_sentryfile = 4;
-	optional int32 lock_account_action = 6;
-	optional uint32 otp_type = 7;
-	optional string otp_identifier = 8;
-	optional bytes otp_sharedsecret = 9;
-	optional uint32 otp_value = 10;
-	optional string machine_name = 11;
-	optional string machine_name_userchosen = 12;
-}
-
-message CMsgClientRequestMachineAuthResponse {
-	optional uint32 eresult = 1;
 }
 
 message CMsgClientRegisterKey {
@@ -165,12 +110,6 @@ message CMsgTrading_StartSession {
 	optional uint64 other_steamid = 1;
 }
 
-message CMsgClientGetCDNAuthToken {
-	optional uint32 depot_id = 1;
-	optional string host_name = 2;
-	optional uint32 app_id = 3;
-}
-
 message CMsgClientGetDepotDecryptionKey {
 	optional uint32 depot_id = 1;
 	optional uint32 app_id = 2;
@@ -197,80 +136,6 @@ message CMsgClientCheckAppBetaPasswordResponse {
 
 	optional int32 eresult = 1 [default = 2];
 	repeated .CMsgClientCheckAppBetaPasswordResponse.BetaPassword betapasswords = 4;
-}
-
-message CMsgClientUpdateAppJobReport {
-	optional uint32 app_id = 1;
-	repeated uint32 depot_ids = 2;
-	optional uint32 app_state = 3;
-	optional uint32 job_app_error = 4;
-	optional string error_details = 5;
-	optional uint32 job_duration = 6;
-	optional uint32 files_validation_failed = 7;
-	optional uint64 job_bytes_downloaded = 8;
-	optional uint64 job_bytes_staged = 9;
-	optional uint64 bytes_comitted = 10;
-	optional uint32 start_app_state = 11;
-	optional fixed64 stats_machine_id = 12;
-	optional string branch_name = 13;
-	optional uint64 total_bytes_downloaded = 14;
-	optional uint64 total_bytes_staged = 15;
-	optional uint64 total_bytes_restored = 16;
-	optional bool is_borrowed = 17;
-	optional bool is_free_weekend = 18;
-	optional uint64 total_bytes_legacy = 19;
-	optional uint64 total_bytes_patched = 20;
-	optional uint64 total_bytes_saved = 21;
-	optional uint32 cell_id = 22;
-}
-
-message CMsgClientDPContentStatsReport {
-	optional fixed64 stats_machine_id = 1;
-	optional string country_code = 2;
-	optional int32 os_type = 3;
-	optional int32 language = 4;
-	optional uint32 num_install_folders = 5;
-	optional uint32 num_installed_games = 6;
-	optional uint64 size_installed_games = 7;
-}
-
-message CMsgClientGetCDNAuthTokenResponse {
-	optional uint32 eresult = 1 [default = 2];
-	optional string token = 2;
-	optional uint32 expiration_time = 3;
-}
-
-message CMsgDownloadRateStatistics {
-	message StatsInfo {
-		optional uint32 source_type = 1;
-		optional uint32 source_id = 2;
-		optional uint32 seconds = 3;
-		optional uint64 bytes = 4;
-		optional string host_name = 5;
-		optional uint64 microseconds = 6;
-		optional bool used_ipv6 = 7;
-		optional bool proxied = 8;
-	}
-
-	optional uint32 cell_id = 1;
-	repeated .CMsgDownloadRateStatistics.StatsInfo stats = 2;
-	optional uint32 throttling_kbps = 3;
-	optional uint32 steam_realm = 4;
-}
-
-message CMsgClientRequestAccountData {
-	optional string account_or_email = 1;
-	optional uint32 action = 2;
-}
-
-message CMsgClientRequestAccountDataResponse {
-	optional uint32 action = 1;
-	optional uint32 eresult = 2;
-	optional string account_name = 3;
-	optional uint32 ct_matches = 4;
-	optional string account_name_suggestion1 = 5;
-	optional string account_name_suggestion2 = 6;
-	optional string account_name_suggestion3 = 7;
 }
 
 message CMsgClientUGSGetGlobalStats {
@@ -334,12 +199,17 @@ message CMsgClientSentLogs {
 }
 
 message CMsgGCClient {
+	enum EFlag {
+		VALVE_DS = 1;
+	}
+
 	optional uint32 appid = 1;
 	optional uint32 msgtype = 2;
 	optional bytes payload = 3;
 	optional fixed64 steamid = 4;
 	optional string gcname = 5;
 	optional uint32 ip = 6;
+	optional uint32 flags = 7;
 }
 
 message CMsgClientRequestFreeLicense {
@@ -500,7 +370,6 @@ message CMsgClientEmailAddrInfo {
 	optional bool email_validation_changed = 3;
 	optional bool credential_change_requires_code = 4;
 	optional bool password_or_secretqa_change_requires_code = 5;
-	optional bool remind_user_about_email = 6;
 }
 
 message CMsgCREItemVoteSummary {
@@ -733,19 +602,15 @@ message CMsgClientServiceCallResponse {
 	optional uint32 last_callcomplete_delta = 21;
 }
 
-message CMsgAMUnlockStreaming {
+message CMsgAMUnlockH264 {
+	optional uint32 appid = 1;
+	optional int32 platform = 2;
+	optional int32 reason = 3;
 }
 
-message CMsgAMUnlockStreamingResponse {
+message CMsgAMUnlockH264Response {
 	optional int32 eresult = 1 [default = 2];
 	optional bytes encryption_key = 2;
-}
-
-message CMsgAMUnlockHEVC {
-}
-
-message CMsgAMUnlockHEVCResponse {
-	optional int32 eresult = 1 [default = 2];
 }
 
 message CMsgClientPlayingSessionState {
@@ -774,4 +639,39 @@ message CMsgClientVoiceCallPreAuthorizeResponse {
 message CMsgBadgeCraftedNotification {
 	optional uint32 appid = 1;
 	optional uint32 badge_level = 2;
+}
+
+message CMsgClientStartPeerContentServer {
+	optional fixed64 steamid = 1;
+	optional fixed64 client_remote_id = 2;
+	optional uint32 app_id = 3;
+	optional uint32 current_build_id = 4;
+}
+
+message CMsgClientStartPeerContentServerResponse {
+	optional uint32 result = 1;
+	optional uint32 server_port = 2;
+	repeated uint32 installed_depots = 3;
+	optional uint64 access_token = 4;
+}
+
+message CMsgClientGetPeerContentInfo {
+	optional fixed64 steamid = 1;
+	optional fixed64 client_remote_id = 2;
+	optional bool owned_games_visible = 3;
+}
+
+message CMsgClientGetPeerContentInfoResponse {
+	optional uint32 result = 1;
+	repeated uint32 apps = 2;
+}
+
+message CMsgClientPendingGameLaunch {
+	optional uint32 app_id = 1;
+}
+
+message CMsgClientPendingGameLaunchResponse {
+	optional int32 eresult = 1 [default = 2];
+	optional uint32 app_id = 2;
+	optional string envkey = 3;
 }

@@ -31,6 +31,7 @@ All globals params (``key``, ``https``, ``format``, ``raw``) can be specified on
     }
 """
 import json as _json
+from typing import TYPE_CHECKING, Any
 from steam.utils.web import make_requests_session as _make_session
 
 class APIHost(object):
@@ -86,6 +87,21 @@ class WebAPI(object):
     http_timeout = DEFAULT_PARAMS['http_timeout']
     apihost = DEFAULT_PARAMS['apihost']
     interfaces = []
+
+    if TYPE_CHECKING:
+        # ``WebAPI`` populates one attribute per Steam interface
+        # (``ISteamUser``, ``ISteamWebAPIUtil``, ``ISteamRemoteStorage``, …)
+        # from the live ``GetSupportedAPIList`` response in
+        # ``load_interfaces``.  The catalogue is defined server-side, so
+        # the concrete attribute names aren't knowable at design time.
+        # Declaring ``__getattr__`` under ``TYPE_CHECKING`` tells static
+        # analysers that arbitrary attribute access resolves to
+        # ``Any``, without altering runtime lookup — the real
+        # interfaces are set as instance attributes via
+        # ``setattr(self, obj.name, obj)`` and found through the normal
+        # ``__getattribute__`` path; unknown names still raise
+        # ``AttributeError`` naturally.
+        def __getattr__(self, name: str) -> Any: ...
 
     def __init__(self, key, format = DEFAULT_PARAMS['format'],
                             raw = DEFAULT_PARAMS['raw'],
@@ -200,6 +216,25 @@ class WebAPIInterface(object):
             if current_obj is None or current_obj.version < obj.version:
                 setattr(self, obj.name, obj)
 
+        # Eagerly render the docstring into an instance attribute so
+        # ``help(instance)`` shows the generated docs.  Setting
+        # ``self.__doc__`` here (instance-level) shadows the class
+        # ``__doc__`` on that specific instance without changing the
+        # class-level attribute's type — the previous
+        # ``@property def __doc__`` pattern violated the base
+        # ``object.__doc__: str | None`` type contract.  All state the
+        # doc reads (``self.name``, ``self.methods``, and each
+        # method's ``__doc__``) is fully populated by this point in
+        # ``__init__``, so eager rendering is equivalent to the old
+        # lazy property.
+        self.__doc__ = self._render_doc()
+
+    def _render_doc(self):
+        doc = "%s\n%s\n" % (self.name, '-'*len(self.name))
+        for method in self.methods:
+            doc += "  %s\n" % method.__doc__.replace("\n", "\n  ")
+        return doc
+
     def __repr__(self):
         return "<%s %s with %s methods>" % (
             self.__class__.__name__,
@@ -245,13 +280,6 @@ class WebAPIInterface(object):
         """
         return self.__doc__
 
-    @property
-    def __doc__(self):
-        doc = "%s\n%s\n" % (self.name, '-'*len(self.name))
-        for method in self.methods:
-            doc += "  %s\n" % method.__doc__.replace("\n", "\n  ")
-        return doc
-
 
 class WebAPIMethod(object):
     """
@@ -273,6 +301,36 @@ class WebAPIMethod(object):
                 param['name'] = param['name'][:-3]
             # turn params from a list to a dict
             self._dict['parameters'][param['name']] = param
+
+        # Eager doc render — same rationale as ``WebAPIInterface``.
+        # See the comment there for why we set ``self.__doc__`` as
+        # an instance attribute instead of the old ``@property
+        # def __doc__`` override (which violated
+        # ``object.__doc__: str | None``).
+        self.__doc__ = self._render_doc()
+
+    def _render_doc(self):
+        doc = "%(httpmethod)s %(name)s (v%(version)04d)\n" % self._dict
+
+        if 'description' in self._dict:
+            doc += "\n  %(description)s\n" % self._dict
+
+        if len(self.parameters):
+            doc += "  \n  Parameters:\n"
+
+            for param in sorted(self.parameters.values(), key=lambda x: x['name']):
+                doc += "    %s %s %s%s\n" % (
+                    param['name'].ljust(25),
+                    ((param['type']+"[]") if param['_array'] else
+                     param['type']
+                     ).ljust(8),
+                    'optional' if param['optional'] else 'required',
+                    (("\n      - " + param['description'])
+                     if 'description' in param and param['description'] else ''
+                     ),
+                    )
+
+        return doc
 
     def __repr__(self):
         return "<%s %s>" % (
@@ -355,31 +413,8 @@ class WebAPIMethod(object):
         """
         return self.__doc__
 
-    @property
-    def __doc__(self):
-        doc = "%(httpmethod)s %(name)s (v%(version)04d)\n" % self._dict
 
-        if 'description' in self._dict:
-            doc += "\n  %(description)s\n" % self._dict
-
-        if len(self.parameters):
-            doc += "  \n  Parameters:\n"
-
-            for param in sorted(self.parameters.values(), key=lambda x: x['name']):
-                doc += "    %s %s %s%s\n" % (
-                    param['name'].ljust(25),
-                    ((param['type']+"[]") if param['_array'] else
-                     param['type']
-                     ).ljust(8),
-                    'optional' if param['optional'] else 'required',
-                    (("\n      - " + param['description'])
-                     if 'description' in param and param['description'] else ''
-                     ),
-                    )
-
-        return doc
-
-def webapi_request(url, method='GET', caller=None, session=None, params=None):
+def webapi_request(url, method='GET', caller=None, session=None, params=None) -> Any:
     """Low level function for calling Steam's WebAPI
 
     .. versionchanged:: 0.8.3
@@ -435,7 +470,13 @@ def webapi_request(url, method='GET', caller=None, session=None, params=None):
     elif onetime['format'] == 'json':
         return resp.json()
     elif onetime['format'] == 'xml':
-        from lxml import etree as _etree
+        # Stdlib ``xml.etree.ElementTree`` — same ``fromstring`` API
+        # the previous ``lxml`` shim used and enough for the plain
+        # deserialisation the caller does here.  Swapped from ``lxml``
+        # so no runtime dep is required (lxml wasn't in the fork's
+        # extras); if downstream needs XPath 1.0 or other lxml-only
+        # features, they can parse ``resp.text`` themselves.
+        import xml.etree.ElementTree as _etree
         return _etree.fromstring(resp.content)
     elif onetime['format'] == 'vdf':
         import vdf as _vdf
@@ -443,7 +484,7 @@ def webapi_request(url, method='GET', caller=None, session=None, params=None):
 
 def get(interface, method, version=1,
         apihost=DEFAULT_PARAMS['apihost'], https=DEFAULT_PARAMS['https'],
-        caller=None, session=None, params=None):
+        caller=None, session=None, params=None) -> Any:
     """Send GET request to an API endpoint
 
     .. versionadded:: 0.8.3
@@ -469,7 +510,7 @@ def get(interface, method, version=1,
 
 def post(interface, method, version=1,
          apihost=DEFAULT_PARAMS['apihost'], https=DEFAULT_PARAMS['https'],
-         caller=None, session=None, params=None):
+         caller=None, session=None, params=None) -> Any:
     """Send POST request to an API endpoint
 
     .. versionadded:: 0.8.3

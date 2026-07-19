@@ -101,7 +101,7 @@ class Util_Proto(unittest.TestCase):
         with self.assertRaises(TypeError):
             utp.proto_fill_from_dict(self.msg, {'messages': [1,2,3]})
 
-    def test_proto_fill_from_dict__list(self):
+    def test_proto_fill_from_dict__list_literal(self):
         utp.proto_fill_from_dict(self.msg, {'list_number32': [1,2,3]})
         self.assertEqual(self.msg.list_number32, [1,2,3])
 
@@ -111,7 +111,7 @@ class Util_Proto(unittest.TestCase):
         self.assertEqual(self.msg.messages[0].text, 'one')
         self.assertEqual(self.msg.messages[1].text, 'two')
 
-    def test_proto_fill_from_dict__list(self):
+    def test_proto_fill_from_dict__list_range(self):
         utp.proto_fill_from_dict(self.msg, {'list_number32': range(10)})
         self.assertEqual(self.msg.list_number32, list(range(10)))
 

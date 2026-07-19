@@ -1,0 +1,123 @@
+syntax = "proto2";
+import "enums.proto";
+import "steammessages_base.proto";
+import "webuimessages_base.proto";
+
+option optimize_for = SPEED;
+option py_generic_services = true;
+
+enum ELEDManagerMode {
+	k_ELEDManagerModeInvalid = 0;
+	k_ELEDManagerModeLogon = 1;
+	k_ELEDManagerModeIdle = 2;
+	k_ELEDManagerModeDownload = 3;
+	k_ELEDManagerModeCustomize = 4;
+	k_ELEDManagerModeCustomizeStartup = 5;
+}
+
+message CMsgLEDColor {
+	optional float r = 1;
+	optional float g = 2;
+	optional float b = 3;
+}
+
+message CMsgLEDManagerDevice {
+	optional int32 id = 1;
+	optional bool enabled = 2;
+	optional string name = 3;
+	repeated string effects_available = 4;
+	optional string effect = 5;
+	optional bool supports_color = 9;
+	repeated .CMsgLEDColor color = 10;
+	optional bool supports_speed = 11;
+	optional float speed = 12;
+	optional bool supports_brightness = 13;
+	optional float brightness = 14;
+	optional bool supports_startup_brightness = 15;
+	optional float startup_brightness = 16;
+}
+
+message CMsgLEDManagerState {
+	optional bool is_service_available = 1;
+	repeated .CMsgLEDManagerDevice devices = 2;
+}
+
+message CLEDManager_GetState_Request {
+}
+
+message CLEDManager_GetState_Response {
+	optional .CMsgLEDManagerState state = 1;
+}
+
+message CLEDManager_StateChanged_Notification {
+}
+
+message CLEDManager_SetColor_Request {
+	optional int32 device_id = 1;
+	optional .CMsgLEDColor color = 2;
+	optional int32 color_index = 3;
+}
+
+message CLEDManager_SetColor_Response {
+}
+
+message CLEDManager_SetEnabled_Request {
+	optional int32 device_id = 1;
+	optional bool enabled = 2;
+}
+
+message CLEDManager_SetEnabled_Response {
+}
+
+message CLEDManager_SetEffect_Request {
+	optional int32 device_id = 1;
+	optional string effect = 2;
+}
+
+message CLEDManager_SetEffect_Response {
+}
+
+message CLEDManager_SetSpeed_Request {
+	optional int32 device_id = 1;
+	optional float speed = 2;
+}
+
+message CLEDManager_SetSpeed_Response {
+}
+
+message CLEDManager_SetBrightness_Request {
+	optional int32 device_id = 1;
+	optional float brightness = 2;
+}
+
+message CLEDManager_SetBrightness_Response {
+}
+
+message CLEDManager_SetStartupBrightness_Request {
+	optional int32 device_id = 1;
+	optional float brightness = 2;
+}
+
+message CLEDManager_SetStartupBrightness_Response {
+}
+
+message CLEDManager_SetManagerMode_Request {
+	optional .ELEDManagerMode mode = 1 [default = k_ELEDManagerModeInvalid];
+}
+
+message CLEDManager_SetManagerMode_Response {
+}
+
+service LEDManager {
+	option (webui_service_execution_site) = k_EClientExecutionSiteSteamUI;
+
+	rpc GetState (.CLEDManager_GetState_Request) returns (.CLEDManager_GetState_Response);
+	rpc NotifyStateChanged (.CLEDManager_StateChanged_Notification) returns (.WebUINoResponse);
+	rpc SetEnabled (.CLEDManager_SetEnabled_Request) returns (.CLEDManager_SetEnabled_Response);
+	rpc SetColor (.CLEDManager_SetColor_Request) returns (.CLEDManager_SetColor_Response);
+	rpc SetEffect (.CLEDManager_SetEffect_Request) returns (.CLEDManager_SetEffect_Response);
+	rpc SetSpeed (.CLEDManager_SetSpeed_Request) returns (.CLEDManager_SetSpeed_Response);
+	rpc SetBrightness (.CLEDManager_SetBrightness_Request) returns (.CLEDManager_SetBrightness_Response);
+	rpc SetStartupBrightness (.CLEDManager_SetStartupBrightness_Request) returns (.CLEDManager_SetStartupBrightness_Response);
+	rpc SetManagerMode (.CLEDManager_SetManagerMode_Request) returns (.CLEDManager_SetManagerMode_Response);
+}

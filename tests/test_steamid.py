@@ -324,6 +324,7 @@ class steamid_functions(unittest.TestCase):
         s64_from_url.return_value = '76580280500085312'
         test_instance = steamid.from_url('76580280500085312')
         self.assertIsInstance(test_instance, SteamID)
+        assert test_instance is not None
         self.assertEqual(test_instance.as_64, 76580280500085312)
 
     @mock.patch('steam.steamid.make_requests_session')

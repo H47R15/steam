@@ -1,5 +1,6 @@
 import struct
 import logging
+from typing import Optional
 
 import gevent
 from gevent import socket
@@ -16,7 +17,13 @@ class Connection(object):
     FMT_SIZE = struct.calcsize(FMT)
 
     def __init__(self):
-        self.socket = None
+        # Assigned to a real ``gevent.socket`` inside subclass
+        # ``_new_socket`` implementations; ``None`` on init means
+        # "not connected yet".  Access sites below narrow via
+        # ``assert self.socket is not None`` before touching any
+        # socket attribute so the ``Optional`` type flows cleanly
+        # through Pylance without a bunch of casts.
+        self.socket: Optional[socket.socket] = None
         self.connected = False
         self.server_addr = None
 
@@ -30,6 +37,7 @@ class Connection(object):
 
     @property
     def local_address(self):
+        assert self.socket is not None, "local_address called before connect()"
         return self.socket.getsockname()[0]
 
     def connect(self, server_addr):
@@ -43,7 +51,12 @@ class Connection(object):
             return False
 
         self.server_addr = server_addr
-        self.recv_queue.queue.clear()
+        # gevent's ``Queue.queue`` is a ``deque`` at runtime but its
+        # stubs expose it as a ``property``; ``.clear()`` works fine
+        # in practice but static-analysis can't see through the
+        # descriptor.  Suppression is scoped tight to this single
+        # attribute chain.
+        self.recv_queue.queue.clear()  # pyright: ignore[reportAttributeAccessIssue]
 
         self._reader = gevent.spawn(self._reader_loop)
         self._writer = gevent.spawn(self._writer_loop)
@@ -67,10 +80,13 @@ class Connection(object):
             self._writer = None
 
         self._readbuf = b''
-        self.send_queue.queue.clear()
-        self.recv_queue.queue.clear()
+        # Same gevent-stub descriptor issue as the ``connect`` site
+        # above — see the comment there.
+        self.send_queue.queue.clear()  # pyright: ignore[reportAttributeAccessIssue]
+        self.recv_queue.queue.clear()  # pyright: ignore[reportAttributeAccessIssue]
         self.recv_queue.put(StopIteration)
 
+        assert self.socket is not None, "disconnect() reached with no live socket"
         self.socket.close()
 
         logger.debug("Disconnected.")
@@ -80,6 +96,26 @@ class Connection(object):
 
     def put_message(self, message):
         self.send_queue.put(message)
+
+    # ─── template-method stubs ────────────────────────────────────
+    # ``TCPConnection`` / ``UDPConnection`` override these to fill in
+    # the socket-family-specific behaviour.  Base defaults raise so a
+    # direct ``Connection()`` instantiation surfaces the mistake
+    # loudly, and Pylance can see the attributes exist on the base
+    # class (silences ``reportAttributeAccessIssue`` at the four
+    # call sites in ``connect`` / ``_reader_loop`` / ``_writer_loop``
+    # below).
+    def _new_socket(self) -> None:
+        raise NotImplementedError
+
+    def _connect(self, server_addr) -> None:
+        raise NotImplementedError
+
+    def _read_data(self) -> bytes:
+        raise NotImplementedError
+
+    def _write_data(self, data: bytes) -> None:
+        raise NotImplementedError
 
     def _writer_loop(self):
         while True:
@@ -133,31 +169,39 @@ class Connection(object):
 
 
 class TCPConnection(Connection):
-    def _new_socket(self):
+    def _new_socket(self) -> None:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    def _connect(self, server_addr):
+    def _connect(self, server_addr) -> None:
+        assert self.socket is not None, "_connect called before _new_socket"
         self.socket.connect(server_addr)
 
-    def _read_data(self):
+    def _read_data(self) -> bytes:
+        assert self.socket is not None, "_read_data called before _new_socket"
         try:
             return self.socket.recv(16384)
         except socket.error:
-            return ''
+            # Returning ``b''`` (bytes) — NOT ``''`` (str) — so the
+            # caller's ``self._readbuf += data`` in ``_reader_loop``
+            # doesn't blow up mixing bytes + str.
+            return b''
 
-    def _write_data(self, data):
+    def _write_data(self, data: bytes) -> None:
+        assert self.socket is not None, "_write_data called before _new_socket"
         self.socket.sendall(data)
 
 
 class UDPConnection(Connection):
-    def _new_socket(self):
+    def _new_socket(self) -> None:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    def _connect(self, server_addr):
+    def _connect(self, server_addr) -> None:
         pass
 
-    def _read_data(self):
-        pass
+    def _read_data(self) -> bytes:
+        # No datagram handling yet — return an empty payload so the
+        # reader loop bails out cleanly rather than raising.
+        return b''
 
-    def _write_data(self, data):
+    def _write_data(self, data: bytes) -> None:
         pass

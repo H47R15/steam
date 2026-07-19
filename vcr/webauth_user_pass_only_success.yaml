@@ -1,6 +1,6 @@
 interactions:
 - request:
-    body: !!python/unicode ''
+    body: ''
     headers:
       Accept:
       - '*/*'
@@ -18,8 +18,7 @@ interactions:
     uri: https://steamcommunity.com/login/getrsakey/
   response:
     body:
-      string: !!python/unicode '{"timestamp": 12345678, "token_gid": 0, "publickey_mod":
-        "ddb3f29bd33f38db5947d85dc2e46bf033916d9caa95948a9af1146bf246915b93e66124e025f21588c05549614fe4c1ffa2ec92ea76bf1c580422bc1fc85700cce8dd14ec232e47a03581dc670ecb3a125bc597569384e3ec2707674458c666c563b7a0972deddd855b23884ca76032c2c5a99af6e8debe47aace8d0bdb8fc42bb9758ce8db0765649f78cd4fa4b3d123ed7cbce0c05b57dbb1a8cbb82923c7c9ca8fecab923db2f3a85a05d8c8bf5a1aeed479d3f533b009cce7d9f9ca196397206bdda46fb850a4c4ea7eb3383e419121fac575629e893959175aedc936cb71527958eb308bd555cf0386939b5a3c097fa6156aeef5eb805168b7bdb511fd",
+      string: '{"timestamp": 12345678, "token_gid": 0, "publickey_mod": "ddb3f29bd33f38db5947d85dc2e46bf033916d9caa95948a9af1146bf246915b93e66124e025f21588c05549614fe4c1ffa2ec92ea76bf1c580422bc1fc85700cce8dd14ec232e47a03581dc670ecb3a125bc597569384e3ec2707674458c666c563b7a0972deddd855b23884ca76032c2c5a99af6e8debe47aace8d0bdb8fc42bb9758ce8db0765649f78cd4fa4b3d123ed7cbce0c05b57dbb1a8cbb82923c7c9ca8fecab923db2f3a85a05d8c8bf5a1aeed479d3f533b009cce7d9f9ca196397206bdda46fb850a4c4ea7eb3383e419121fac575629e893959175aedc936cb71527958eb308bd555cf0386939b5a3c097fa6156aeef5eb805168b7bdb511fd",
         "publickey_exp": "010001", "success": true}'
     headers:
       cache-control:
@@ -40,7 +39,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: !!python/unicode ''
+    body: ''
     headers:
       Accept:
       - '*/*'
@@ -58,8 +57,8 @@ interactions:
     uri: https://steamcommunity.com/login/dologin/
   response:
     body:
-      string: !!python/unicode '{"requires_twofactor": false, "login_complete": true,
-        "transfer_urls": ["https://store.steampowered.com/login/transfer", "https://help.steampowered.com/login/transfer"],
+      string: '{"requires_twofactor": false, "login_complete": true, "transfer_urls":
+        ["https://store.steampowered.com/login/transfer", "https://help.steampowered.com/login/transfer"],
         "transfer_parameters": {"steamid": "0", "remember_login": false, "token":
         "AAAAAAAAAAAAAAAA", "token_secure": "BBBBBBBBBBBBBBBB", "auth": "ZZZZZZZZZZZZZZZZ"},
         "success": true}'
@@ -81,6 +80,512 @@ interactions:
       vary:
       - Accept-Encoding
       x-frame-options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '40'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/getrsakey/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA01SSW4VMAy9y1+zsJ3YiXsZ5FGqoKKirQRC3B13R5Z+8ZvkP4+3j4h6e3s8vf/8
+        qC+P1w///hzf6vfXlx/5eHrE7uPAuTM1KBURg6kWxlqsK6CaPUJOkGZGmPFCPLVRch+Lsk4wbj6E
+        XO4G3bhs8B15ilVwrQ1XOKrqekv0ISMyueYBhHmvUUt/yp0ecVJwXOzJTRdzXpEbwfxXhrXZrRhN
+        ztEosot7rWXifCKXMLtTEl9ndQI+NnJYYwaPyzrgshlctY2Bg/YEbOyTY/GKpPZNaB4F35t884Sw
+        3JoK2A0m2kuGn1BxaFpv3kKZJkbEVo5COo3V6ruLA0lKaHH6LIgByUW9qsum1yECUuQVgoWw7+xa
+        IaUIT3Gb9nQXxY5hmtgTAWJcAhtJdu+2ddFPqYvCtjSxvWrKmCA5SRH4liw8Yb2u2DGjQxPz7D3T
+        pY//T6J+vc5JAAIADvD+/FJv7/byOdzT//jmgeDx9x/zZTgdVwIAAA==
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '382'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Set-Cookie:
+      - steamCountry=ES%7CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA; path=/; secure; HttpOnly;
+        SameSite=None
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '575'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/dologin/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA6tWKi5NTk4tLlaySkvMKU7VUSpKLSzNLEotji8pz09LTC7JL1KyKikqBcrkApUl
+        pqcqWSkp1QIAiOnwszgAAAA=
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '74'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Set-Cookie:
+      - steamLoginSecure=0%7C%7CBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB; path=/;
+        secure; HttpOnly; SameSite=None
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '40'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/getrsakey/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA01SSW4VMAy9y1+zsJ3YiXsZ5FGqoKKirQRC3B13R5Z+8ZvkP4+3j4h6e3s8vf/8
+        qC+P1w///hzf6vfXlx/5eHrE7uPAuTM1KBURg6kWxlqsK6CaPUJOkGZGmPFCPLVRch+Lsk4wbj6E
+        XO4G3bhs8B15ilVwrQ1XOKrqekv0ISMyueYBhHmvUUt/yp0ecVJwXOzJTRdzXpEbwfxXhrXZrRhN
+        ztEosot7rWXifCKXMLtTEl9ndQI+NnJYYwaPyzrgshlctY2Bg/YEbOyTY/GKpPZNaB4F35t884Sw
+        3JoK2A0m2kuGn1BxaFpv3kKZJkbEVo5COo3V6ruLA0lKaHH6LIgByUW9qsum1yECUuQVgoWw7+xa
+        IaUIT3Gb9nQXxY5hmtgTAWJcAhtJdu+2ddFPqYvCtjSxvWrKmCA5SRH4liw8Yb2u2DGjQxPz7D3T
+        pY//T6J+vc5JAAIADvD+/FJv7/byOdzT//jmgeDx9x/zZTgdVwIAAA==
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '382'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Set-Cookie:
+      - steamCountry=ES%7CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA; path=/; secure; HttpOnly;
+        SameSite=None
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '569'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/dologin/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA6tWKi5NTk4tLlaySkvMKU7VUSpKLSzNLEotji8pz09LTC7JL1KyKikqBcrkApUl
+        pqcqWSkp1QIAiOnwszgAAAA=
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '74'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Set-Cookie:
+      - steamLoginSecure=0%7C%7CBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB; path=/;
+        secure; HttpOnly; SameSite=None
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '576'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/dologin/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA6tWKi5NTk4tLlayKikqTdVRKkotLM0sSi2OLynPT0tMLskvUrJKS8wpBkrl5Kdn
+        5sUn5+cW5KSWpEI01AIA/v7WokEAAAA=
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '80'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '40'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/getrsakey/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA01SSW4VMAy9y1+zsJ3YiXsZ5FGqoKKirQRC3B13R5Z+8ZvkP4+3j4h6e3s8vf/8
+        qC+P1w///hzf6vfXlx/5eHrE7uPAuTM1KBURg6kWxlqsK6CaPUJOkGZGmPFCPLVRch+Lsk4wbj6E
+        XO4G3bhs8B15ilVwrQ1XOKrqekv0ISMyueYBhHmvUUt/yp0ecVJwXOzJTRdzXpEbwfxXhrXZrRhN
+        ztEosot7rWXifCKXMLtTEl9ndQI+NnJYYwaPyzrgshlctY2Bg/YEbOyTY/GKpPZNaB4F35t884Sw
+        3JoK2A0m2kuGn1BxaFpv3kKZJkbEVo5COo3V6ruLA0lKaHH6LIgByUW9qsum1yECUuQVgoWw7+xa
+        IaUIT3Gb9nQXxY5hmtgTAWJcAhtJdu+2ddFPqYvCtjSxvWrKmCA5SRH4liw8Yb2u2DGjQxPz7D3T
+        pY//T6J+vc5JAAIADvD+/FJv7/byOdzT//jmgeDx9x/zZTgdVwIAAA==
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '382'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Set-Cookie:
+      - steamCountry=ES%7CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA; path=/; secure; HttpOnly;
+        SameSite=None
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '563'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/dologin/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA6tWKi5NTk4tLlaySkvMKU7VUSpKLSzNLEotji8pz09LTC7JL1KyKikqBcrkApUl
+        pqcqWSkp1QIAiOnwszgAAAA=
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '74'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Set-Cookie:
+      - steamLoginSecure=0%7C%7CBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB; path=/;
+        secure; HttpOnly; SameSite=None
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '576'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/dologin/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA6tWKi5NTk4tLlayKikqTdVRKkotLM0sSi2OLynPT0tMLskvUrJKS8wpBkrl5Kdn
+        5sUn5+cW5KSWpEI01AIA/v7WokEAAAA=
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '80'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '40'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/getrsakey/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA01SSW4VMAy9y1+zsJ3YiXsZ5FGqoKKirQRC3B13R5Z+8ZvkP4+3j4h6e3s8vf/8
+        qC+P1w///hzf6vfXlx/5eHrE7uPAuTM1KBURg6kWxlqsK6CaPUJOkGZGmPFCPLVRch+Lsk4wbj6E
+        XO4G3bhs8B15ilVwrQ1XOKrqekv0ISMyueYBhHmvUUt/yp0ecVJwXOzJTRdzXpEbwfxXhrXZrRhN
+        ztEosot7rWXifCKXMLtTEl9ndQI+NnJYYwaPyzrgshlctY2Bg/YEbOyTY/GKpPZNaB4F35t884Sw
+        3JoK2A0m2kuGn1BxaFpv3kKZJkbEVo5COo3V6ruLA0lKaHH6LIgByUW9qsum1yECUuQVgoWw7+xa
+        IaUIT3Gb9nQXxY5hmtgTAWJcAhtJdu+2ddFPqYvCtjSxvWrKmCA5SRH4liw8Yb2u2DGjQxPz7D3T
+        pY//T6J+vc5JAAIADvD+/FJv7/byOdzT//jmgeDx9x/zZTgdVwIAAA==
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '382'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Set-Cookie:
+      - steamCountry=ES%7Ce57ef8ab19b71328985e32a4ea86ae24; path=/; secure; HttpOnly;
+        SameSite=None
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '575'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/dologin/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA6tWKi5NTk4tLlaySkvMKU7VUSpKLSzNLEotji8pz09LTC7JL1KyKikqBcrkApUl
+        pqcqWSkp1QIAiOnwszgAAAA=
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '74'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Set-Cookie:
+      - steamLoginSecure=0%7C%7CBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB; path=/;
+        secure; HttpOnly; SameSite=None
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '592'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/dologin/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA6tWKi5NTk4tLlayKikqTdVRKkotLM0sSi2OLynPT0tMLskvUrJKS8wpBkrl5Kdn
+        5sUn5+cW5KSWpEI01AIA/v7WokEAAAA=
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '80'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
       - DENY
     status:
       code: 200

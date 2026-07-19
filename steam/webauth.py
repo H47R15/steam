@@ -58,26 +58,24 @@ import json
 from time import time
 from base64 import b64encode
 from getpass import getpass
-import six
 import requests
 
 from steam.steamid import SteamID
 from steam.utils.web import make_requests_session, generate_session_id
 from steam.core.crypto import rsa_publickey, pkcs1v15_encrypt
 
-if six.PY2:
-    intBase = long
-    _cli_input = raw_input
-else:
-    intBase = int
-    _cli_input = input
+intBase = int
+_cli_input = input
 
 
 class WebAuth(object):
+    username: str
+    password: str
+    timestamp: int  #: rsa timestamp, populated by :meth:`_load_key`
     key = None
     logged_on = False    #: whether authentication has been completed successfully
-    session = None      #: :class:`requests.Session` (with auth cookies after auth is completed)
-    session_id = None   #: :class:`str`, session id string
+    session: requests.Session  #: :class:`requests.Session` populated in ``__init__`` via :func:`make_requests_session`
+    session_id: "str | None" = None   #: :class:`str`, session id string
     captcha_gid = -1
     captcha_code = ''
     steam_id = None     #: :class:`.SteamID` (after auth is completed)
@@ -145,12 +143,77 @@ class WebAuth(object):
         }
 
         try:
-            return self.session.post('https://steamcommunity.com/login/dologin/', data=data, timeout=15).json()
+            response = self.session.post(
+                'https://steamcommunity.com/login/dologin/', data=data, timeout=15
+            )
         except requests.exceptions.RequestException as e:
             raise HTTPError(str(e))
+        # Steam occasionally returns a JSON ``null`` body when it rejects
+        # a retry (rate-limit, replayed 2FA code, invalid client state, …).
+        # ``requests.Response.json()`` maps that to Python ``None`` —
+        # leaving ``login()`` to crash with a bare
+        # ``TypeError: 'NoneType' is not subscriptable`` on ``resp['success']``.
+        # Wrap into a proper ``LoginIncorrect`` so callers get an actionable
+        # exception matching the shape of every other login-error branch.
+        try:
+            parsed = response.json()
+        except ValueError as e:
+            raise HTTPError(f'Steam returned non-JSON dologin body: {e}')
+        if not isinstance(parsed, dict):
+            raise LoginIncorrect(
+                f'Steam returned an unexpected dologin body '
+                f'({type(parsed).__name__}: {parsed!r}) — usually means '
+                f'rate-limit / replayed 2FA code / invalid session'
+            )
+        return parsed
 
     def _finalize_login(self, login_response):
-        self.steam_id = SteamID(login_response['transfer_parameters']['steamid'])
+        """Extract ``self.steam_id`` from a successful ``dologin`` response.
+
+        Steam has shipped multiple response shapes here over the years, so
+        this method probes each in turn:
+
+          1. Legacy: ``transfer_parameters`` (a single object with
+             ``steamid``).  Used by pre-2020 Steam login responses and
+             still returned for some account types.
+          2. Modern: ``transfer_info`` (a list of ``{url, params}``,
+             replacing the older ``transfer_urls`` + ``transfer_parameters``
+             split).  Each entry's ``params.steamid`` carries the same
+             value.
+          3. Fallback: parse from the ``steamLogin`` /
+             ``steamLoginSecure`` cookie value — Steam encodes it as
+             ``<steamid>%7C%7C<token>`` regardless of response shape.
+
+        Silent on absolute failure — ``self.steam_id`` stays ``None``
+        (its class-level default) if none of the three sources yield a
+        value.  The session cookies set by ``dologin`` still work for
+        subsequent requests either way; only ``.steam_id`` bookkeeping
+        is affected.  Callers that need the ID should ``assert
+        auth.steam_id is not None`` after ``login()`` returns.
+        """
+        steamid_raw = None
+
+        params = login_response.get('transfer_parameters')
+        if isinstance(params, dict):
+            steamid_raw = params.get('steamid')
+
+        if not steamid_raw:
+            for info in login_response.get('transfer_info') or []:
+                candidate = (info.get('params') or {}).get('steamid')
+                if candidate:
+                    steamid_raw = candidate
+                    break
+
+        if not steamid_raw:
+            for cookie in self.session.cookies:
+                if cookie.name in ('steamLogin', 'steamLoginSecure') and cookie.value:
+                    candidate = cookie.value.split('%7C%7C', 1)[0]
+                    if candidate.isdigit():
+                        steamid_raw = candidate
+                        break
+
+        if steamid_raw:
+            self.steam_id = SteamID(steamid_raw)
 
     def login(self, password='', captcha='', email_code='', twofactor_code='', language='english'):
         """Attempts web login and returns on a session with cookies set
@@ -195,7 +258,11 @@ class WebAuth(object):
             self.password = self.captcha_code = ''
             self.captcha_gid = -1
 
-            for cookie in list(self.session.cookies):
+            # RequestsCookieJar mixes CookieJar (yields Cookie) with MutableMapping[str, str]
+            # (yields str) — iter() picks the CookieJar overload so the loop is typed as Cookie.
+            for cookie in list(iter(self.session.cookies)):
+                if cookie.value is None:
+                    continue
                 for domain in ['store.steampowered.com', 'help.steampowered.com', 'steamcommunity.com']:
                     self.session.cookies.set(cookie.name, cookie.value, domain=domain, secure=cookie.secure)
 
@@ -310,10 +377,27 @@ class MobileWebAuth(WebAuth):
         self.session.cookies.set('mobileClientVersion', '0 (2.1.3)')
         self.session.cookies.set('mobileClient', 'android')
 
+        # Same null-body / non-dict defensive handling as WebAuth._send_login
+        # above.  The ``try/finally`` here also has to unset the mobile
+        # cookies regardless of outcome, so structure is a bit denser.
         try:
-            return self.session.post('https://steamcommunity.com/login/dologin/', data=data, timeout=15).json()
-        except requests.exceptions.RequestException as e:
-            raise HTTPError(str(e))
+            try:
+                response = self.session.post(
+                    'https://steamcommunity.com/login/dologin/', data=data, timeout=15
+                )
+            except requests.exceptions.RequestException as e:
+                raise HTTPError(str(e))
+            try:
+                parsed = response.json()
+            except ValueError as e:
+                raise HTTPError(f'Steam returned non-JSON dologin body: {e}')
+            if not isinstance(parsed, dict):
+                raise LoginIncorrect(
+                    f'Steam returned an unexpected dologin body '
+                    f'({type(parsed).__name__}: {parsed!r}) — usually means '
+                    f'rate-limit / replayed 2FA code / invalid session'
+                )
+            return parsed
         finally:
             self.session.cookies.pop('mobileClientVersion', None)
             self.session.cookies.pop('mobileClient', None)

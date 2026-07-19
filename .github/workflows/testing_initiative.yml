@@ -1,17 +1,17 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# This workflow installs Python dependencies via Poetry and runs the pytest suite.
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: Testing Initiative
+name: Tests
 
 on:
   push:
     branches: [ master ]
     paths-ignore:
       - '.gitignore'
+      - '.env.example'
       - '*.md'
       - '*.rst'
       - 'LICENSE'
-      - 'Vagrantfile'
       - 'protobuf_list.txt'
       - 'protobufs/**'
       - 'recipes/**'
@@ -19,91 +19,29 @@ on:
     branches: [ master ]
     paths-ignore:
       - '.gitignore'
+      - '.env.example'
       - '*.md'
       - '*.rst'
       - 'LICENSE'
-      - 'Vagrantfile'
       - 'protobuf_list.txt'
       - 'protobufs/**'
       - 'recipes/**'
+
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-         - ubuntu-20.04
-         - macos-latest
-         - windows-latest
-        python-version: [2.7, 3.6, 3.7, 3.8, 3.9]
-        no-coverage: [0]
-        include:
-          - os: ubuntu-20.04
-            python-version: pypy-2.7
-            no-coverage: 1
-          - os: ubuntu-20.04
-            python-version: pypy-3.6
-            no-coverage: 1
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python Env
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.13"
+          cache: "poetry"
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
       - name: Install dependencies
-        run: |
-          make init
-      - name: Run Tests
-        env:
-            NOCOV: ${{ matrix.no-coverage }}
-        run: |
-          make test
-      - name: Upload to Coveralls
-        # pypy + concurrenct=gevent not supported in coveragepy. See https://github.com/nedbat/coveragepy/issues/560
-        if: matrix.no-coverage == 0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_PARALLEL: true
-          COVERALLS_FLAG_NAME: "${{ matrix.os }}_${{ matrix.python-version }}"
-        run: |
-          coveralls --service=github
-
-  coveralls:
-    name: Finish Coveralls
-    needs: test
-    runs-on: ubuntu-20.04
-    container: python:3-slim
-    steps:
-    - name: Install coveralls
-      run: |
-        pip3 install --upgrade coveralls
-    - name: Send coverage finish to coveralls.io
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        coveralls --finish
-
-  build-docs:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os:
-          - ubuntu-20.04
-        python-version: [3.6]
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python Env
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
-      - name: Install dependencies
-        run: |
-          make init
-          make init_docs
-      - name: Build Docs
-        run: make docs
+        run: poetry install --with dev --extras client
+      - name: Run tests
+        run: poetry run pytest --tb=short

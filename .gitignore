@@ -28,8 +28,41 @@
 !recipes/*/*
 !recipes/*/*/*
 
+# ``.github/`` — issue templates, workflows, FUNDING.
+!.github/
+!.github/**
+
+# ``scripts/`` — dev-only console scripts (pb-*, vcr-*), registered via
+# ``[tool.poetry.scripts]`` in ``pyproject.toml`` and shipped alongside the
+# runtime package so ``poetry install`` picks them up.
+!scripts/
+!scripts/**
+
+# ``typings/`` — local pyright stubs (currently a BuildServices override
+# fixing a bug in types-protobuf 7.34).  See ``pyrightconfig.json``.
+!typings/
+!typings/**
+
+# Poetry manifests + pyright config — the actual project spec, was being
+# dropped by the top-level ``*`` rule pre-modernization when the package
+# used setup.py + a Makefile.
+!pyproject.toml
+!poetry.lock
+!pyrightconfig.json
+
+# Poetry build output — never committed; the publish workflow regenerates it.
+dist/
+
 *.egg-info
 *.pyc
 .coverage
 *.swp
 *.bin
+
+# ``.env`` holds a real Steam Web API key (used by ``tests/generete_webauth_vcr.py``
+# and the VCR-cassette regeneration flow described in ``.env.example``).  Already
+# implicitly denied by the leading ``*`` at the top of this file — explicit rule
+# below makes the intent visible, and the ``!.env.example`` line keeps the
+# tracked template alongside it so contributors know what shape to fill in.
+.env
+!.env.example

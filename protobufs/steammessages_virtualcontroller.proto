@@ -1,0 +1,139 @@
+syntax = "proto2";
+enum EInputMode {
+	k_EInputModeUnknown = 0;
+	k_EInputModeMouse = 1;
+	k_EInputModeController = 2;
+	k_EInputModeMouseAndController = 3;
+}
+
+enum EMouseMode {
+	k_EMouseModeUnknown = 0;
+	k_EMouseModeRelativeCursor_OBSOLETE = 1;
+	k_EMouseModeAbsoluteCursor = 2;
+	k_EMouseModeTouch = 3;
+	k_EMouseModeRelative = 4;
+}
+
+enum EControllerElementType {
+	k_EControllerElementTypeNone = -1;
+	k_EControllerElementTypeThumb = 0;
+	k_EControllerElementTypeButtonSteam = 1;
+	k_EControllerElementTypeJoystickLeft = 2;
+	k_EControllerElementTypeButtonJoystickLeft = 3;
+	k_EControllerElementTypeJoystickRight = 4;
+	k_EControllerElementTypeButtonJoystickRight = 5;
+	k_EControllerElementTypeDPad = 6;
+	k_EControllerElementTypeButtonA = 7;
+	k_EControllerElementTypeButtonB = 8;
+	k_EControllerElementTypeButtonX = 9;
+	k_EControllerElementTypeButtonY = 10;
+	k_EControllerElementTypeButtonSelect = 11;
+	k_EControllerElementTypeButtonStart = 12;
+	k_EControllerElementTypeButtonTriggerLeft = 13;
+	k_EControllerElementTypeButtonTriggerRight = 14;
+	k_EControllerElementTypeButtonBumperLeft = 15;
+	k_EControllerElementTypeButtonBumperRight = 16;
+	k_EControllerElementTypeButtonMacro0 = 17;
+	k_EControllerElementTypeButtonMacro1 = 18;
+	k_EControllerElementTypeButtonMacro2 = 19;
+	k_EControllerElementTypeButtonMacro3 = 20;
+	k_EControllerElementTypeButtonMacro4 = 21;
+	k_EControllerElementTypeButtonMacro5 = 22;
+	k_EControllerElementTypeButtonMacro6 = 23;
+	k_EControllerElementTypeButtonMacro7 = 24;
+	k_EControllerElementTypeTrackpadCenter = 25;
+	k_EControllerElementTypeTrackpadLeft = 26;
+	k_EControllerElementTypeTrackpadRight = 27;
+	k_EControllerElementTypeKeyboard = 28;
+	k_EControllerElementTypeMagnifyingGlass = 29;
+	k_EControllerElementTypeButtonMacro1Finger = 30;
+	k_EControllerElementTypeButtonMacro2Finger = 31;
+	k_EControllerElementTypeRecordInput = 32;
+	k_EControllerElementTypePlaybackInput = 33;
+	k_EControllerElementTypePaste = 34;
+	k_EControllerElementTypeMax = 35;
+}
+
+message CVirtualControllerElement {
+	optional .EControllerElementType type = 1 [default = k_EControllerElementTypeNone];
+	optional bool visible = 2;
+	optional float x_position = 3;
+	optional float y_position = 4;
+	optional float x_scale = 5 [default = 1];
+	optional float y_scale = 6 [default = 1];
+}
+
+message CVirtualControllerColor {
+	optional float r = 1 [default = 1];
+	optional float g = 2 [default = 1];
+	optional float b = 3 [default = 1];
+	optional float a = 4 [default = 1];
+}
+
+message CVirtualControllerLayout {
+	optional int32 layout_version = 1;
+	optional int32 actionset_id = 2;
+	repeated .CVirtualControllerElement elements = 4;
+	optional .CVirtualControllerColor color = 5;
+}
+
+message CVirtualControllerLayouts {
+	repeated .CVirtualControllerLayout layouts = 1;
+	optional .EInputMode input_mode = 2 [default = k_EInputModeController];
+	optional .EMouseMode mouse_mode = 3 [default = k_EMouseModeUnknown];
+	optional float trackpad_sensitivity = 4 [default = 1];
+	optional bool pinch_zoom_enabled = 5 [default = false];
+	optional float pinch_zoom_x = 6 [default = 0];
+	optional float pinch_zoom_y = 7 [default = 0];
+	optional float pinch_zoom_scale = 8 [default = 1];
+	optional bool shaken = 9;
+	optional bool mouse_offscreen = 10;
+}
+
+message CVirtualControllerConfig {
+	message Control {
+		optional string name = 1;
+		optional string icon = 2;
+		optional int32 input_source = 3;
+		optional int32 input_mode = 4;
+		optional int32 input_element = 5;
+		optional int32 output_gamepad = 6;
+		optional int32 output_keyboard = 7;
+		optional int32 output_mouse = 8;
+		optional string icon_foreground = 9;
+		optional string icon_background = 10;
+		optional bool input_toggle = 11;
+		optional int32 input_activate_stick_or_trackpad = 12;
+		optional int32 activation_type = 13;
+		optional int32 long_press_ms = 14;
+		optional int32 double_press_ms = 15;
+	}
+
+	message ActionSet {
+		optional int32 id = 1;
+		optional int32 parent_id = 2;
+		optional string name = 3;
+		repeated .CVirtualControllerConfig.Control controls = 4;
+	}
+
+	optional string name = 1;
+	repeated .CVirtualControllerConfig.ActionSet actionsets = 2;
+	optional .EMouseMode default_mouse_mode = 3 [default = k_EMouseModeAbsoluteCursor];
+}
+
+message CVirtualControllerLayoutPackage {
+	optional uint32 appid = 1;
+	optional uint64 creator = 2;
+	optional uint32 initial_revision = 3;
+	optional uint32 saved_revision = 4;
+	optional .CVirtualControllerConfig config = 5;
+	optional .CVirtualControllerLayouts layouts = 6;
+}
+
+message CVirtualControllerGlobalConfig {
+	optional bool feedback_enabled = 1;
+	optional bool gyroscope_enabled = 2 [default = true];
+	optional bool auto_fade_enabled = 3 [default = true];
+	optional bool rumble_enabled = 4 [default = true];
+	optional bool shake_fade_enabled = 5;
+}

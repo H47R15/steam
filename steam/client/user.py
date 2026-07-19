@@ -111,7 +111,21 @@ class SteamUser(object):
         """
         hashbytes = self.get_ps('avatar_hash')
 
-        if hashbytes != "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000":
+        # Fall back to Steam's default-avatar hash when the persona-
+        # state slot isn't populated (``get_ps`` returned ``None``
+        # because ``_pstate`` hasn't been loaded yet) OR when the
+        # field is the 20-byte all-zero sentinel Steam uses for
+        # "user has no avatar set".
+        #
+        # The upstream code compared ``bytes`` to a ``str`` literal
+        # (``!= "\\000"*20``); on py3 that comparison is always
+        # ``True`` (different types never compare equal), so the
+        # sentinel branch was dead and every no-avatar user rendered
+        # a URL derived from ``hexlify(b'\\x00'*20)`` instead of the
+        # canonical default hash.  Fixed by using a proper ``b"..."``
+        # literal AND by adding the ``None`` short-circuit that
+        # keeps ``hexlify(None)`` from raising ``TypeError``.
+        if hashbytes and hashbytes != b"\x00" * 20:
             ahash = hexlify(hashbytes).decode('ascii')
         else:
             ahash = 'fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb'

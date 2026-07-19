@@ -1,0 +1,306 @@
+syntax = "proto2";
+option optimize_for = SPEED;
+option py_generic_services = true;
+
+enum EClientNotificationType {
+	k_EClientNotificationType_Invalid = 0;
+	k_EClientNotificationType_DownloadCompleted = 1;
+	k_EClientNotificationType_FriendInvite = 2;
+	k_EClientNotificationType_FriendInGame = 3;
+	k_EClientNotificationType_FriendOnline = 4;
+	k_EClientNotificationType_Achievement = 5;
+	k_EClientNotificationType_LowBattery = 6;
+	k_EClientNotificationType_SystemUpdate = 7;
+	k_EClientNotificationType_FriendMessage = 8;
+	k_EClientNotificationType_GroupChatMessage = 9;
+	k_EClientNotificationType_FriendInviteRollup = 10;
+	k_EClientNotificationType_FamilySharingStopPlaying = 12;
+	k_EClientNotificationType_Screenshot = 14;
+	k_EClientNotificationType_CloudSyncFailure = 15;
+	k_EClientNotificationType_CloudSyncConflict = 16;
+	k_EClientNotificationType_IncomingVoiceChat = 17;
+	k_EClientNotificationType_ClaimSteamDeckRewards = 18;
+	k_EClientNotificationType_GiftReceived = 19;
+	k_EClientNotificationType_ItemAnnouncement = 20;
+	k_EClientNotificationType_HardwareSurvey = 21;
+	k_EClientNotificationType_LowDiskSpace = 22;
+	k_EClientNotificationType_BatteryTemperature = 23;
+	k_EClientNotificationType_DockUnsupportedFirmware = 24;
+	k_EClientNotificationType_PeerContentUpload = 25;
+	k_EClientNotificationType_CannotReadControllerGuideButton = 26;
+	k_EClientNotificationType_Comment = 27;
+	k_EClientNotificationType_Wishlist = 28;
+	k_EClientNotificationType_TradeOffer = 29;
+	k_EClientNotificationType_AsyncGame = 30;
+	k_EClientNotificationType_General = 31;
+	k_EClientNotificationType_HelpRequest = 32;
+	k_EClientNotificationType_OverlaySplashScreen = 33;
+	k_EClientNotificationType_BroadcastAvailableToWatch = 34;
+	k_EClientNotificationType_TimedTrialRemaining = 35;
+	k_EClientNotificationType_LoginRefresh = 36;
+	k_EClientNotificationType_MajorSale = 37;
+	k_EClientNotificationType_TimerExpired = 38;
+	k_EClientNotificationType_ModeratorMsg = 39;
+	k_EClientNotificationType_SteamInputActionSetChanged = 40;
+	k_EClientNotificationType_RemoteClientConnection = 41;
+	k_EClientNotificationType_RemoteClientStartStream = 42;
+	k_EClientNotificationType_StreamingClientConnection = 43;
+	k_EClientNotificationType_FamilyInvite = 44;
+	k_EClientNotificationType_PlaytimeWarning = 45;
+	k_EClientNotificationType_FamilyPurchaseRequest = 46;
+	k_EClientNotificationType_FamilyPurchaseRequestResponse = 47;
+	k_EClientNotificationType_ParentalFeatureRequest = 48;
+	k_EClientNotificationType_ParentalPlaytimeRequest = 49;
+	k_EClientNotificationType_GameRecordingError = 50;
+	k_EClientNotificationType_ParentalFeatureResponse = 51;
+	k_EClientNotificationType_ParentalPlaytimeResponse = 52;
+	k_EClientNotificationType_RequestedGameAdded = 53;
+	k_EClientNotificationType_ClipDownloaded = 54;
+	k_EClientNotificationType_GameRecordingStart = 55;
+	k_EClientNotificationType_GameRecordingStop = 56;
+	k_EClientNotificationType_GameRecordingUserMarkerAdded = 57;
+	k_EClientNotificationType_GameRecordingInstantClip = 58;
+	k_EClientNotificationType_PlaytestInvite = 59;
+	k_EClientNotificationType_TradeReversal = 60;
+	k_EClientNotificationType_HardwareUpdateAvailable = 61;
+	k_EClientNotificationType_ControllerLowBattery = 62;
+	k_EClientNotificationType_ControllerConnected = 63;
+	k_EClientNotificationType_ControllerDisconnected = 64;
+}
+
+enum ESystemUpdateNotificationType {
+	k_ESystemUpdateNotificationType_Invalid = 0;
+	k_ESystemUpdateNotificationType_Available = 1;
+	k_ESystemUpdateNotificationType_NeedsRestart = 2;
+}
+
+enum EGameRecordingErrorType {
+	k_EGameRecordingErrorGeneral = 1;
+	k_EGameRecordingErrorLowDiskSpace = 2;
+}
+
+message CClientNotificationCloudSyncFailure {
+	optional uint32 appid = 1;
+}
+
+message CClientNotificationCloudSyncConflict {
+	optional uint32 appid = 1;
+}
+
+message CClientNotificationScreenshot {
+	optional string screenshot_handle = 1;
+	optional string description = 2;
+	optional string local_url = 3;
+}
+
+message CClientNotificationDownloadCompleted {
+	optional uint32 appid = 1;
+	optional uint32 dlc_appid = 2;
+}
+
+message CClientNotificationFriendInvite {
+	optional fixed64 steamid = 1;
+}
+
+message CClientNotificationFriendInviteRollup {
+	optional uint32 new_invite_count = 1;
+}
+
+message CClientNotificationFriendInGame {
+	optional fixed64 steamid = 1;
+	optional string game_name = 2;
+}
+
+message CClientNotificationFriendOnline {
+	optional fixed64 steamid = 1;
+}
+
+message CClientNotificationAchievement {
+	optional string achievement_id = 1;
+	optional uint32 appid = 2;
+	optional string name = 3;
+	optional string description = 4;
+	optional string image_url = 5;
+	optional bool achieved = 6;
+	optional uint32 rtime_unlocked = 7;
+	optional float min_progress = 8;
+	optional float current_progress = 9;
+	optional float max_progress = 10;
+	optional float global_achieved_pct = 11;
+}
+
+message CClientNotificationLowBattery {
+	optional float pct_remaining = 1;
+}
+
+message CClientNotificationSystemUpdate {
+	optional .ESystemUpdateNotificationType type = 1 [default = k_ESystemUpdateNotificationType_Invalid];
+}
+
+message CClientNotificationFriendMessage {
+	optional string tag = 1;
+	optional string steamid = 2;
+	optional string title = 3;
+	optional string body = 4;
+	optional string icon = 5;
+	optional uint32 notificationid = 6;
+	optional string response_steamurl = 7;
+}
+
+message CClientNotificationGroupChatMessage {
+	optional string tag = 1;
+	optional string steamid_sender = 2;
+	optional string chat_group_id = 3;
+	optional string chat_id = 4;
+	optional string title = 5;
+	optional string body = 6;
+	optional string rawbody = 7;
+	optional string icon = 8;
+	optional uint32 notificationid = 9;
+}
+
+message CClientNotificationFamilySharingDeviceAuthorizationChanged {
+	optional uint32 accountid_owner = 1;
+	optional bool authorized = 2;
+}
+
+message CClientNotificationFamilySharingStopPlaying {
+	optional uint32 accountid_owner = 1;
+	optional uint32 seconds_remaining = 2;
+	optional uint32 appid = 3;
+}
+
+message CClientNotificationFamilySharingLibraryAvailable {
+	optional uint32 accountid_owner = 1;
+}
+
+message CClientNotificationIncomingVoiceChat {
+	optional fixed64 steamid = 1;
+}
+
+message CClientNotificationClaimSteamDeckRewards {
+}
+
+message CClientNotificationGiftReceived {
+	optional string sender_name = 1;
+}
+
+message CClientNotificationItemAnnouncement {
+	optional uint32 new_item_count = 1;
+	optional bool new_backpack_items = 2;
+}
+
+message CClientNotificationHardwareSurveyPending {
+}
+
+message CClientNotificationLowDiskSpace {
+	optional uint32 folder_index = 1;
+}
+
+message CClientNotificationBatteryTemperature {
+	optional uint32 temperature = 1;
+	optional string notification_type = 2;
+}
+
+message CClientNotificationDockUnsupportedFirmware {
+}
+
+message CClientNotificationPeerContentUpload {
+	optional uint32 appid = 1;
+	optional string peer_name = 2;
+}
+
+message CClientNotificationCannotReadControllerGuideButton {
+	optional int32 controller_index = 1;
+}
+
+message CClientNotificationOverlaySplashScreen {
+}
+
+message CClientNotificationBroadcastAvailableToWatch {
+	optional int32 broadcast_permission = 1;
+}
+
+message CClientNotificationTimedTrialRemaining {
+	optional uint32 appid = 1;
+	optional string icon = 2;
+	optional bool offline = 3;
+	optional uint32 allowed_seconds = 4;
+	optional uint32 played_seconds = 5;
+}
+
+message CClientNotificationLoginRefresh {
+}
+
+message CClientNotificationTimerExpired {
+}
+
+message CClientNotificationSteamInputActionSetChanged {
+	optional int32 controller_index = 1;
+	optional string action_set_name = 2;
+}
+
+message CClientNotificationRemoteClientConnection {
+	optional string machine = 1;
+	optional bool connected = 2;
+}
+
+message CClientNotificationRemoteClientStartStream {
+	optional string machine = 1;
+	optional string game_name = 2;
+}
+
+message CClientNotificationStreamingClientConnection {
+	optional string hostname = 1;
+	optional string machine = 2;
+	optional uint32 guest_id = 3;
+	optional bool connected = 4;
+}
+
+message CClientNotificationPlaytimeWarning {
+	optional string type = 1;
+	optional uint32 playtime_remaining = 2;
+}
+
+message CClientNotificationGameRecordingError {
+	optional fixed64 game_id = 1;
+	optional .EGameRecordingErrorType error_type = 2 [default = k_EGameRecordingErrorGeneral];
+}
+
+message CClientNotificationGameRecordingStart {
+	optional fixed64 game_id = 1;
+}
+
+message CClientNotificationGameRecordingStop {
+	optional fixed64 game_id = 1;
+	optional string clip_id = 2;
+	optional float duration_secs = 3;
+}
+
+message CClientNotificationGameRecordingUserMarkerAdded {
+	optional fixed64 game_id = 1;
+}
+
+message CClientNotificationGameRecordingInstantClip {
+	optional fixed64 game_id = 1;
+	optional string clip_id = 2;
+	optional float duration_secs = 3;
+}
+
+message CClientNotificationHardwareUpdateAvailable {
+	repeated uint32 etype = 1;
+}
+
+message CClientNotificationControllerLowBattery {
+	optional uint32 controller_type = 1;
+	optional float pct_remaining = 2;
+}
+
+message CClientNotificationControllerConnected {
+	optional uint32 controller_index = 1;
+}
+
+message CClientNotificationControllerDisconnected {
+	optional uint32 controller_type = 1;
+	optional string controller_name = 2;
+}

@@ -132,6 +132,7 @@ from re import match as _re_match
 from struct import pack as _pack, unpack_from as _unpack_from
 from time import time as _time
 from enum import IntEnum
+from typing import Literal, overload
 from steam.utils.binary import StructReader as _StructReader
 
 __all__ = ['query_master', 'a2s_info', 'a2s_players', 'a2s_rules', 'a2s_ping']
@@ -142,7 +143,26 @@ def _u(data):
 
 
 class StructReader(_StructReader):
-    def read_cstring(self, binary=False):
+    # The overloads let Pylance narrow the return type at call sites
+    # (``read_cstring(binary=False)`` → ``str``,
+    # ``read_cstring(binary=True)`` → ``bytes``) so downstream code
+    # that passes the result into e.g. ``re.match`` (which needs a
+    # concrete ``str``) doesn't trip on the ``bytes | str`` union.
+    #
+    # The ``pyright`` ignore on the implementation signature is
+    # intentional: the base ``_StructReader.read_cstring`` returns
+    # ``bytes`` and takes a ``terminator`` keyword, but this
+    # subclass widens the return to include ``str`` (via optional
+    # UTF-8 decoding) and repurposes the first positional slot as
+    # a ``binary`` toggle.  The design is by upstream ValvePython
+    # and is baked into the a2s callers below, so we document the
+    # LSP violation rather than silently drift the signatures back
+    # apart or rewrite the callers.
+    @overload
+    def read_cstring(self, binary: Literal[False] = False) -> str: ...
+    @overload
+    def read_cstring(self, binary: Literal[True]) -> bytes: ...
+    def read_cstring(self, binary: bool = False) -> "bytes | str":  # pyright: ignore[reportIncompatibleMethodOverride]
         raw = super(StructReader, self).read_cstring()
         if binary:
             return raw
@@ -212,6 +232,14 @@ def query_master(filter_text=r'\nappid\500', max_servers=20, region=MSRegion.Wor
         if data.read(6) != b'\xFF\xFF\xFF\xFF\x66\x0A':
             ms.close()
             raise RuntimeError("Invalid response from master server")
+
+        # If the response header is followed by zero server entries
+        # (server list exhausted, or an unexpected empty chunk), the
+        # ``while data.rlen()`` loop won't execute — pre-seed ``ip``
+        # and ``port`` with the sentinel used to compose ``next_ip``
+        # below so we don't hit a ``NameError`` in that edge case.
+        ip: str = '0.0.0.0'
+        port: int = 0
 
         # read list of servers
         while data.rlen():
@@ -367,6 +395,13 @@ def a2s_info(server_addr, timeout=2, force_goldsrc=False, challenge=0):
     data = StructReader(data)
     header, = data.unpack('<4xc')
 
+    # Pre-seed ``info`` so the ``return info`` at the bottom of the
+    # function has a bound name when Pylance walks the branches —
+    # the ``header not in b'mIA'`` guard raises so ``info`` is
+    # unreachable through that path in practice, but static analysis
+    # can't prove the exhaustiveness.
+    info: dict = {}
+
     # invalid header
     if header not in b'mIA':
         raise RuntimeError("Invalid response header - %s" % repr(header))
@@ -484,6 +519,15 @@ def a2s_players(server_addr, timeout=2, challenge=0):
 
     # request challenge number
     header = None
+    # Pre-seed so the ``StructReader(data)`` call below (only reached
+    # when ``header == b'D'``, which is only set inside the ``challenge
+    # in (-1, 0)`` branch) has a bound ``data`` name even for
+    # analysers that can't tie the two conditions together.  No type
+    # annotation because ``data`` legitimately transitions
+    # ``bytes → StructReader`` at line 502 below — annotating locks
+    # the initial type and would then flag every downstream
+    # ``data.unpack(...)`` call.
+    data = b''
 
     if challenge in (-1, 0):
         ss.send(_pack('<lci', -1, b'U', challenge))
@@ -580,6 +624,13 @@ def a2s_rules(server_addr, timeout=2, challenge=0, binary=False):
         value = data.read_cstring(binary=binary)
 
         if not binary:
+            # ``read_cstring`` overloads guarantee ``str`` in the
+            # ``binary=False`` branch, but Pylance can't tie the
+            # runtime ``binary`` flag to a specific overload — the
+            # ``assert isinstance`` narrows locally so ``_re_match``
+            # (which requires ``str``, not ``bytes | str``) type-
+            # checks cleanly.
+            assert isinstance(value, str)
             if _re_match(r'^\-?[0-9]+$', value):
                 value = int(value)
             elif _re_match(r'^\-?[0-9]+\.[0-9]+$', value):

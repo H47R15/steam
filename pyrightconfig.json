@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/pyright/main/packages/vscode-pyright/schemas/pyrightconfig.schema.json",
+
+  "//": "Local pyright config for the steam package.  Anchors the project",
+  "//1": "root at this directory so ``stubPath`` (and ``include`` / ``exclude``",
+  "//2": "if we add them) resolve relative to the repo root.",
+
+  "stubPath": "typings",
+  "include": ["steam", "scripts", "tests"],
+  "exclude": ["**/__pycache__", "**/.venv", "vcr", "protobufs", "docs"]
+}

@@ -1,0 +1,135 @@
+syntax = "proto2";
+import "steammessages_base.proto";
+import "webuimessages_base.proto";
+import "enums.proto";
+
+option optimize_for = SPEED;
+option py_generic_services = true;
+
+message CAudio_GetSupportedFeatures_Request {
+}
+
+message CAudio_GetSupportedFeatures_Response {
+	optional bool mono_downmix = 1;
+	optional bool use_bluetooth_for_mic = 2;
+	optional bool reset_config = 3;
+}
+
+message CAudio_GetMonoDownmixEnabled_Request {
+}
+
+message CAudio_GetMonoDownmixEnabled_Response {
+	optional bool enabled = 1;
+}
+
+message CAudio_SetMonoDownmixEnabled_Request {
+	optional bool enabled = 1;
+}
+
+message CAudio_SetMonoDownmixEnabled_Response {
+}
+
+message CAudio_GetUseBluetoothForMic_Request {
+}
+
+message CAudio_GetUseBluetoothForMic_Response {
+	optional bool enabled = 1;
+}
+
+message CAudio_SetUseBluetoothForMic_Request {
+	optional bool enabled = 1;
+}
+
+message CAudio_SetUseBluetoothForMic_Response {
+}
+
+message CAudio_SupportsHdmiCec_Request {
+	optional int32 sink_id = 1;
+}
+
+message CAudio_SupportsHdmiCec_Response {
+	optional bool enabled = 1;
+}
+
+message CAudio_GetHdmiCecEnabled_Request {
+	optional int32 sink_id = 1;
+}
+
+message CAudio_GetHdmiCecEnabled_Response {
+	optional bool enabled = 1;
+}
+
+message CAudio_GetHdmiCecActive_Request {
+	optional int32 sink_id = 1;
+}
+
+message CAudio_GetHdmiCecActive_Response {
+	optional bool active = 1;
+}
+
+message CAudio_SetHdmiCecEnabled_Request {
+	optional int32 sink_id = 1;
+	optional bool enabled = 2;
+}
+
+message CAudio_SetHdmiCecEnabled_Response {
+}
+
+message CAudio_SendHdmiCecVolume_Request {
+	optional int32 sink_id = 1;
+	optional bool up = 2;
+}
+
+message CAudio_SendHdmiCecVolume_Response {
+}
+
+message CAudio_ToggleHdmiCecMute_Request {
+	optional int32 sink_id = 1;
+}
+
+message CAudio_ToggleHdmiCecMute_Response {
+}
+
+message CAudio_ResetConfig_Request {
+}
+
+message CAudio_ResetConfig_Response {
+}
+
+message CAudio_PlaySpeakerTestOnChannel_Request {
+	optional int32 channel_num = 1;
+}
+
+message CAudio_PlaySpeakerTestOnChannel_Response {
+	optional bool success = 1;
+}
+
+message CAudio_SetSpeakerConfiguration_Request {
+	optional int32 sink_id = 1;
+	optional .ESpeakerConfiguration config = 2 [default = k_ESpeakerConfiguration_Other];
+}
+
+message CAudio_SetSpeakerConfiguration_Response {
+	optional .ESpeakerConfiguration config = 1 [default = k_ESpeakerConfiguration_Other];
+	optional int32 channels = 2;
+	optional string sdescription = 3;
+}
+
+service Audio {
+	option (webui_service_execution_site) = k_EClientExecutionSiteSteamUI;
+
+	rpc GetSupportedFeatures (.CAudio_GetSupportedFeatures_Request) returns (.CAudio_GetSupportedFeatures_Response);
+	rpc GetMonoDownmixEnabled (.CAudio_GetMonoDownmixEnabled_Request) returns (.CAudio_GetMonoDownmixEnabled_Response);
+	rpc SetMonoDownmixEnabled (.CAudio_SetMonoDownmixEnabled_Request) returns (.CAudio_SetMonoDownmixEnabled_Response);
+	rpc GetUseBluetoothForMic (.CAudio_GetUseBluetoothForMic_Request) returns (.CAudio_GetUseBluetoothForMic_Response);
+	rpc SetUseBluetoothForMic (.CAudio_SetUseBluetoothForMic_Request) returns (.CAudio_SetUseBluetoothForMic_Response);
+	rpc SupportsHdmiCec (.CAudio_SupportsHdmiCec_Request) returns (.CAudio_SupportsHdmiCec_Response);
+	rpc GetHdmiCecEnabled (.CAudio_GetHdmiCecEnabled_Request) returns (.CAudio_GetHdmiCecEnabled_Response);
+	rpc GetHdmiCecActive (.CAudio_GetHdmiCecActive_Request) returns (.CAudio_GetHdmiCecActive_Response);
+	rpc SetHdmiCecEnabled (.CAudio_SetHdmiCecEnabled_Request) returns (.CAudio_SetHdmiCecEnabled_Response);
+	rpc SendHdmiCecVolume (.CAudio_SendHdmiCecVolume_Request) returns (.CAudio_SendHdmiCecVolume_Response);
+	rpc ToggleHdmiCecMute (.CAudio_ToggleHdmiCecMute_Request) returns (.CAudio_ToggleHdmiCecMute_Response);
+	rpc ResetConfig (.CAudio_ResetConfig_Request) returns (.CAudio_ResetConfig_Response);
+	rpc PlaySpeakerTestOnChannel (.CAudio_PlaySpeakerTestOnChannel_Request) returns (.CAudio_PlaySpeakerTestOnChannel_Response);
+	rpc SetSpeakerConfiguration (.CAudio_SetSpeakerConfiguration_Request) returns (.CAudio_SetSpeakerConfiguration_Response);
+}

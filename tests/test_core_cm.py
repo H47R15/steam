@@ -59,8 +59,11 @@ class CMClient_Scenarios(unittest.TestCase):
         # run
         cm = CMClient()
 
-        with gevent.Timeout(2, False):
-            cm.connect(retry=1)
+        try:
+            with gevent.Timeout(2):
+                cm.connect(retry=1)
+        except gevent.Timeout:
+            pass
 
         gevent.idle()
 
@@ -79,8 +82,11 @@ class CMClient_Scenarios(unittest.TestCase):
         # run
         cm = CMClient()
 
-        with gevent.Timeout(3, False):
-            cm.connect(retry=1)
+        try:
+            with gevent.Timeout(3):
+                cm.connect(retry=1)
+        except gevent.Timeout:
+            pass
 
         gevent.idle()
 
@@ -105,8 +111,11 @@ class CMClient_Scenarios(unittest.TestCase):
         # run
         cm = CMClient()
 
-        with gevent.Timeout(3, False):
-            cm.connect(retry=1)
+        try:
+            with gevent.Timeout(3):
+                cm.connect(retry=1)
+        except gevent.Timeout:
+            pass
 
         gevent.idle()
 

@@ -1,0 +1,108 @@
+# Publish the steam package to PyPI.
+#
+# Triggered when a GitHub Release is published (either through the web UI at
+# https://github.com/H47R15/steam/releases/new, or via ``gh release create v1.5.0``).
+# Builds a wheel + sdist with Poetry and uploads them to PyPI using PyPI's
+# Trusted Publisher OIDC flow — no long-lived API token stored in the repo.
+#
+# Prereqs (do these once, outside the workflow):
+#   1. Create a PyPI account at https://pypi.org/account/register/.
+#   2. Register the package name via first-manual-upload OR configure a
+#      "pending publisher" on PyPI before the first release (see the
+#      README block below the file for the step-by-step).
+#   3. Under https://pypi.org/manage/project/<pkg>/settings/publishing/
+#      add a Trusted Publisher pointing at:
+#         Owner:                H47R15
+#         Repository name:      steam
+#         Workflow name:        publish.yml
+#         Environment name:     pypi
+#   4. In this repo, create an environment named ``pypi`` at
+#      https://github.com/H47R15/steam/settings/environments — no secrets
+#      needed, but the environment gate protects publish from accidental
+#      runs on non-release commits.
+#
+# Every release also gets the wheel + sdist attached as GitHub Release
+# assets, so consumers who prefer ``pip install <url>`` over PyPI can
+# fetch them straight from the Releases page.
+
+name: Publish
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: Build wheel + sdist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: "1.8.5"
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Assert release tag matches pyproject.toml version
+        run: |
+          release_tag="${GITHUB_REF_NAME}"
+          release_version="${release_tag#v}"
+          pyproject_version=$(poetry version --short)
+          if [ "$release_version" != "$pyproject_version" ]; then
+            echo "::error::release tag '$release_tag' (parsed as '$release_version') does not match pyproject.toml version '$pyproject_version'"
+            exit 1
+          fi
+
+      - name: Build wheel + sdist
+        run: poetry build
+
+      - name: Upload build artifacts (shared with publish + release-assets jobs)
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  publish-pypi:
+    name: Publish to PyPI (Trusted Publisher)
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      # ``id-token: write`` is required by PyPI's Trusted Publisher OIDC flow —
+      # gh-action-pypi-publish exchanges the GH-issued token for a short-lived
+      # PyPI token at publish time.  No secrets stored anywhere.
+      id-token: write
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  attach-release-assets:
+    name: Attach wheel + sdist to the GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*

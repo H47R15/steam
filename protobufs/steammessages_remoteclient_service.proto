@@ -1,0 +1,37 @@
+syntax = "proto2";
+import "steammessages_base.proto";
+import "steammessages_unified_base.proto";
+import "steammessages_remoteclient_service_messages.proto";
+
+option py_generic_services = true;
+
+service RemoteClient {
+	rpc GetPairingInfo (.CRemoteClient_GetPairingInfo_Request) returns (.CRemoteClient_GetPairingInfo_Response);
+	rpc NotifyOnline (.CRemoteClient_Online_Notification) returns (.NoResponse);
+	rpc GetRecentClients (.CRemoteClient_GetRecentClients_Request) returns (.CRemoteClient_GetRecentClients_Response);
+	rpc MarkTaskComplete (.CRemoteClient_MarkTaskComplete_Request) returns (.CRemoteClient_MarkTaskComplete_Response);
+	rpc NotifyReplyPacket (.CRemoteClient_ReplyPacket_Notification) returns (.NoResponse);
+	rpc AllocateRelayServer (.CRemoteClient_AllocateRelayServer_Request) returns (.CRemoteClient_AllocateRelayServer_Response);
+	rpc AllocateSDR (.CRemoteClient_AllocateSDR_Request) returns (.CRemoteClient_AllocateSDR_Response);
+	rpc SendSteamBroadcastPacket (.CRemoteClient_SteamBroadcast_Notification) returns (.NoResponse);
+	rpc SendSteamToSteamPacket (.CRemoteClient_SteamToSteam_Notification) returns (.NoResponse);
+	rpc SendRemotePlaySessionStarted (.CRemotePlay_SessionStarted_Request) returns (.CRemotePlay_SessionStarted_Response);
+	rpc SendRemotePlaySessionStopped (.CRemotePlay_SessionStopped_Notification) returns (.NoResponse);
+	rpc SendRemotePlayTogetherPacket (.CRemotePlayTogether_Notification) returns (.NoResponse);
+	rpc CreateRemotePlayTogetherInvitation (.CRemoteClient_CreateRemotePlayTogetherInvitation_Request) returns (.CRemoteClient_CreateRemotePlayTogetherInvitation_Response);
+	rpc DeleteRemotePlayTogetherInvitation (.CRemoteClient_DeleteRemotePlayTogetherInvitation_Request) returns (.CRemoteClient_DeleteRemotePlayTogetherInvitation_Response);
+}
+
+service RemoteClientSteamClient {
+	option (service_execution_site) = k_EProtoExecutionSiteSteamClient;
+
+	rpc NotifyRegisterStatusUpdate (.CRemoteClient_RegisterStatusUpdate_Notification) returns (.NoResponse);
+	rpc NotifyUnregisterStatusUpdate (.CRemoteClient_UnregisterStatusUpdate_Notification) returns (.NoResponse);
+	rpc NotifyRemotePacket (.CRemoteClient_RemotePacket_Notification) returns (.NoResponse);
+	rpc NotifyEnableSteamBroadcast (.CRemoteClient_EnableSteamBroadcast_Notification) returns (.NoResponse);
+	rpc NotifyDisableSteamBroadcast (.CRemoteClient_DisableSteamBroadcast_Notification) returns (.NoResponse);
+	rpc NotifySteamBroadcastPacket (.CRemoteClient_SteamBroadcast_Notification) returns (.NoResponse);
+	rpc NotifySteamToSteamPacket (.CRemoteClient_SteamToSteam_Notification) returns (.NoResponse);
+	rpc NotifyRemotePlayTogetherPacket (.CRemotePlayTogether_Notification) returns (.NoResponse);
+	rpc NotifyTaskList (.CRemoteClient_TaskList_Notification) returns (.NoResponse);
+}

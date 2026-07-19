@@ -1,0 +1,267 @@
+syntax = "proto2";
+option optimize_for = SPEED;
+
+enum ERemoteClientBroadcastMsg {
+	k_ERemoteClientBroadcastMsgDiscovery = 0;
+	k_ERemoteClientBroadcastMsgStatus = 1;
+	k_ERemoteClientBroadcastMsgOffline = 2;
+	k_ERemoteDeviceAuthorizationRequest = 3;
+	k_ERemoteDeviceAuthorizationResponse = 4;
+	k_ERemoteDeviceStreamingRequest = 5;
+	k_ERemoteDeviceStreamingResponse = 6;
+	k_ERemoteDeviceProofRequest = 7;
+	k_ERemoteDeviceProofResponse = 8;
+	k_ERemoteDeviceAuthorizationCancelRequest = 9;
+	k_ERemoteDeviceStreamingCancelRequest = 10;
+	k_ERemoteClientBroadcastMsgClientIDDeconflict = 11;
+	k_ERemoteDeviceStreamTransportSignal = 12;
+	k_ERemoteDeviceStreamingProgress = 13;
+	k_ERemoteDeviceAuthorizationConfirmed = 14;
+	k_ERemoteClientBroadcastMsgPairingState = 15;
+	k_ERemoteClientBroadcastMsgPairingExclusivity = 16;
+}
+
+enum ERemoteClientService {
+	k_ERemoteClientServiceNone = 0;
+	k_ERemoteClientServiceRemoteControl = 1;
+	k_ERemoteClientServiceGameStreaming = 2;
+	k_ERemoteClientServiceSiteLicense = 4;
+	k_ERemoteClientServiceContentCache = 8;
+	k_ERemoteClientServiceContentServer = 16;
+	k_ERemoteClientServiceManageDownloads = 32;
+}
+
+enum EVRLinkCaps {
+	k_EVRLinkCapsUnknown = 0;
+	k_EVRLinkCapsAvailable = 1;
+	k_EVRLinkCapsUnimplemented = 2;
+	k_EVRLinkCapsMissingHardwareEncoding = 3;
+}
+
+enum ERemoteDeviceAuthorizationResult {
+	k_ERemoteDeviceAuthorizationSuccess = 0;
+	k_ERemoteDeviceAuthorizationDenied = 1;
+	k_ERemoteDeviceAuthorizationNotLoggedIn = 2;
+	k_ERemoteDeviceAuthorizationOffline = 3;
+	k_ERemoteDeviceAuthorizationBusy = 4;
+	k_ERemoteDeviceAuthorizationInProgress = 5;
+	k_ERemoteDeviceAuthorizationTimedOut = 6;
+	k_ERemoteDeviceAuthorizationFailed = 7;
+	k_ERemoteDeviceAuthorizationCanceled = 8;
+}
+
+enum EStreamDeviceFormFactor {
+	k_EStreamDeviceFormFactorUnknown = 0;
+	k_EStreamDeviceFormFactorPhone = 1;
+	k_EStreamDeviceFormFactorTablet = 2;
+	k_EStreamDeviceFormFactorComputer = 3;
+	k_EStreamDeviceFormFactorTV = 4;
+	k_EStreamDeviceFormFactorVRHeadset = 5;
+}
+
+enum EStreamTransport {
+	k_EStreamTransportNone = 0;
+	k_EStreamTransportUDP = 1;
+	k_EStreamTransportUDPRelay_OBSOLETE = 2;
+	k_EStreamTransportWebRTC_OBSOLETE = 3;
+	k_EStreamTransportSDR = 4;
+	k_EStreamTransportUDP_SNS = 5;
+	k_EStreamTransportUDPRelay_SNS_OBSOLETE = 6;
+}
+
+enum EStreamInterface {
+	k_EStreamInterfaceDefault = 0;
+	k_EStreamInterfaceRecentGames = 1;
+	k_EStreamInterfaceBigPicture = 2;
+	k_EStreamInterfaceDesktop = 3;
+	k_EStreamInterfaceSteamVR = 4;
+}
+
+enum ERemoteDeviceStreamingResult {
+	k_ERemoteDeviceStreamingSuccess = 0;
+	k_ERemoteDeviceStreamingUnauthorized = 1;
+	k_ERemoteDeviceStreamingScreenLocked = 2;
+	k_ERemoteDeviceStreamingFailed = 3;
+	k_ERemoteDeviceStreamingBusy = 4;
+	k_ERemoteDeviceStreamingInProgress = 5;
+	k_ERemoteDeviceStreamingCanceled = 6;
+	k_ERemoteDeviceStreamingDriversNotInstalled = 7;
+	k_ERemoteDeviceStreamingDisabled = 8;
+	k_ERemoteDeviceStreamingBroadcastingActive = 9;
+	k_ERemoteDeviceStreamingVRActive = 10;
+	k_ERemoteDeviceStreamingPINRequired = 11;
+	k_ERemoteDeviceStreamingTransportUnavailable = 12;
+	k_ERemoteDeviceStreamingInvisible = 13;
+	k_ERemoteDeviceStreamingGameLaunchFailed = 14;
+	k_ERemoteDeviceStreamingSteamVRNotInstalled = 15;
+}
+
+message CMsgRemoteClientBroadcastHeader {
+	optional uint64 client_id = 1;
+	optional .ERemoteClientBroadcastMsg msg_type = 2 [default = k_ERemoteClientBroadcastMsgDiscovery];
+	optional uint64 instance_id = 3;
+	optional uint64 device_id_OBSOLETE = 4;
+	optional bytes device_token = 5;
+}
+
+message CMsgRemoteClientBroadcastStatus {
+	message User {
+		optional fixed64 steamid = 1;
+		optional uint32 auth_key_id = 2;
+	}
+
+	optional int32 version = 1;
+	optional int32 min_version = 2;
+	optional uint32 connect_port = 3;
+	optional string hostname = 4;
+	optional uint32 enabled_services = 6;
+	optional int32 ostype = 7 [default = 0];
+	optional bool is64bit = 8;
+	repeated .CMsgRemoteClientBroadcastStatus.User users = 9;
+	optional int32 euniverse = 11;
+	optional uint32 timestamp = 12;
+	optional bool screen_locked = 13;
+	optional bool games_running = 14;
+	repeated string mac_addresses = 15;
+	optional uint32 download_lan_peer_group = 16;
+	optional bool broadcasting_active = 17;
+	optional bool vr_active = 18;
+	optional uint32 content_cache_port = 19;
+	repeated string ip_addresses = 20;
+	optional string public_ip_address = 21;
+	optional bool remoteplay_active = 22;
+	optional uint32 supported_services = 23;
+	optional bool steam_deck = 24;
+	optional uint64 steam_version = 25;
+	optional .EVRLinkCaps vr_link_caps = 26 [default = k_EVRLinkCapsUnknown];
+	optional fixed64 vr_link_invite_client_id = 27;
+	optional fixed64 connected_paired_network_hash = 28;
+	optional bool wifi_dongle_present = 29;
+	optional bool is_low_spec_hardware = 30;
+	optional uint32 gaming_device_type = 31;
+}
+
+message CMsgRemoteClientBroadcastDiscovery {
+	optional uint32 seq_num = 1;
+	repeated uint64 client_ids = 2;
+}
+
+message CMsgRemoteClientBroadcastClientIDDeconflict {
+	repeated uint64 client_ids = 2;
+}
+
+message CMsgRemoteDeviceAuthorizationRequest {
+	message CKeyEscrow_Ticket {
+		optional bytes password = 1;
+		optional uint64 identifier = 2;
+		optional bytes payload = 3;
+		optional uint32 timestamp = 4;
+		optional .CMsgRemoteDeviceAuthorizationRequest.EKeyEscrowUsage usage = 5 [default = k_EKeyEscrowUsageStreamingDevice];
+		optional string device_name = 6;
+		optional string device_model = 7;
+		optional string device_serial = 8;
+		optional uint32 device_provisioning_id = 9;
+	}
+
+	enum EKeyEscrowUsage {
+		k_EKeyEscrowUsageStreamingDevice = 0;
+	}
+
+	required bytes device_token = 1;
+	optional string device_name = 2;
+	required bytes encrypted_request = 3;
+	optional bytes auth_key = 4;
+	optional uint32 request_id = 5;
+}
+
+message CMsgRemoteDeviceAuthorizationCancelRequest {
+}
+
+message CMsgRemoteDeviceAuthorizationResponse {
+	required .ERemoteDeviceAuthorizationResult result = 1 [default = k_ERemoteDeviceAuthorizationSuccess];
+	optional fixed64 steamid = 2;
+	optional bytes auth_key = 3;
+	optional bytes device_token = 4;
+}
+
+message CMsgRemoteDeviceAuthorizationConfirmed {
+	required .ERemoteDeviceAuthorizationResult result = 1 [default = k_ERemoteDeviceAuthorizationSuccess];
+}
+
+message CMsgRemoteClientBroadcastClientPairingState {
+	optional fixed64 my_paired_network_hash = 1;
+	optional uint32 my_pairing_time = 2;
+}
+
+message CMsgRemoteClientBroadcastClientPairingExclusivity {
+	optional fixed64 if_paired_network_hash_is = 1;
+	optional fixed64 unpair_unless_you_are_client_id = 2;
+	optional uint32 last_known_pairing_time = 3;
+}
+
+message CMsgRemoteDeviceStreamingRequest {
+	message ReservedGamepad {
+		optional uint32 controller_type = 1;
+		optional uint32 controller_subtype = 2;
+	}
+
+	required uint32 request_id = 1;
+	optional int32 maximum_resolution_x = 2;
+	optional int32 maximum_resolution_y = 3;
+	optional int32 audio_channel_count = 4 [default = 2];
+	optional string device_version = 5;
+	optional bool stream_desktop = 6;
+	optional bytes device_token = 7;
+	optional bytes pin = 8;
+	optional bool enable_video_streaming = 9 [default = true];
+	optional bool enable_audio_streaming = 10 [default = true];
+	optional bool enable_input_streaming = 11 [default = true];
+	optional bool network_test = 12;
+	optional uint64 client_id = 13;
+	repeated .EStreamTransport supported_transport = 14;
+	optional bool restricted = 15;
+	optional .EStreamDeviceFormFactor form_factor = 16 [default = k_EStreamDeviceFormFactorUnknown];
+	optional int32 gamepad_count = 17;
+	repeated .CMsgRemoteDeviceStreamingRequest.ReservedGamepad gamepads = 18;
+	optional uint64 gameid = 19;
+	optional .EStreamInterface stream_interface = 20 [default = k_EStreamInterfaceDefault];
+	optional int32 maximum_framerate_numerator = 21;
+	optional int32 maximum_framerate_denominator = 22;
+	optional bool display_hdr = 23;
+}
+
+message CMsgRemoteDeviceStreamingCancelRequest {
+	required uint32 request_id = 1;
+}
+
+message CMsgRemoteDeviceStreamingProgress {
+	required uint32 request_id = 1;
+	optional float progress = 2;
+}
+
+message CMsgRemoteDeviceStreamingResponse {
+	required uint32 request_id = 1;
+	required .ERemoteDeviceStreamingResult result = 2 [default = k_ERemoteDeviceStreamingSuccess];
+	optional uint32 port = 3;
+	optional bytes encrypted_session_key = 4;
+	optional .EStreamTransport transport = 6 [default = k_EStreamTransportUDP];
+	optional string relay_server = 7;
+	optional string cert = 8;
+}
+
+message CMsgRemoteDeviceProofRequest {
+	required bytes challenge = 1;
+	optional uint32 request_id = 2;
+	optional bool update_secret = 3;
+}
+
+message CMsgRemoteDeviceProofResponse {
+	required bytes response = 1;
+	optional uint32 request_id = 2;
+	optional bool updated_secret = 3;
+}
+
+message CMsgRemoteDeviceStreamTransportSignal {
+	optional bytes token = 1;
+	optional bytes payload = 2;
+}

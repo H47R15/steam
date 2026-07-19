@@ -75,7 +75,6 @@ message CMsgClientLogon {
 	optional string machine_name = 96;
 	optional string machine_name_userchosen = 97;
 	optional string country_override = 98;
-	optional bool is_steam_box = 99;
 	optional uint64 client_instance_id = 100;
 	optional string two_factor_code = 101;
 	optional bool supports_rate_limit_response = 102;
@@ -83,8 +82,9 @@ message CMsgClientLogon {
 	optional int32 priority_reason = 104;
 	optional .CMsgClientSecret embedded_client_secret = 105;
 	optional bool disable_partner_autogrants = 106;
-	optional bool is_steam_deck = 107;
 	optional string access_token = 108;
+	optional bool is_chrome_os = 109;
+	optional uint32 gaming_device_type = 111;
 }
 
 message CMsgClientLogonResponse {
@@ -98,11 +98,11 @@ message CMsgClientLogonResponse {
 	optional string email_domain = 8;
 	optional bytes steam2_ticket = 9;
 	optional int32 eresult_extended = 10;
-	optional string webapi_authenticate_user_nonce = 11;
 	optional uint32 cell_id_ping_threshold = 12;
 	optional bool deprecated_use_pics = 13;
 	optional string vanity_url = 14;
 	optional .CMsgIPAddress public_ip = 15;
+	optional string user_country = 16;
 	optional fixed64 client_supplied_steamid = 20;
 	optional string ip_country_code = 21;
 	optional bytes parental_settings = 22;
@@ -114,6 +114,7 @@ message CMsgClientLogonResponse {
 	optional bool force_client_update_check = 28;
 	optional string agreement_session_url = 29;
 	optional uint64 token_id = 30;
+	optional uint64 family_group_id = 31;
 }
 
 message CMsgClientRequestWebAPIAuthenticateUserNonce {
@@ -147,9 +148,6 @@ message CMsgClientAccountInfo {
 	optional string ip_country = 2;
 	optional int32 count_authed_computers = 5;
 	optional uint32 account_flags = 7;
-	optional uint64 facebook_id = 8;
-	optional string facebook_name = 9;
-	optional bool steamguard_notify_newmachines = 14;
 	optional string steamguard_machine_name_user_chosen = 15;
 	optional bool is_phone_verified = 16;
 	optional uint32 two_factor_state = 17;

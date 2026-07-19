@@ -4,24 +4,6 @@ import "steammessages_unified_base.proto";
 
 option py_generic_services = true;
 
-enum EInternalAccountType {
-	k_EInternalSteamAccountType = 1;
-	k_EInternalClanType = 2;
-	k_EInternalAppType = 3;
-	k_EInternalBroadcastChannelType = 4;
-}
-
-enum EExternalAccountType {
-	k_EExternalNone = 0;
-	k_EExternalSteamAccount = 1;
-	k_EExternalGoogleAccount = 2;
-	k_EExternalFacebookAccount = 3;
-	k_EExternalTwitterAccount = 4;
-	k_EExternalTwitchAccount = 5;
-	k_EExternalYouTubeChannelAccount = 6;
-	k_EExternalFacebookPage = 7;
-}
-
 message CUserAccount_GetAvailableValveDiscountPromotions_Request {
 	optional string country_code = 1;
 }
@@ -42,6 +24,70 @@ message CUserAccount_GetAvailableValveDiscountPromotions_Response {
 	}
 
 	repeated .CUserAccount_GetAvailableValveDiscountPromotions_Response.ValveDiscountPromotionDetails promotions = 1;
+}
+
+message CUserAccount_GetOptOutEmailOptions_Request {
+	optional string opt_out_token = 1;
+}
+
+message CPerAppEmailOptions {
+	optional uint32 appid = 1;
+	optional bool opt_out_in_library_events = 2 [default = false];
+}
+
+message CPerClanEmailOptions {
+	optional uint32 clanid = 1;
+	optional bool opt_out_in_library_events = 2 [default = false];
+}
+
+message CUserAccount_GetOptOutEmailOptions_Response {
+	optional string email = 1;
+	optional bool opt_out_all = 2;
+	optional bool opt_out_wishlist_sales = 3;
+	optional bool opt_out_seasonal_promo = 4;
+	optional bool opt_out_wishlist_releases = 5;
+	optional bool opt_out_greenlight_releases = 6;
+	optional bool opt_out_curator_connect = 7;
+	optional bool opt_out_creator_home_releases = 8;
+	optional bool opt_out_in_library_events = 9;
+	repeated .CPerAppEmailOptions per_app_opt_outs = 10;
+	repeated .CPerClanEmailOptions per_clan_opt_outs = 11;
+	optional bool opt_out_loyalty_awards_received = 12;
+	optional bool opt_out_partner_messages = 13;
+	optional bool opt_out_year_in_review = 14;
+	optional bool opt_out_wishlist_demo_releases = 15;
+	optional bool opt_out_creator_home_demo_releases = 16;
+	optional bool opt_out_next_fest_starts = 17 [default = true];
+	optional bool opt_out_theme_sale_starts = 18 [default = true];
+	optional bool opt_out_season_pass_ship = 19;
+	optional bool opt_out_roadmap_ship = 20;
+	optional bool is_self = 21;
+}
+
+message CUserAccount_SetOptOutEmailOptions_Request {
+	optional string opt_out_token = 1;
+	optional bool opt_out_all = 2;
+	optional bool opt_out_wishlist_sales = 3;
+	optional bool opt_out_seasonal_promo = 4;
+	optional bool opt_out_wishlist_releases = 5;
+	optional bool opt_out_greenlight_releases = 6;
+	optional bool opt_out_curator_connect = 7;
+	optional bool opt_out_creator_home_releases = 8;
+	optional bool opt_out_in_library_events = 9;
+	repeated .CPerAppEmailOptions per_app_opt_outs = 10;
+	repeated .CPerClanEmailOptions per_clan_opt_outs = 11;
+	optional bool opt_out_loyalty_awards_received = 12;
+	optional bool opt_out_partner_messages = 13;
+	optional bool opt_out_year_in_review = 14;
+	optional bool opt_out_wishlist_demo_releases = 15;
+	optional bool opt_out_creator_home_demo_releases = 16;
+	optional bool opt_out_next_fest_starts = 17;
+	optional bool opt_out_theme_sale_starts = 18;
+	optional bool opt_out_season_pass_ship = 19;
+	optional bool opt_out_roadmap_ship = 20;
+}
+
+message CUserAccount_SetOptOutEmailOptions_Response {
 }
 
 message CUserAccount_GetClientWalletDetails_Request {
@@ -65,6 +111,10 @@ message CUserAccount_GetWalletDetails_Response {
 	optional bool has_wallet_in_other_regions = 12;
 	repeated int32 other_regions = 13;
 	optional string formatted_balance = 14;
+	optional string formatted_delayed_balance = 15;
+	optional int32 delayed_balance_available_min_time = 16;
+	optional int32 delayed_balance_available_max_time = 17;
+	optional int32 delayed_balance_newest_source = 18;
 }
 
 message CUserAccount_GetAccountLinkStatus_Request {
@@ -145,27 +195,6 @@ message CUserAccount_RegisterCompatTool_Request {
 message CUserAccount_RegisterCompatTool_Response {
 }
 
-message CAccountLinking_GetLinkedAccountInfo_Request {
-	optional .EInternalAccountType account_type = 1 [default = k_EInternalSteamAccountType];
-	optional uint64 account_id = 2 [(description) = "Internal account ID"];
-	optional .EExternalAccountType filter = 3 [default = k_EExternalNone, (description) = "if specified then only return this external account type"];
-	optional bool return_access_token = 4 [(description) = "if provided and true, then returns valid access token if available. It may refresh the token. "];
-}
-
-message CAccountLinking_GetLinkedAccountInfo_Response {
-	message CExternalAccountTuple_Response {
-		optional .EExternalAccountType external_type = 1 [default = k_EExternalNone];
-		optional string external_id = 2 [(description) = "unique external account identifier"];
-		optional string external_user_name = 3 [(description) = "user readable; best effort"];
-		optional string external_url = 4 [(description) = "required for all, can be a sentinal to verify correctness"];
-		optional string access_token = 5 [(description) = "provided if requeest and it was valid."];
-		optional string access_token_secret = 6 [(description) = "required for OAuth v1 and signing the message, provided with access token."];
-		optional bool is_valid = 7 [(description) = "If false, it means access token no longer work (expired, disconnected) and the link is now broken. Inform user to refresh."];
-	}
-
-	repeated .CAccountLinking_GetLinkedAccountInfo_Response.CExternalAccountTuple_Response external_accounts = 1;
-}
-
 message CEmbeddedClient_AuthorizeCurrentDevice_Request {
 	optional fixed64 steamid = 1;
 	optional uint32 appid = 2;
@@ -186,65 +215,21 @@ message CEmbeddedClient_AuthorizeDevice_Response {
 }
 
 service UserAccount {
-	option (service_description) = "A service to get user account information";
-
-	rpc GetAvailableValveDiscountPromotions (.CUserAccount_GetAvailableValveDiscountPromotions_Request) returns (.CUserAccount_GetAvailableValveDiscountPromotions_Response) {
-		option (method_description) = "Gets the available promotional discounts available to the user";
-	}
-
-	rpc GetClientWalletDetails (.CUserAccount_GetClientWalletDetails_Request) returns (.CUserAccount_GetWalletDetails_Response) {
-		option (method_description) = "Returns balance and details about any users wallet";
-	}
-
-	rpc GetAccountLinkStatus (.CUserAccount_GetAccountLinkStatus_Request) returns (.CUserAccount_GetAccountLinkStatus_Response) {
-		option (method_description) = "Fetches account link status";
-	}
-
-	rpc CancelLicenseForApp (.CUserAccount_CancelLicenseForApp_Request) returns (.CUserAccount_CancelLicenseForApp_Response) {
-		option (method_description) = "Cancels a free license for a user";
-	}
-
-	rpc GetUserCountry (.CUserAccount_GetUserCountry_Request) returns (.CUserAccount_GetUserCountry_Response) {
-		option (method_description) = "Get the country code associated with the passed steamid (only available for logged-in user or support)";
-	}
-
-	rpc CreateFriendInviteToken (.CUserAccount_CreateFriendInviteToken_Request) returns (.CUserAccount_CreateFriendInviteToken_Response) {
-		option (method_description) = "Create a limited-use token that can be used to create a friend request";
-	}
-
-	rpc GetFriendInviteTokens (.CUserAccount_GetFriendInviteTokens_Request) returns (.CUserAccount_GetFriendInviteTokens_Response) {
-		option (method_description) = "Get the set of active tokens for the user";
-	}
-
-	rpc ViewFriendInviteToken (.CUserAccount_ViewFriendInviteToken_Request) returns (.CUserAccount_ViewFriendInviteToken_Response) {
-		option (method_description) = "View details about an invite token ";
-	}
-
-	rpc RedeemFriendInviteToken (.CUserAccount_RedeemFriendInviteToken_Request) returns (.CUserAccount_RedeemFriendInviteToken_Response) {
-		option (method_description) = "Create a friend relationship using the given invite token";
-	}
-
-	rpc RevokeFriendInviteToken (.CUserAccount_RevokeFriendInviteToken_Request) returns (.CUserAccount_RevokeFriendInviteToken_Response) {
-		option (method_description) = "Revoke an active friend invite token";
-	}
-
-	rpc RegisterCompatTool (.CUserAccount_RegisterCompatTool_Request) returns (.CUserAccount_RegisterCompatTool_Response) {
-		option (method_description) = "Register intended account usage of a tool";
-	}
-}
-
-service AccountLinking {
-	option (service_description) = "A service to manage and link to external accounts";
-
-	rpc GetLinkedAccountInfo (.CAccountLinking_GetLinkedAccountInfo_Request) returns (.CAccountLinking_GetLinkedAccountInfo_Response) {
-		option (method_description) = "List all my active linked external accounts; may be requested to return the access token";
-	}
+	rpc GetAvailableValveDiscountPromotions (.CUserAccount_GetAvailableValveDiscountPromotions_Request) returns (.CUserAccount_GetAvailableValveDiscountPromotions_Response);
+	rpc GetOptOutEmailOptions (.CUserAccount_GetOptOutEmailOptions_Request) returns (.CUserAccount_GetOptOutEmailOptions_Response);
+	rpc SetOptOutEmailOptions (.CUserAccount_SetOptOutEmailOptions_Request) returns (.CUserAccount_SetOptOutEmailOptions_Response);
+	rpc GetClientWalletDetails (.CUserAccount_GetClientWalletDetails_Request) returns (.CUserAccount_GetWalletDetails_Response);
+	rpc GetAccountLinkStatus (.CUserAccount_GetAccountLinkStatus_Request) returns (.CUserAccount_GetAccountLinkStatus_Response);
+	rpc CancelLicenseForApp (.CUserAccount_CancelLicenseForApp_Request) returns (.CUserAccount_CancelLicenseForApp_Response);
+	rpc GetUserCountry (.CUserAccount_GetUserCountry_Request) returns (.CUserAccount_GetUserCountry_Response);
+	rpc CreateFriendInviteToken (.CUserAccount_CreateFriendInviteToken_Request) returns (.CUserAccount_CreateFriendInviteToken_Response);
+	rpc GetFriendInviteTokens (.CUserAccount_GetFriendInviteTokens_Request) returns (.CUserAccount_GetFriendInviteTokens_Response);
+	rpc ViewFriendInviteToken (.CUserAccount_ViewFriendInviteToken_Request) returns (.CUserAccount_ViewFriendInviteToken_Response);
+	rpc RedeemFriendInviteToken (.CUserAccount_RedeemFriendInviteToken_Request) returns (.CUserAccount_RedeemFriendInviteToken_Response);
+	rpc RevokeFriendInviteToken (.CUserAccount_RevokeFriendInviteToken_Request) returns (.CUserAccount_RevokeFriendInviteToken_Response);
+	rpc RegisterCompatTool (.CUserAccount_RegisterCompatTool_Request) returns (.CUserAccount_RegisterCompatTool_Response);
 }
 
 service EmbeddedClient {
-	option (service_description) = "Service to authorize and manage Steam functions directly embedded in games";
-
-	rpc AuthorizeCurrentDevice (.CEmbeddedClient_AuthorizeCurrentDevice_Request) returns (.CEmbeddedClient_AuthorizeDevice_Response) {
-		option (method_description) = "Use a logged-in (password/etc) session to create a durable access token";
-	}
+	rpc AuthorizeCurrentDevice (.CEmbeddedClient_AuthorizeCurrentDevice_Request) returns (.CEmbeddedClient_AuthorizeDevice_Response);
 }

@@ -10,6 +10,8 @@ message CContentBuilder_InitDepotBuild_Request {
 	optional uint64 workshop_itemid = 3;
 	optional bool for_local_cs = 4;
 	optional string target_branch = 5;
+	optional bool shader_depot = 6;
+	optional uint64 baseline_manifest_id = 7;
 }
 
 message CContentBuilder_InitDepotBuild_Response {
@@ -17,13 +19,18 @@ message CContentBuilder_InitDepotBuild_Response {
 	optional uint32 chunk_size = 2;
 	optional bytes aes_key = 3;
 	optional bytes rsa_key = 4;
-	optional string url_host = 5;
+	optional string deprecated_url_host = 5;
 	optional bool offset_detection_enabled = 6;
 	optional uint32 offset_detection_min_clean_chunk = 7;
 	optional uint32 offset_detection_blast_radius_pre = 8;
 	optional uint32 offset_detection_blast_radius_post = 9;
 	optional uint32 offset_detection_max_distance_pre = 10;
 	optional uint32 offset_detection_max_distance_post = 11;
+	optional uint32 compression_method = 12;
+	optional string download_host = 13;
+	optional uint64 manifest_request_code = 14;
+	optional string chunk_upload_host = 15;
+	optional string manifest_upload_host = 16;
 }
 
 message CContentBuilder_StartDepotUpload_Request {
@@ -62,6 +69,7 @@ message CContentBuilder_FinishDepotUpload_Request {
 message CContentBuilder_FinishDepotUpload_Response {
 	optional uint64 manifestid = 1;
 	optional bool prev_reused = 2;
+	optional uint64 manifest_request_code = 3;
 }
 
 message CContentBuilder_CommitAppBuild_Request {
@@ -74,6 +82,8 @@ message CContentBuilder_CommitAppBuild_Request {
 	repeated .CContentBuilder_CommitAppBuild_Request.Depots depot_manifests = 2;
 	optional string build_notes = 4;
 	optional string live_branch = 5;
+	optional bool for_local_cs = 6;
+	optional bool web_upload = 7;
 }
 
 message CContentBuilder_CommitAppBuild_Response {
@@ -91,29 +101,10 @@ message CContentBuilder_SignInstallScript_Response {
 }
 
 service ContentBuilder {
-	option (service_description) = "Interface to build and upload depot content";
-
-	rpc InitDepotBuild (.CContentBuilder_InitDepotBuild_Request) returns (.CContentBuilder_InitDepotBuild_Response) {
-		option (method_description) = "Get inital parameters to start building a depot";
-	}
-
-	rpc StartDepotUpload (.CContentBuilder_StartDepotUpload_Request) returns (.CContentBuilder_StartDepotUpload_Response) {
-		option (method_description) = "Start uploading manifest and chunks for a depot";
-	}
-
-	rpc GetMissingDepotChunks (.CContentBuilder_GetMissingDepotChunks_Request) returns (.CContentBuilder_GetMissingDepotChunks_Response) {
-		option (method_description) = "Get list of missing chunks for depot upload";
-	}
-
-	rpc FinishDepotUpload (.CContentBuilder_FinishDepotUpload_Request) returns (.CContentBuilder_FinishDepotUpload_Response) {
-		option (method_description) = "Commit a depot build after manifest and all chunks are uploaded";
-	}
-
-	rpc CommitAppBuild (.CContentBuilder_CommitAppBuild_Request) returns (.CContentBuilder_CommitAppBuild_Response) {
-		option (method_description) = "Combine previous depot uploads into an app build and commit it";
-	}
-
-	rpc SignInstallScript (.CContentBuilder_SignInstallScript_Request) returns (.CContentBuilder_SignInstallScript_Response) {
-		option (method_description) = "Sign an install script";
-	}
+	rpc InitDepotBuild (.CContentBuilder_InitDepotBuild_Request) returns (.CContentBuilder_InitDepotBuild_Response);
+	rpc StartDepotUpload (.CContentBuilder_StartDepotUpload_Request) returns (.CContentBuilder_StartDepotUpload_Response);
+	rpc GetMissingDepotChunks (.CContentBuilder_GetMissingDepotChunks_Request) returns (.CContentBuilder_GetMissingDepotChunks_Response);
+	rpc FinishDepotUpload (.CContentBuilder_FinishDepotUpload_Request) returns (.CContentBuilder_FinishDepotUpload_Response);
+	rpc CommitAppBuild (.CContentBuilder_CommitAppBuild_Request) returns (.CContentBuilder_CommitAppBuild_Response);
+	rpc SignInstallScript (.CContentBuilder_SignInstallScript_Request) returns (.CContentBuilder_SignInstallScript_Response);
 }

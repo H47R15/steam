@@ -1,4 +1,8 @@
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/content_manifest.proto
+# Added since fork: transitive dep of steammessages_storebrowse.proto (post-2023)
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/contenthubs.proto
+# Added since fork: transitive dep of steammessages_parental.proto (post-2023 split)
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_parental_objects.proto
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/encrypted_app_ticket.proto
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/offline_ticket.proto
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_base.proto
@@ -13,7 +17,8 @@ https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/s
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_clientserver_mms.proto
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_clientserver_ucm.proto
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_clientserver_uds.proto
-https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_clientserver_ufs.proto
+# steammessages_clientserver_ufs.proto — dropped upstream (2020s consolidation)
+#https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_clientserver_ufs.proto
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_clientserver_userstats.proto
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_remoteplay.proto
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_auth.steamclient.proto
@@ -24,7 +29,8 @@ https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/s
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_credentials.steamclient.proto
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_datapublisher.steamclient.proto
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_depotbuilder.steamclient.proto
-https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_deviceauth.steamclient.proto
+# steammessages_deviceauth.steamclient.proto — dropped upstream (merged into steammessages_auth?)
+#https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_deviceauth.steamclient.proto
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_econ.steamclient.proto
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_friendmessages.steamclient.proto
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_gamenotifications.steamclient.proto
@@ -44,7 +50,8 @@ https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/s
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_secrets.steamclient.proto
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_shader.steamclient.proto
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_site_license.steamclient.proto
-https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_star.steamclient.proto
+# steammessages_star.steamclient.proto — dropped upstream
+#https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_star.steamclient.proto
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_steamtv.steamclient.proto
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_store.steamclient.proto
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_storebrowse.steamclient.proto
@@ -58,3 +65,56 @@ https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/s
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/enums.proto
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/enums_clientserver.proto
 https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/enums_productinfo.proto
+# --- ADDED 2026-07-19: 54 new upstream files since fork (5-year drift) ---
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/clientmetrics.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/htmlmessages.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steamdatagram_messages_auth.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steamdatagram_messages_sdr.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_accounthardware.steamclient.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_appoverview.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_childprocessquery.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_clientlanp2p.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_clientmetrics.steamclient.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_clientnotificationtypes.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_clientserver_video.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_clientsettings.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_community.steamclient.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_familygroups.steamclient.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_gamenetworking.steamclient.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_gamenetworkingui.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_gamerecording.steamclient.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_gamerecording_objects.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_hiddevices.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_notifications.steamclient.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_remoteclient.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_remoteclient_discovery.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_remoteclient_service.steamclient.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_remoteclient_service_messages.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_sitelicenseclient.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_siteserverui.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_vac.steamclient.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steammessages_virtualcontroller.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steamnetworkingsockets_messages.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steamnetworkingsockets_messages_certs.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/steamnetworkingsockets_messages_udp.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/webuimessages_achievements.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/webuimessages_audio.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/webuimessages_base.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/webuimessages_bluetooth.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/webuimessages_gamenotes.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/webuimessages_gamerecording.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/webuimessages_gamerecordingfiles.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/webuimessages_gamescope.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/webuimessages_hardwareupdate.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/webuimessages_leds.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/webuimessages_screensaver.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/webuimessages_sharedjscontext.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/webuimessages_sleep.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/webuimessages_steamengine.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/webuimessages_steaminput.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/webuimessages_steamos.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/webuimessages_storagedevicemanager.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/webuimessages_systemmanager.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/webuimessages_transport.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/webuimessages_transportvalidation.proto
+https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/Protobufs/webuimessages_user.proto

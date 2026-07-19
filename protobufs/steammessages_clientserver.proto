@@ -22,13 +22,6 @@ message CMsgClientTicketAuthComplete {
 	optional fixed64 owner_steam_id = 8;
 }
 
-message CMsgClientCMList {
-	repeated uint32 cm_addresses = 1;
-	repeated uint32 cm_ports = 2;
-	repeated string cm_websocket_addresses = 3;
-	optional uint32 percent_default_to_websocket = 4;
-}
-
 message CMsgClientP2PConnectionInfo {
 	optional fixed64 steam_id_dest = 1;
 	optional fixed64 steam_id_src = 2;
@@ -36,6 +29,7 @@ message CMsgClientP2PConnectionInfo {
 	optional bytes candidate = 4;
 	optional fixed64 legacy_connection_id_src = 5;
 	optional bytes rendezvous = 6;
+	optional uint32 app_id_secondary = 7;
 }
 
 message CMsgClientP2PConnectionFailInfo {
@@ -87,6 +81,12 @@ message CMsgClientGameConnectTokens {
 }
 
 message CMsgClientGamesPlayed {
+	message ProcessInfo {
+		optional uint32 process_id = 1;
+		optional uint32 process_id_parent = 2;
+		optional bool parent_is_steam = 3;
+	}
+
 	message GamePlayed {
 		optional uint64 steam_id_gs = 1;
 		optional fixed64 game_id = 2;
@@ -119,6 +119,7 @@ message CMsgClientGamesPlayed {
 		optional uint32 compat_tool_build_id = 29;
 		optional string beta_name = 30;
 		optional uint32 dlc_context = 31;
+		repeated .CMsgClientGamesPlayed.ProcessInfo process_id_list = 32;
 	}
 
 	repeated .CMsgClientGamesPlayed.GamePlayed games_played = 1;
@@ -150,12 +151,18 @@ message CMsgClientAuthList {
 	repeated .CMsgAuthTicket tickets = 4;
 	repeated uint32 app_ids = 5;
 	optional uint32 message_sequence = 6;
+	optional bool filtered = 7;
 }
 
 message CMsgClientAuthListAck {
 	repeated uint32 ticket_crc = 1;
 	repeated uint32 app_ids = 2;
 	optional uint32 message_sequence = 3;
+}
+
+message CMsgGameServerPolicyUpdate {
+	optional uint32 app_id = 1;
+	optional uint32 app_id_aux = 2;
 }
 
 message CMsgClientLicenseList {
@@ -273,7 +280,6 @@ message CMsgClientConnectionStats {
 		optional uint32 micro_sec_avg_latency = 17;
 		optional uint32 micro_sec_min_latency = 18;
 		optional uint32 micro_sec_max_latency = 19;
-		optional uint32 mem_pool_msg_in_use = 20;
 	}
 
 	optional .CMsgClientConnectionStats.Stats_Logon stats_logon = 1;

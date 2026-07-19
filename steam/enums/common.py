@@ -1046,12 +1046,52 @@ class EPackageStatus(SteamIntEnum):
     Invalid = 3
 
 
-# Do not remove
-from enum import EnumMeta
-
-__all__ = [obj.__name__
-           for obj in globals().values()
-           if obj.__class__ is EnumMeta and obj.__name__ != 'SteamIntEnum'
-           ]
-
-del EnumMeta
+# Explicit ``__all__`` for ``from steam.enums.common import *`` (used by
+# ``steam/enums/__init__.py``).  Was originally computed dynamically by
+# scanning ``globals()`` for ``EnumMeta``-classed objects — that worked at
+# runtime but Pylance can't statically evaluate the resulting list, so
+# ``reportUnsupportedDunderAll`` fired and consumers of ``from steam.enums
+# import *`` lost auto-completion / import-resolution on every enum.  The
+# static list below is generated from the dynamic version (one-shot) and
+# maintained by hand alongside the class definitions above — add new enums
+# here when introduced.
+__all__ = [
+    'EAccountFlags',
+    'EAppType',
+    'EBillingType',
+    'EChatEntryType',
+    'EChatRoomEnterResponse',
+    'EClientPersonaStateFlag',
+    'EClientUIMode',
+    'ECurrencyCode',
+    'EDepotFileFlag',
+    'EFriendFlags',
+    'EFriendRelationship',
+    'EInstanceFlag',
+    'ELeaderboardDataRequest',
+    'ELeaderboardDisplayType',
+    'ELeaderboardSortMethod',
+    'ELeaderboardUploadScoreMethod',
+    'ELicenseFlags',
+    'ELicenseType',
+    'EOSType',
+    'EPackageStatus',
+    'EPaymentMethod',
+    'EPersonaState',
+    'EPersonaStateFlag',
+    'EProtoAppType',
+    'EPublishedFileInappropriateProvider',
+    'EPublishedFileInappropriateResult',
+    'EPublishedFileQueryType',
+    'EPublishedFileVisibility',
+    'EPurchaseResultDetail',
+    'EResult',
+    'EServerType',
+    'ETwoFactorTokenType',
+    'EType',
+    'EUniverse',
+    'EUserBadge',
+    'EVanityUrlType',
+    'EWorkshopFileType',
+    'WorkshopEnumerationType',
+]

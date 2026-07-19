@@ -1,0 +1,84 @@
+syntax = "proto2";
+import "enums.proto";
+import "steammessages_base.proto";
+import "webuimessages_base.proto";
+
+option optimize_for = SPEED;
+option py_generic_services = true;
+
+enum EDisplayPowerState {
+	k_EDisplayPowerState_Invalid = 0;
+	k_EDisplayPowerState_Off = 1;
+	k_EDisplayPowerState_On = 2;
+}
+
+message CMsgDisplayInfo {
+	optional string make = 1;
+	optional string model = 2;
+	optional string connector_name = 3;
+	repeated int32 supported_refresh_rates = 4;
+	repeated int32 supported_frame_rates = 5;
+	optional bool is_external = 6;
+	optional bool is_hdr_capable = 7;
+	optional bool is_vrr_capable = 8;
+	optional .EDisplayPowerState display_state = 9 [default = k_EDisplayPowerState_Invalid];
+}
+
+message CMsgGamescopeState {
+	optional bool is_service_available = 1;
+	optional bool is_reshade_supported = 2;
+	optional bool is_app_hdr_enabled = 3;
+	optional bool is_app_refresh_rate_supported = 4;
+	optional .CMsgDisplayInfo active_display_info = 5;
+	optional bool is_app_refresh_rate_capable = 6;
+	optional bool is_refresh_rate_switching_supported = 7;
+	optional bool is_refresh_rate_switching_restricted = 8;
+	optional bool is_hdr_visualization_supported = 9;
+	optional bool is_mura_correction_supported = 10;
+	optional bool is_global_action_binding_supported = 11;
+	optional bool is_look_supported = 12;
+	repeated string look_names = 13;
+	optional bool is_display_state_management_supported = 14;
+}
+
+message CGamescope_GetState_Request {
+}
+
+message CGamescope_GetState_Response {
+	optional .CMsgGamescopeState state = 1;
+}
+
+message CGamescope_StateChanged_Notification {
+}
+
+message CGamescope_SetBlurParams_Request {
+	optional .EGamescopeBlurMode mode = 1 [default = k_EGamescopeBlurMode_Disabled];
+	optional int32 radius = 2;
+	optional int32 fade_duration_ms = 3;
+}
+
+message CGamescope_SetBlurParams_Response {
+}
+
+message CGamescope_ReArmMuraCalibration_Request {
+}
+
+message CGamescope_ReArmMuraCalibration_Response {
+}
+
+message CGamescope_SetDisplayPowerState_Request {
+	optional .EDisplayPowerState estate = 1 [default = k_EDisplayPowerState_Invalid];
+}
+
+message CGamescope_SetDisplayPowerState_Response {
+}
+
+service Gamescope {
+	option (webui_service_execution_site) = k_EClientExecutionSiteSteamUI;
+
+	rpc GetState (.CGamescope_GetState_Request) returns (.CGamescope_GetState_Response);
+	rpc NotifyStateChanged (.CGamescope_StateChanged_Notification) returns (.WebUINoResponse);
+	rpc SetBlurParams (.CGamescope_SetBlurParams_Request) returns (.CGamescope_SetBlurParams_Response);
+	rpc ReArmMuraCalibration (.CGamescope_ReArmMuraCalibration_Request) returns (.CGamescope_ReArmMuraCalibration_Response);
+	rpc SetDisplayPowerState (.CGamescope_SetDisplayPowerState_Request) returns (.CGamescope_SetDisplayPowerState_Response);
+}

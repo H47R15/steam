@@ -1,0 +1,66 @@
+syntax = "proto2";
+import "enums.proto";
+import "steammessages_base.proto";
+import "webuimessages_base.proto";
+
+option optimize_for = SPEED;
+option py_generic_services = true;
+
+enum ESystemPowerState {
+	k_ESystemPowerState_Invalid = 0;
+	k_ESystemPowerState_Normal = 1;
+	k_ESystemPowerState_LowPowerDownloads = 2;
+	k_ESystemPowerState_Sleep = 3;
+}
+
+message CMsgSleepManagerState {
+	optional bool is_low_power_download_supported = 1;
+	optional .ESystemPowerState current_state = 2 [default = k_ESystemPowerState_Invalid];
+}
+
+message CSleepManager_GetState_Request {
+}
+
+message CSleepManager_GetState_Response {
+	optional .CMsgSleepManagerState state = 1;
+}
+
+message CSleepManager_StateChanged_Notification {
+}
+
+message CSleepManager_RequestSuspend_Notification {
+	optional bool optionally_transition_to_low_power_downloads = 1;
+	optional bool suppress_actual_suspend = 2;
+}
+
+message CSleepManager_ResumeFromSuspend_Notification {
+}
+
+message CSleepManager_ShowPowerMenu_Notification {
+}
+
+message CSleepManager_SwitchToPowerState_Request {
+	optional .ESystemPowerState state = 1 [default = k_ESystemPowerState_Invalid];
+	optional string reason = 2;
+}
+
+message CSleepManager_SwitchToPowerState_Response {
+}
+
+message CSleepManager_RequestSleep_Request {
+}
+
+message CSleepManager_RequestSleep_Response {
+}
+
+service SleepManager {
+	option (webui_service_execution_site) = k_EClientExecutionSiteSteamUI;
+
+	rpc GetState (.CSleepManager_GetState_Request) returns (.CSleepManager_GetState_Response);
+	rpc NotifyStateChanged (.CSleepManager_StateChanged_Notification) returns (.WebUINoResponse);
+	rpc NotifyRequestSuspend (.CSleepManager_RequestSuspend_Notification) returns (.WebUINoResponse);
+	rpc NotifyResumeFromSuspend (.CSleepManager_ResumeFromSuspend_Notification) returns (.WebUINoResponse);
+	rpc NotifyShowPowerMenu (.CSleepManager_ShowPowerMenu_Notification) returns (.WebUINoResponse);
+	rpc SwitchToPowerState (.CSleepManager_SwitchToPowerState_Request) returns (.CSleepManager_SwitchToPowerState_Response);
+	rpc RequestSleep (.CSleepManager_RequestSleep_Request) returns (.CSleepManager_RequestSleep_Response);
+}

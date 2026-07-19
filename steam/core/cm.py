@@ -5,6 +5,7 @@ from gzip import GzipFile
 from time import time
 from collections import defaultdict
 from itertools import cycle, count
+from typing import Optional, Tuple, Union
 
 from io import BytesIO
 
@@ -62,7 +63,13 @@ class CMClient(EventEmitter):
     verbose_debug = False                   #: print message connects in debug
 
     auto_discovery = True                   #: enables automatic CM discovery
-    cm_servers = None                       #: a instance of :class:`.CMServerList`
+    # Populated in ``__init__`` with a real :class:`.CMServerList`
+    # instance.  Declared without a default so Pylance sees the
+    # instance-attribute type as ``CMServerList`` (not ``None``) —
+    # the class-level ``= None`` used to widen the inferred type
+    # and cascade ``reportOptionalMemberAccess`` warnings through
+    # every ``self.cm_servers.<attr>`` access site downstream.
+    cm_servers: "CMServerList"
     current_server_addr = None              #: (ip, port) tuple
     _seen_logon = False
     _connecting = False
@@ -88,10 +95,10 @@ class CMClient(EventEmitter):
         else:
             raise ValueError("Only TCP is supported")
 
-        self.on(EMsg.ChannelEncryptRequest, self.__handle_encrypt_request),
-        self.on(EMsg.Multi, self.__handle_multi),
-        self.on(EMsg.ClientLogOnResponse, self._handle_logon),
-        self.on(EMsg.ClientCMList, self._handle_cm_list),
+        self.on(EMsg.ChannelEncryptRequest, self.__handle_encrypt_request)
+        self.on(EMsg.Multi, self.__handle_multi)
+        self.on(EMsg.ClientLogOnResponse, self._handle_logon)
+        self.on(EMsg.ClientCMList, self._handle_cm_list)
 
     def emit(self, event, *args):
         if event is not None:
@@ -135,6 +142,7 @@ class CMClient(EventEmitter):
             if not self.cm_servers.bootstrap_from_webapi():
                 self.cm_servers.bootstrap_from_dns()
 
+        server_addr = None
         for i, server_addr in enumerate(cycle(self.cm_servers), start=next(i)-1):
             if retry and i >= retry:
                 self._connecting = False
@@ -151,6 +159,7 @@ class CMClient(EventEmitter):
             if diff < 5:
                 self.sleep(5 - diff)
 
+        assert server_addr is not None
         self.current_server_addr = server_addr
         self.connected = True
         self.emit(self.EVENT_CONNECTED)
@@ -169,7 +178,8 @@ class CMClient(EventEmitter):
 
         if self._heartbeat_loop:
             self._heartbeat_loop.kill()
-        self._recv_loop.kill()
+        if self._recv_loop:
+            self._recv_loop.kill()
 
         self._reset_attributes()
 
@@ -242,7 +252,7 @@ class CMClient(EventEmitter):
 
         gevent.spawn(self.disconnect)
 
-    def _parse_message(self, message):
+    def _parse_message(self, message) -> Optional[Tuple[EMsg, Union[Msg, MsgProto]]]:
         emsg_id, = struct.unpack_from("<I", message)
         emsg = EMsg(clear_proto_bit(emsg_id))
 
@@ -251,7 +261,7 @@ class CMClient(EventEmitter):
                             repr(emsg),
                             is_proto(emsg_id),
                             )
-            return
+            return None
 
         if emsg in (EMsg.ChannelEncryptRequest,
                     EMsg.ChannelEncryptResponse,
@@ -483,9 +493,13 @@ class CMServerList(object):
         """
         self._LOG.debug("Attempting bootstrap via WebAPI")
 
-        from steam import webapi
+        # Deferred import — same guard the original code used to avoid
+        # a top-of-module circular import (``steam.webapi`` imports
+        # ``requests`` which pulls in gevent-adapters that may not be
+        # monkey-patched yet at ``core.cm`` load time).
+        from steam.webapi import get as webapi_get
         try:
-            resp = webapi.get('ISteamDirectory', 'GetCMList', 1, params={'cellid': cell_id,
+            resp = webapi_get('ISteamDirectory', 'GetCMList', 1, params={'cellid': cell_id,
                                                                          'http_timeout': 3})
         except Exception as exp:
             self._LOG.error("WebAPI boostrap failed: %s" % str(exp))

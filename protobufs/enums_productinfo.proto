@@ -1,14 +1,33 @@
 syntax = "proto2";
-import "steammessages_base.proto";
-
 option optimize_for = SPEED;
-option py_generic_services = true;
-option (force_php_generation) = true;
 
 enum EContentDescriptorID {
-	k_EContentDescriptor_FrequentNudityOrSexualContent = 1;
+	k_EContentDescriptor_NudityOrSexualContent = 1;
 	k_EContentDescriptor_FrequentViolenceOrGore = 2;
-	k_EContentDescriptor_StrongSexualContent = 3;
-	k_EContentDescriptor_UNUSED_4 = 4;
+	k_EContentDescriptor_AdultOnlySexualContent = 3;
+	k_EContentDescriptor_GratuitousSexualContent = 4;
 	k_EContentDescriptor_AnyMatureContent = 5;
+	k_EContentDescriptorMAX = 6;
+}
+
+enum ERatingAgency {
+	k_ERatingAgency_Invalid = 0;
+	k_ERatingAgency_ESRB = 1;
+	k_ERatingAgency_PEGI = 2;
+	k_ERatingAgency_BBFC = 3;
+	k_ERatingAgency_USK = 4;
+	k_ERatingAgency_OFLC_AU = 5;
+	k_ERatingAgency_OFLC_NZ = 6;
+	k_ERatingAgency_CERO = 7;
+	k_ERatingAgency_GRAC = 8;
+	k_ERatingAgency_GMEDIA = 9;
+	k_ERatingAgency_DEJUS = 10;
+	k_ERatingAgency_IMDA = 11;
+	k_ERatingAgency_FPB = 12;
+	k_ERatingAgency_TESRI = 13;
+	k_ERatingAgency_RARS = 14;
+	k_ERatingAgency_AGCOM = 15;
+	k_ERatingAgency_IGRS = 16;
+	k_ERatingAgency_Steam_Germany = 17;
+	k_ERatingAgency_Steam_Australia = 18;
 }

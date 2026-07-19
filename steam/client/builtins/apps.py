@@ -1,4 +1,8 @@
+from __future__ import annotations
+
 from binascii import hexlify
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Optional
+
 import vdf
 from steam.enums import EResult, EServerType
 from steam.enums.emsg import EMsg
@@ -6,8 +10,76 @@ from steam.core.msg import MsgProto
 from steam.utils.proto import proto_fill_from_dict
 
 
-class Apps(object):
-    licenses = None  #: :class:`dict` Accounts' package licenses
+class _AppsMixinHost:  # pragma: no cover
+    """Structural type describing the surface the :class:`Apps` mixin
+    requires from its host class (typically :class:`SteamClient`
+    which inherits from :class:`CMClient` and :class:`EventEmitter`).
+
+    ``Apps`` is a mixin — it never runs standalone; it's always
+    combined into a ``SteamClient`` MRO where these attributes /
+    methods live on the co-mixed base classes.  Declaring them on
+    a Protocol-ish base class here lets Pylance resolve
+    ``self.on(...)`` / ``self.send_job(...)`` / ``self.wait_event(...)``
+    etc. under ``TYPE_CHECKING`` without dragging the concrete
+    ``SteamClient`` / ``CMClient`` types into a runtime import
+    (which would cause a circular import at load time — the
+    ``steam.client`` package imports this module during its own
+    ``__init__``).
+
+    Only referenced from the ``TYPE_CHECKING``-guarded ``_HostBase``
+    alias below, so this class body is dead code at runtime.
+    """
+    #: Event emitter's method-registration entry point (from
+    #: ``gevent_eventemitter.EventEmitter`` via ``CMClient``).
+    on: Callable[..., Any]
+
+    #: Class constant from :class:`.CMClient`.
+    EVENT_DISCONNECTED: ClassVar[str]
+
+    def send_job(
+        self,
+        message: MsgProto,
+        body_params: Optional[dict] = None,
+    ) -> Any:
+        """Fire-and-forget a job-flagged message and return the job id.
+        Implemented on :class:`.SteamClient`."""
+        ...
+
+    def send_job_and_wait(
+        self,
+        message: MsgProto,
+        body_params: Optional[dict] = None,
+        timeout: Optional[float] = None,
+        raises: bool = False,
+    ) -> Any:
+        """Round-trip a job-flagged message and block until the
+        response arrives.  Implemented on :class:`.SteamClient`."""
+        ...
+
+    def wait_event(
+        self,
+        event: Any,
+        timeout: Optional[float] = None,
+        raises: bool = False,
+    ) -> Any:
+        """Block until ``event`` fires and return the event payload.
+        Implemented on :class:`gevent_eventemitter.EventEmitter`."""
+        ...
+
+
+# ``Apps`` is a mixin — at runtime it derives from ``object`` (so
+# instances placed in the SteamClient MRO don't add another ancestor
+# beyond the concrete bases already there).  Under ``TYPE_CHECKING``
+# we pretend it derives from the host-surface stub above so Pylance
+# resolves the co-mixed attributes cleanly.
+if TYPE_CHECKING:
+    _HostBase = _AppsMixinHost
+else:
+    _HostBase = object
+
+
+class Apps(_HostBase):
+    licenses: dict = {}  #: :class:`dict` Accounts' package licenses
 
     def __init__(self, *args, **kwargs):
         super(Apps, self).__init__(*args, **kwargs)
@@ -129,7 +201,10 @@ class Apps(object):
 
         message.body.meta_data_only = meta_data_only
         message.body.num_prev_failed = 0
-        message.body.supports_package_tokens = 1
+        # ``supports_package_tokens`` was renamed to ``OBSOLETE_supports_package_tokens``
+        # upstream ~2022; Steam CMs ignore whatever value clients set here.  Line
+        # dropped to avoid ``AttributeError`` under the regenerated protobufs
+        # (the un-prefixed name no longer resolves at runtime).
 
         job_id = self.send_job(message)
 

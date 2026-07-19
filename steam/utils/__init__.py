@@ -1,15 +1,10 @@
 """Utility package with various useful functions
 """
-import six
-from six.moves import xrange as _range
-import sys
-
-if six.PY2 and sys.platform == 'win32':
-    import win_inet_pton
-
 import weakref
 import struct
 import socket
+
+_range = range
 
 
 def ip4_from_int(ip):
@@ -94,6 +89,9 @@ class WeakRefKeyDict(object):
         return len(self.refs)
 
 class WeakRefCallback(object):
+    refs: dict
+    key: int
+
     def __init__(self, refs, key):
         self.__dict__.update(locals())
     def __call__(self, wr):

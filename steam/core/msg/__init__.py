@@ -1,4 +1,5 @@
 import fnmatch
+from typing import Any, ClassVar, Literal, Optional, Union
 from steam.core.msg.unified import get_um
 from steam.core.msg.structs import get_struct
 from steam.core.msg.headers import MsgHdr, ExtendedMsgHdr, MsgHdrProtoBuf, GCMsgHdr, GCMsgHdrProto
@@ -81,9 +82,22 @@ def get_cmsg(emsg):
     return cmsg_lookup.get(cmsg_name, None)
 
 class Msg(object):
-    proto = False
-    body = None     #: message instance
-    payload = None  #: Will contain body payload, if we fail to find correct message class
+    # ``proto: Literal[False]`` on ``Msg`` and ``Literal[True]`` on
+    # ``MsgProto`` below turns the pair into a discriminated union —
+    # ``if msg.proto:`` narrows a ``Msg | MsgProto`` handle to
+    # ``MsgProto`` on the ``True`` branch (protobuf headers +
+    # ``jobid_target``/``target_job_name``) and to ``Msg`` on the
+    # ``False`` branch (struct headers + ``targetJobID``).  Same
+    # PEP 544 discriminated-union pattern typeshed uses on
+    # ``TypedDict`` families.
+    proto: ClassVar[Literal[False]] = False
+    #: Populated after :meth:`parse`; either a :class:`.StructMessage`
+    #: subclass instance or the sentinel ``"!!! Failed to resolve
+    #: message !!!"`` string.  ``Any`` because the concrete type
+    #: depends on the ``EMsg`` value chosen at instantiation.
+    body: Any = None
+    payload: Optional[bytes] = None  #: raw bytes when body couldn't be resolved
+    header: Union[MsgHdr, ExtendedMsgHdr]
 
     def __init__(self, msg, data=None, extended=False, parse=True):
         self.extended = extended
@@ -171,9 +185,22 @@ class Msg(object):
 
 
 class MsgProto(object):
-    proto = True
-    body = None     #: protobuf message instance
-    payload = None  #: Will contain body payload, if we fail to find correct proto message
+    #: See the discriminator note on :class:`.Msg` — this
+    #: ``Literal[True]`` pairs with ``Msg.proto: Literal[False]`` to
+    #: let type-checkers narrow a ``Msg | MsgProto`` union off a
+    #: single ``if msg.proto:`` check.
+    proto: ClassVar[Literal[True]] = True
+    #: Populated after :meth:`parse`; a ``google.protobuf.message.Message``
+    #: instance whose concrete class depends on the ``EMsg`` value
+    #: chosen at instantiation (e.g. ``CMsgClientLogon`` for
+    #: ``EMsg.ClientLogon``).  ``Any`` because the concrete type is
+    #: only knowable at runtime and callers already know it.
+    body: Any = None
+    payload: Optional[bytes] = None  #: raw bytes when body couldn't be resolved
+    #: Protobuf header — an instance of ``CMsgProtoBufHeader``.  See
+    #: the ``.pyi`` stub at ``steam/protobufs/steammessages_base_pb2.pyi``
+    #: for the field surface.
+    header: Any
 
     def __init__(self, msg, data=None, parse=True):
         self._header = MsgHdrProtoBuf(data)

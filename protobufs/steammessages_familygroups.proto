@@ -1,0 +1,495 @@
+syntax = "proto2";
+import "steammessages_base.proto";
+import "steammessages_unified_base.proto";
+import "enums.proto";
+
+option py_generic_services = true;
+
+enum EFamilyGroupRole {
+	k_EFamilyGroupRole_None = 0;
+	k_EFamilyGroupRole_Adult = 1;
+	k_EFamilyGroupRole_Child = 2;
+	k_EFamilyGroupRole_MAX = 3;
+}
+
+enum EFamilyGroupsTwoFactorMethod {
+	k_EFamilyGroupsTwoFactorMethodNone = 0;
+	k_EFamilyGroupsTwoFactorMethodMobile = 1;
+	k_EFamilyGroupsTwoFactorMethodEmail = 2;
+}
+
+enum EPurchaseRequestAction {
+	k_EPurchaseRequestAction_None = 0;
+	k_EPurchaseRequestAction_Decline = 1;
+	k_EPurchaseRequestAction_Purchased = 2;
+	k_EPurchaseRequestAction_Abandoned = 3;
+	k_EPurchaseRequestAction_Cancel = 4;
+	k_EPurchaseRequestAction_MAX = 5;
+}
+
+enum EFamilyGroupChangeLogType {
+	k_InvalidChangeType = 0;
+	k_FamilyGroupCreated = 1;
+	k_FamilyGroupModified = 2;
+	k_FamilyGroupDeleted = 3;
+	k_AccountInvited = 4;
+	k_InviteDeniedByGroupSize = 5;
+	k_JoinedFamilyGroup = 6;
+	k_JoinDeniedByRegionMismatch = 7;
+	k_JoinDeniedByMissingIpAddress = 8;
+	k_JoinDeniedByFamilyCooldown = 9;
+	k_JoinDeniedByUserCooldown = 10;
+	k_JoinDeniedByOtherGroup = 11;
+	k_AccountRemoved = 12;
+	k_InviteCanceled = 13;
+	k_PurchaseRequested = 14;
+	k_ParentalSettingsEnabled = 15;
+	k_ParentalSettingsDisabled = 16;
+	k_ParentalSettingsChanged = 17;
+	k_FamilyCooldownOverridesChanged = 18;
+	k_PurchaseRequestCanceled = 19;
+	k_PurchaseRequestApproved = 20;
+	k_PurchaseRequestDeclined = 21;
+	k_CooldownSkipConsumed = 22;
+	k_FamilyGroupRestored = 23;
+	k_JoinDenied = 24;
+	k_SupportForceAcceptedInvite = 25;
+}
+
+enum ESharedLibraryExcludeReason {
+	k_ESharedLibrary_Included = 0;
+	k_ESharedLibrary_AppExcluded_ByPartner = 1;
+	k_ESharedLibrary_LicenseExcluded = 2;
+	k_ESharedLibrary_FreeGame = 3;
+	k_ESharedLibrary_LicensePrivate = 4;
+	k_ESharedLibrary_AppExcluded_WrongAppType = 6;
+	k_ESharedLibrary_AppExcluded_NonrefundableDLC = 7;
+	k_ESharedLibrary_AppExcluded_UnreleasedApp = 8;
+	k_ESharedLibrary_AppExcluded_ParentAppExcluded = 9;
+	k_ESharedLibrary_PackageExcluded_ByPartner = 10;
+	k_ESharedLibrary_PackageExcluded_Special = 11;
+	k_ESharedLibrary_PackageExcluded_Dev = 12;
+	k_ESharedLibrary_PackageExcluded_FreeWeekend = 13;
+	k_ESharedLibrary_PackageExcluded_Invalid = 15;
+	k_ESharedLibrary_PackageExcluded_RecurringLicense = 16;
+	k_ESharedLibrary_PackageExcluded_WrongLicenseType = 17;
+	k_ESharedLibrary_PackageExcluded_MasterSub = 18;
+	k_ESharedLibrary_PackageExcluded_NoShareableApps = 19;
+	k_ESharedLibrary_LicenseExcluded_PaymentMasterSub = 20;
+	k_ESharedLibrary_LicenseExcluded_PaymentFamilyGroup = 21;
+	k_ESharedLibrary_LicenseExcluded_PaymentAuthorizedDevice = 22;
+	k_ESharedLibrary_LicenseExcluded_PaymentAutoGrant = 23;
+	k_ESharedLibrary_LicenseExcluded_FlagPending = 24;
+	k_ESharedLibrary_LicenseExcluded_FlagPendingRefund = 25;
+	k_ESharedLibrary_LicenseExcluded_FlagBorrowed = 26;
+	k_ESharedLibrary_LicenseExcluded_FlagAutoGrant = 27;
+	k_ESharedLibrary_LicenseExcluded_FlagTimedTrial = 28;
+	k_ESharedLibrary_LicenseExcluded_FreeSub = 29;
+	k_ESharedLibrary_LicenseExcluded_Inactive = 30;
+}
+
+message CFamilyGroups_CreateFamilyGroup_Request {
+	optional string name = 1;
+	optional fixed64 steamid = 2;
+}
+
+message CFamilyGroups_CreateFamilyGroup_Response {
+	optional uint64 family_groupid = 1;
+	optional bool cooldown_skip_granted = 2;
+}
+
+message CFamilyGroups_GetFamilyGroup_Request {
+	optional uint64 family_groupid = 1;
+	optional bool send_running_apps = 2;
+}
+
+message FamilyGroupMember {
+	optional fixed64 steamid = 1;
+	optional .EFamilyGroupRole role = 2 [default = k_EFamilyGroupRole_None];
+	optional uint32 time_joined = 3;
+	optional uint32 cooldown_seconds_remaining = 4;
+}
+
+message FamilyGroupPendingInvite {
+	optional fixed64 steamid = 1;
+	optional .EFamilyGroupRole role = 2 [default = k_EFamilyGroupRole_None];
+}
+
+message FamilyGroupFormerMember {
+	optional fixed64 steamid = 1;
+}
+
+message CFamilyGroups_GetFamilyGroup_Response {
+	optional string name = 1;
+	repeated .FamilyGroupMember members = 2;
+	repeated .FamilyGroupPendingInvite pending_invites = 3;
+	optional uint32 free_spots = 4;
+	optional string country = 5;
+	optional uint32 slot_cooldown_remaining_seconds = 6;
+	repeated .FamilyGroupFormerMember former_members = 7;
+	optional uint32 slot_cooldown_overrides = 8;
+}
+
+message CFamilyGroups_GetFamilyGroupForUser_Request {
+	optional uint64 steamid = 1;
+	optional bool include_family_group_response = 2;
+}
+
+message FamilyGroupPendingInviteForUser {
+	optional uint64 family_groupid = 1;
+	optional .EFamilyGroupRole role = 2 [default = k_EFamilyGroupRole_None];
+	optional fixed64 inviter_steamid = 3;
+	optional bool awaiting_2fa = 4;
+	optional uint64 invite_id = 5;
+}
+
+message FamilyGroupMembership {
+	optional uint64 family_groupid = 1;
+	optional uint32 rtime_joined = 2;
+	optional uint32 rtime_left = 3;
+	optional uint32 role = 4;
+	optional bool participated = 5;
+}
+
+message CFamilyGroups_GetFamilyGroupForUser_Response {
+	optional uint64 family_groupid = 1;
+	optional bool is_not_member_of_any_group = 2;
+	optional uint32 latest_time_joined = 3;
+	optional uint64 latest_joined_family_groupid = 4;
+	repeated .FamilyGroupPendingInviteForUser pending_group_invites = 5;
+	optional uint32 role = 6;
+	optional uint32 cooldown_seconds_remaining = 7;
+	optional .CFamilyGroups_GetFamilyGroup_Response family_group = 8;
+	optional bool can_undelete_last_joined_family = 9;
+	repeated .FamilyGroupMembership membership_history = 10;
+}
+
+message CFamilyGroups_ModifyFamilyGroupDetails_Request {
+	optional uint64 family_groupid = 1;
+	optional string name = 2;
+}
+
+message CFamilyGroups_ModifyFamilyGroupDetails_Response {
+}
+
+message CFamilyGroups_InviteToFamilyGroup_Request {
+	optional uint64 family_groupid = 1;
+	optional fixed64 receiver_steamid = 2;
+	optional .EFamilyGroupRole receiver_role = 3 [default = k_EFamilyGroupRole_None];
+}
+
+message CFamilyGroups_InviteToFamilyGroup_Response {
+	optional uint64 invite_id = 1;
+	optional .EFamilyGroupsTwoFactorMethod two_factor_method = 2 [default = k_EFamilyGroupsTwoFactorMethodNone];
+}
+
+message CFamilyGroups_ConfirmInviteToFamilyGroup_Request {
+	optional uint64 family_groupid = 1;
+	optional uint64 invite_id = 2;
+	optional uint64 nonce = 3;
+}
+
+message CFamilyGroups_ConfirmInviteToFamilyGroup_Response {
+}
+
+message CFamilyGroups_ResendInvitationToFamilyGroup_Request {
+	optional uint64 family_groupid = 1;
+	optional uint64 steamid = 2;
+}
+
+message CFamilyGroups_ResendInvitationToFamilyGroup_Response {
+}
+
+message CFamilyGroups_JoinFamilyGroup_Request {
+	optional uint64 family_groupid = 1;
+	optional uint64 nonce = 2;
+}
+
+message CFamilyGroups_JoinFamilyGroup_Response {
+	optional .EFamilyGroupsTwoFactorMethod two_factor_method = 2 [default = k_EFamilyGroupsTwoFactorMethodNone];
+	optional bool cooldown_skip_granted = 3;
+	optional bool invite_already_accepted = 4;
+	optional uint32 cooldown_seconds_remaining = 5;
+}
+
+message CFamilyGroups_ConfirmJoinFamilyGroup_Request {
+	optional uint64 family_groupid = 1;
+	optional uint64 invite_id = 2;
+	optional uint64 nonce = 3;
+}
+
+message CFamilyGroups_ConfirmJoinFamilyGroup_Response {
+}
+
+message CFamilyGroups_RemoveFromFamilyGroup_Request {
+	optional uint64 family_groupid = 1;
+	optional fixed64 steamid_to_remove = 2;
+}
+
+message CFamilyGroups_RemoveFromFamilyGroup_Response {
+}
+
+message CFamilyGroups_CancelFamilyGroupInvite_Request {
+	optional uint64 family_groupid = 1;
+	optional fixed64 steamid_to_cancel = 2;
+}
+
+message CFamilyGroups_CancelFamilyGroupInvite_Response {
+}
+
+message CFamilyGroups_GetUsersSharingDevice_Request {
+	optional uint64 family_groupid = 1;
+	optional uint64 client_instance_id = 2;
+}
+
+message CFamilyGroups_GetUsersSharingDevice_Response {
+	repeated fixed64 users = 1;
+}
+
+message CFamilyGroups_DeleteFamilyGroup_Request {
+	optional uint64 family_groupid = 1;
+}
+
+message CFamilyGroups_DeleteFamilyGroup_Response {
+}
+
+message CFamilyGroups_UndeleteFamilyGroup_Request {
+	optional uint64 family_groupid = 1;
+}
+
+message CFamilyGroups_UndeleteFamilyGroup_Response {
+}
+
+message CFamilyGroups_GetPlaytimeSummary_Request {
+	optional fixed64 family_groupid = 1;
+}
+
+message CFamilyGroups_PlaytimeEntry {
+	optional fixed64 steamid = 1;
+	optional uint32 appid = 2;
+	optional uint32 first_played = 3;
+	optional uint32 latest_played = 4;
+	optional uint32 seconds_played = 5;
+}
+
+message CFamilyGroups_GetPlaytimeSummary_Response {
+	repeated .CFamilyGroups_PlaytimeEntry entries = 1;
+	repeated .CFamilyGroups_PlaytimeEntry entries_by_owner = 2;
+}
+
+message CFamilyGroups_RequestPurchase_Request {
+	optional uint64 family_groupid = 1;
+	optional uint64 gidshoppingcart = 2;
+	optional string store_country_code = 3;
+	optional bool use_account_cart = 4;
+}
+
+message CFamilyGroups_RequestPurchase_Response {
+	optional uint64 gidshoppingcart = 1;
+	optional uint64 request_id = 2;
+}
+
+message CFamilyGroups_GetPurchaseRequests_Request {
+	optional uint64 family_groupid = 1;
+	repeated uint64 request_ids = 3;
+	optional uint32 rt_include_completed_since = 4;
+}
+
+message PurchaseRequest {
+	optional fixed64 requester_steamid = 1;
+	optional uint64 gidshoppingcart = 2;
+	optional uint32 time_requested = 3;
+	optional uint32 time_responded = 4;
+	optional fixed64 responder_steamid = 5;
+	optional .EPurchaseRequestAction response_action = 6 [default = k_EPurchaseRequestAction_None];
+	optional bool is_completed = 7;
+	optional uint64 request_id = 8;
+	repeated uint32 requested_packageids = 9;
+	repeated uint32 purchased_packageids = 10;
+	repeated uint32 requested_bundleids = 11;
+	repeated uint32 purchased_bundleids = 12;
+}
+
+message CFamilyGroups_GetPurchaseRequests_Response {
+	repeated .PurchaseRequest requests = 1;
+}
+
+message CFamilyGroups_RespondToRequestedPurchase_Request {
+	optional uint64 family_groupid = 1;
+	optional .EPurchaseRequestAction action = 3 [default = k_EPurchaseRequestAction_None];
+	optional uint64 request_id = 4;
+}
+
+message CFamilyGroups_RespondToRequestedPurchase_Response {
+}
+
+message CFamilyGroups_GetChangeLog_Request {
+	optional uint64 family_groupid = 1;
+}
+
+message CFamilyGroups_GetChangeLog_Response {
+	message Change {
+		optional fixed64 timestamp = 1;
+		optional fixed64 actor_steamid = 2;
+		optional .EFamilyGroupChangeLogType type = 3 [default = k_InvalidChangeType];
+		optional string body = 4;
+		optional bool by_support = 5;
+	}
+
+	repeated .CFamilyGroups_GetChangeLog_Response.Change changes = 1;
+}
+
+message CFamilyGroups_SetFamilyCooldownOverrides_Request {
+	optional uint64 family_groupid = 1;
+	optional uint32 cooldown_count = 2;
+}
+
+message CFamilyGroups_SetFamilyCooldownOverrides_Response {
+}
+
+message CFamilyGroups_GetSharedLibraryApps_Request {
+	optional fixed64 family_groupid = 1;
+	optional bool include_own = 2;
+	optional bool include_excluded = 3;
+	optional string language = 5;
+	optional uint32 max_apps = 6;
+	optional bool include_non_games = 7;
+	optional fixed64 steamid = 8;
+}
+
+message CFamilyGroups_GetSharedLibraryApps_Response {
+	message SharedApp {
+		optional uint32 appid = 1;
+		repeated fixed64 owner_steamids = 2;
+		optional string name = 6;
+		optional string sort_as = 7;
+		optional string capsule_filename = 8;
+		optional string img_icon_hash = 9;
+		optional .ESharedLibraryExcludeReason exclude_reason = 10 [default = k_ESharedLibrary_Included];
+		optional uint32 rt_time_acquired = 11;
+		optional uint32 rt_last_played = 12;
+		optional uint32 rt_playtime = 13;
+		optional .EProtoAppType app_type = 14 [default = k_EAppTypeGame];
+		repeated uint32 content_descriptors = 15;
+	}
+
+	repeated .CFamilyGroups_GetSharedLibraryApps_Response.SharedApp apps = 1;
+	optional fixed64 owner_steamid = 2;
+}
+
+message CFamilyGroups_SetPreferredLender_Request {
+	optional uint64 family_groupid = 1;
+	optional uint32 appid = 2;
+	optional fixed64 lender_steamid = 3;
+}
+
+message CFamilyGroups_SetPreferredLender_Response {
+}
+
+message CFamilyGroups_GetPreferredLenders_Request {
+	optional uint64 family_groupid = 1;
+}
+
+message CFamilyGroups_GetPreferredLenders_Response {
+	message FamilyMember {
+		optional fixed64 steamid = 1;
+		repeated uint32 preferred_appids = 2;
+	}
+
+	repeated .CFamilyGroups_GetPreferredLenders_Response.FamilyMember members = 1;
+}
+
+message CFamilyGroups_ForceAcceptInvite_Request {
+	optional uint64 family_groupid = 1;
+	optional fixed64 steamid = 2;
+}
+
+message CFamilyGroups_ForceAcceptInvite_Response {
+}
+
+message CFamilyGroups_GetInviteCheckResults_Request {
+	optional uint64 family_groupid = 1;
+	optional fixed64 steamid = 2;
+}
+
+message CFamilyGroups_GetInviteCheckResults_Response {
+	optional bool wallet_country_matches = 1;
+	optional bool ip_match = 2;
+	optional uint32 join_restriction = 3;
+}
+
+message CFamilyGroups_ClearCooldownSkip_Request {
+	optional fixed64 steamid = 1;
+	optional uint64 invite_id = 2;
+}
+
+message CFamilyGroups_ClearCooldownSkip_Response {
+}
+
+message CFamilyGroups_RollbackFamilyGroup_Request {
+	optional uint64 family_groupid = 1;
+	optional uint32 rtime32_target = 2;
+}
+
+message CFamilyGroups_RollbackFamilyGroup_Response {
+}
+
+message CFamilyGroupsClient_NotifyRunningApps_Notification {
+	message PlayingMember {
+		optional fixed64 member_steamid = 1;
+		optional fixed64 owner_steamid = 2;
+	}
+
+	message RunningApp {
+		optional uint32 appid = 1;
+		repeated .CFamilyGroupsClient_NotifyRunningApps_Notification.PlayingMember playing_members = 3;
+	}
+
+	optional uint64 family_groupid = 1;
+	repeated .CFamilyGroupsClient_NotifyRunningApps_Notification.RunningApp running_apps = 2;
+}
+
+message CFamilyGroupsClient_InviteStatus_Notification {
+}
+
+message CFamilyGroupsClient_GroupChanged_Notification {
+	optional uint64 family_groupid = 1;
+}
+
+service FamilyGroups {
+	rpc CreateFamilyGroup (.CFamilyGroups_CreateFamilyGroup_Request) returns (.CFamilyGroups_CreateFamilyGroup_Response);
+	rpc GetFamilyGroup (.CFamilyGroups_GetFamilyGroup_Request) returns (.CFamilyGroups_GetFamilyGroup_Response);
+	rpc GetFamilyGroupForUser (.CFamilyGroups_GetFamilyGroupForUser_Request) returns (.CFamilyGroups_GetFamilyGroupForUser_Response);
+	rpc ModifyFamilyGroupDetails (.CFamilyGroups_ModifyFamilyGroupDetails_Request) returns (.CFamilyGroups_ModifyFamilyGroupDetails_Response);
+	rpc InviteToFamilyGroup (.CFamilyGroups_InviteToFamilyGroup_Request) returns (.CFamilyGroups_InviteToFamilyGroup_Response);
+	rpc ConfirmInviteToFamilyGroup (.CFamilyGroups_ConfirmInviteToFamilyGroup_Request) returns (.CFamilyGroups_ConfirmInviteToFamilyGroup_Response);
+	rpc ResendInvitationToFamilyGroup (.CFamilyGroups_ResendInvitationToFamilyGroup_Request) returns (.CFamilyGroups_ResendInvitationToFamilyGroup_Response);
+	rpc JoinFamilyGroup (.CFamilyGroups_JoinFamilyGroup_Request) returns (.CFamilyGroups_JoinFamilyGroup_Response);
+	rpc ConfirmJoinFamilyGroup (.CFamilyGroups_ConfirmJoinFamilyGroup_Request) returns (.CFamilyGroups_ConfirmJoinFamilyGroup_Response);
+	rpc RemoveFromFamilyGroup (.CFamilyGroups_RemoveFromFamilyGroup_Request) returns (.CFamilyGroups_RemoveFromFamilyGroup_Response);
+	rpc CancelFamilyGroupInvite (.CFamilyGroups_CancelFamilyGroupInvite_Request) returns (.CFamilyGroups_CancelFamilyGroupInvite_Response);
+	rpc GetUsersSharingDevice (.CFamilyGroups_GetUsersSharingDevice_Request) returns (.CFamilyGroups_GetUsersSharingDevice_Response);
+	rpc DeleteFamilyGroup (.CFamilyGroups_DeleteFamilyGroup_Request) returns (.CFamilyGroups_DeleteFamilyGroup_Response);
+	rpc UndeleteFamilyGroup (.CFamilyGroups_UndeleteFamilyGroup_Request) returns (.CFamilyGroups_UndeleteFamilyGroup_Response);
+	rpc GetPlaytimeSummary (.CFamilyGroups_GetPlaytimeSummary_Request) returns (.CFamilyGroups_GetPlaytimeSummary_Response);
+	rpc RequestPurchase (.CFamilyGroups_RequestPurchase_Request) returns (.CFamilyGroups_RequestPurchase_Response);
+	rpc GetPurchaseRequests (.CFamilyGroups_GetPurchaseRequests_Request) returns (.CFamilyGroups_GetPurchaseRequests_Response);
+	rpc RespondToRequestedPurchase (.CFamilyGroups_RespondToRequestedPurchase_Request) returns (.CFamilyGroups_RespondToRequestedPurchase_Response);
+	rpc GetChangeLog (.CFamilyGroups_GetChangeLog_Request) returns (.CFamilyGroups_GetChangeLog_Response);
+	rpc SetFamilyCooldownOverrides (.CFamilyGroups_SetFamilyCooldownOverrides_Request) returns (.CFamilyGroups_SetFamilyCooldownOverrides_Response);
+	rpc GetSharedLibraryApps (.CFamilyGroups_GetSharedLibraryApps_Request) returns (.CFamilyGroups_GetSharedLibraryApps_Response);
+	rpc SetPreferredLender (.CFamilyGroups_SetPreferredLender_Request) returns (.CFamilyGroups_SetPreferredLender_Response);
+	rpc GetPreferredLenders (.CFamilyGroups_GetPreferredLenders_Request) returns (.CFamilyGroups_GetPreferredLenders_Response);
+	rpc ForceAcceptInvite (.CFamilyGroups_ForceAcceptInvite_Request) returns (.CFamilyGroups_ForceAcceptInvite_Response);
+	rpc GetInviteCheckResults (.CFamilyGroups_GetInviteCheckResults_Request) returns (.CFamilyGroups_GetInviteCheckResults_Response);
+	rpc ClearCooldownSkip (.CFamilyGroups_ClearCooldownSkip_Request) returns (.CFamilyGroups_ClearCooldownSkip_Response);
+	rpc RollbackFamilyGroup (.CFamilyGroups_RollbackFamilyGroup_Request) returns (.CFamilyGroups_RollbackFamilyGroup_Response);
+}
+
+service FamilyGroupsClient {
+	option (service_execution_site) = k_EProtoExecutionSiteSteamClient;
+
+	rpc NotifyRunningApps (.CFamilyGroupsClient_NotifyRunningApps_Notification) returns (.NoResponse);
+	rpc NotifyInviteStatus (.CFamilyGroupsClient_InviteStatus_Notification) returns (.NoResponse);
+	rpc NotifyGroupChanged (.CFamilyGroupsClient_GroupChanged_Notification) returns (.NoResponse);
+}

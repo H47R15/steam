@@ -3,6 +3,7 @@ import "steammessages_base.proto";
 import "steammessages_unified_base.proto";
 import "enums_productinfo.proto";
 import "enums.proto";
+import "contenthubs.proto";
 
 option py_generic_services = true;
 
@@ -12,6 +13,9 @@ enum EStoreItemType {
 	k_EStoreItemType_Package = 1;
 	k_EStoreItemType_Bundle = 2;
 	k_EStoreItemType_Mtx = 3;
+	k_EStoreItemType_Tag = 4;
+	k_EStoreItemType_Creator = 5;
+	k_EStoreItemType_HubCategory = 6;
 }
 
 enum EStoreAppType {
@@ -45,6 +49,54 @@ enum EUserReviewScore {
 	k_EUserReviewScore_OverwhelminglyPositive = 9;
 }
 
+enum ETrailerCategory {
+	k_ETrailerCategory_Invalid = 0;
+	k_ETrailerCategory_Gameplay = 1;
+	k_ETrailerCategory_Teaser = 2;
+	k_ETrailerCategory_Cinematic = 3;
+	k_ETrailerCategory_Update = 4;
+	k_ETrailerCategory_Accolades = 5;
+	k_ETrailerCategory_Interview = 6;
+}
+
+enum EStoreBrowseFilterFailure {
+	k_EStoreBrowseFilterFailure_None = 0;
+	k_EStoreBrowseFilterFailure_Redundant = 10;
+	k_EStoreBrowseFilterFailure_NotPreferred = 20;
+	k_EStoreBrowseFilterFailure_NotInterested = 30;
+	k_EStoreBrowseFilterFailure_UnwantedContent = 40;
+	k_EStoreBrowseFilterFailure_Unavailable = 50;
+}
+
+enum EStoreLinkType {
+	k_EStoreLinkType_None = 0;
+	k_EStoreLinkType_YouTube = 1;
+	k_EStoreLinkType_Facebook = 2;
+	k_EStoreLinkType_Twitter = 3;
+	k_EStoreLinkType_Twitch = 4;
+	k_EStoreLinkType_Discord = 5;
+	k_EStoreLinkType_QQ = 6;
+	k_EStoreLinkType_VK = 7;
+	k_EStoreLinkType_Bilibili = 8;
+	k_EStoreLinkType_Weibo = 9;
+	k_EStoreLinkType_Reddit = 10;
+	k_EStoreLinkType_Instagram = 11;
+	k_EStoreLinkType_Tumblr = 12;
+	k_EStoreLinkType_Tieba = 13;
+	k_EStoreLinkType_Tiktok = 14;
+	k_EStoreLinkType_Telegram = 15;
+	k_EStoreLinkType_LinkedIn = 16;
+	k_EStoreLinkType_WeChat = 17;
+	k_EStoreLinkType_QQLink = 18;
+	k_EStoreLinkType_Douyin = 19;
+	k_EStoreLinkType_Bluesky = 20;
+	k_EStoreLinkType_Mastodon = 21;
+	k_EStoreLinkType_Threads = 22;
+	k_EStoreLinkType_QQChannel = 23;
+	k_EStoreLinkType_RedNote = 24;
+	k_EStoreLinkType_MAX = 25;
+}
+
 enum EStoreCategoryType {
 	k_EStoreCategoryType_Category = 0;
 	k_EStoreCategoryType_SupportedPlayers = 1;
@@ -58,13 +110,15 @@ message StoreItemID {
 	optional uint32 appid = 1;
 	optional uint32 packageid = 2;
 	optional uint32 bundleid = 3;
+	optional uint32 tagid = 4;
+	optional uint32 creatorid = 5;
+	optional uint32 hubcategoryid = 6;
 }
 
 message StoreBrowseContext {
 	optional string language = 1;
-	optional int32 elanguage = 2 [(description) = "ELanguage"];
-	optional string country_code = 3 [(description) = "2-character country code; required"];
-	optional int32 steam_realm = 4 [(description) = "ESteamRealm"];
+	optional int32 elanguage = 2;
+	optional string country_code = 3;
 }
 
 message StoreBrowseItemDataRequest {
@@ -75,10 +129,16 @@ message StoreBrowseItemDataRequest {
 	optional bool include_screenshots = 5;
 	optional bool include_trailers = 6;
 	optional bool include_ratings = 7;
-	optional int32 include_tag_count = 8 [(description) = "Count of tags to return, as tagids.  Maximum 20."];
+	optional int32 include_tag_count = 8;
 	optional bool include_reviews = 9;
-	optional bool include_basic_info = 10 [(description) = "Include short description, publisher, developers"];
-	optional bool include_supported_languages = 11 [(description) = "includes the games support for languages: supported, full_audio, subtitles"];
+	optional bool include_basic_info = 10;
+	optional bool include_supported_languages = 11;
+	optional bool include_full_description = 12;
+	optional bool include_included_items = 13;
+	optional .StoreBrowseItemDataRequest included_item_data_request = 14;
+	optional bool include_assets_without_overrides = 15;
+	optional bool apply_user_filters = 16;
+	optional bool include_links = 17;
 }
 
 message CStoreBrowse_GetItems_Request {
@@ -87,51 +147,70 @@ message CStoreBrowse_GetItems_Request {
 	optional .StoreBrowseItemDataRequest data_request = 3;
 }
 
-message StoreGameRating {
-	optional string type = 1 [(description) = "'esrb', 'pegi', ..."];
-	optional string rating = 2 [(description) = "'t' for teen, 'm' for mature, ..."];
-	repeated string descriptors = 3 [(description) = "Additional descriptors like 'Intense Violence', 'Strong Language',..."];
-	optional string interactive_elements = 4 [(description) = "ESRB-specific"];
-	optional int32 required_age = 10 [(description) = "Age in years.  Store pages will prompt with an age gate"];
-	optional bool use_age_gate = 11;
-	optional string image_url = 20 [(description) = "An image corresponding to the rating."];
-	optional string image_target = 21 [(description) = "URL where the image should link for more information."];
-}
-
 message StoreItem {
+	message Demo {
+		optional uint32 appid = 1;
+		optional string label = 2;
+		optional bool show_above_purchase = 3;
+	}
+
+	message Playtest {
+		optional uint32 appid = 1;
+		optional bool is_open = 2;
+	}
+
+	message RelatedF2P {
+		optional uint32 appid = 1;
+		optional string header_text = 2;
+		optional string description_text = 3;
+	}
+
 	message RelatedItems {
-		optional uint32 parent_appid = 1 [(description) = "For DLC, Demos, etc, this is the main app."];
+		optional uint32 parent_appid = 1;
+		repeated uint32 demo_appid = 2;
+		repeated uint32 standalone_demo_appid = 3;
+		repeated .StoreItem.Demo demos = 4;
+		repeated .StoreItem.Demo standalone_demos = 5;
+		repeated .StoreItem.Playtest playtests = 6;
+		optional .StoreItem.RelatedF2P related_f2p = 7;
+	}
+
+	message IncludedItems {
+		repeated .StoreItem included_apps = 1;
+		repeated .StoreItem included_packages = 2;
+		repeated .StoreItem included_bundles = 3;
 	}
 
 	message Categories {
-		repeated uint32 supported_player_categoryids = 2 [(description) = "Categories like Single Player, Multiplayer, MMO"];
-		repeated uint32 feature_categoryids = 3 [(description) = "Categories indicating supported features like Steam Cloud, VAC, Achievements, etc"];
-		repeated uint32 controller_categoryids = 4 [(description) = "Categories indicating controller support and full controller support."];
+		repeated uint32 supported_player_categoryids = 2;
+		repeated uint32 feature_categoryids = 3;
+		repeated uint32 controller_categoryids = 4;
 	}
 
 	message Reviews {
 		message StoreReviewSummary {
 			optional uint32 review_count = 1;
-			optional int32 percent_positive = 2 [(description) = "0-100"];
+			optional int32 percent_positive = 2;
 			optional .EUserReviewScore review_score = 3 [default = k_EUserReviewScore_None];
-			optional string review_score_label = 4 [(description) = "A string like 'Mixed', 'Negative', 'Overwhelmingly Positive'"];
+			optional string review_score_label = 4;
 		}
 
-		optional .StoreItem.Reviews.StoreReviewSummary summary_filtered = 1 [(description) = "Review summary with review bombs removed (if any).  Always present (if include_reviews set in request)"];
-		optional .StoreItem.Reviews.StoreReviewSummary summary_unfiltered = 2 [(description) = "Review summary with review bombs included.  Only present if there are review bombs."];
+		optional .StoreItem.Reviews.StoreReviewSummary summary_filtered = 1;
+		optional .StoreItem.Reviews.StoreReviewSummary summary_unfiltered = 2;
+		optional .StoreItem.Reviews.StoreReviewSummary summary_language_specific = 3;
 	}
 
 	message BasicInfo {
 		message CreatorHomeLink {
 			optional string name = 1;
-			optional uint32 creator_clan_account_id = 2 [(description) = "Optioanl field indicating this name is associated this the creator home via the clan account id"];
+			optional uint32 creator_clan_account_id = 2;
 		}
 
 		optional string short_description = 1;
 		repeated .StoreItem.BasicInfo.CreatorHomeLink publishers = 2;
 		repeated .StoreItem.BasicInfo.CreatorHomeLink developers = 3;
 		repeated .StoreItem.BasicInfo.CreatorHomeLink franchises = 4;
-		optional string capsule_headline = 5 [(description) = "A custom string specified by the partner for display on or around a capsule on the store, e.g. 'Just Updated!'"];
+		optional string capsule_headline = 5;
 	}
 
 	message Tag {
@@ -140,33 +219,44 @@ message StoreItem {
 	}
 
 	message Assets {
-		optional string asset_url_format = 1 [(description) = "Format for URLs, should substitute the capsule name for ${FILENAME} in the URL."];
+		optional string asset_url_format = 1;
 		optional string main_capsule = 2;
+		optional string main_capsule_2x = 18;
 		optional string small_capsule = 3;
-		optional string header = 4 [(description) = "Equivalent to GetConstantRatioHeaderImage in PHP; apps will always have this, packages and bundles may not."];
-		optional string package_header = 5 [(description) = "A wider header used on package/bundle pages.  Not set for apps."];
+		optional string small_capsule_2x = 19;
+		optional string header = 4;
+		optional string header_2x = 20;
+		optional string package_header = 5;
 		optional string page_background = 6;
-		optional string hero_capsule = 7 [(description) = "374x448"];
-		optional string hero_capsule_2x = 8 [(description) = "748x896 version of hero capsule."];
-		optional string library_capsule = 9 [(description) = "300x450 - tall library asset"];
-		optional string library_capsule_2x = 10 [(description) = "600x900 - tall library asset"];
-		optional string library_hero = 11 [(description) = "960x310 or 1920x620 - library detail background asset"];
-		optional string library_hero_2x = 12 [(description) = "1920x620 or 3840x1240 - library detail background asset"];
-		optional string community_icon = 13 [(description) = "32x32 jpg uploading via steamworks under community assets"];
+		optional string hero_capsule = 7;
+		optional string hero_capsule_2x = 8;
+		optional string library_capsule = 9;
+		optional string library_capsule_2x = 10;
+		optional string library_hero = 11;
+		optional string library_hero_2x = 12;
+		optional string community_icon = 13;
+		optional string clan_avatar = 14;
+		optional string page_background_path = 15;
+		optional string raw_page_background = 16;
+		optional string edition_comparison = 17;
 	}
 
 	message ReleaseInfo {
-		optional uint32 steam_release_date = 1 [(description) = "The date this item first released on the Steam store.  For Early Access graduates, this is their graduation day."];
-		optional uint32 original_release_date = 2 [(description) = "Optional; the date this item first released elsewhere, typically back catalog items."];
-		optional uint32 original_steam_release_date = 3 [(description) = "For Early Access graduates, the date the game first appeared on Steam."];
-		optional bool is_coming_soon = 4 [(description) = "Is the app coming soon?  This flag should be preferred to doing time comparisons against steam_release_date."];
-		optional bool is_preload = 5 [(description) = "Can the app be preloaded?  Only applies to Coming Soon titles."];
-		optional string custom_release_date_message = 6 [(description) = "Custom release date string.  steam_release_date will be unset if this is set."];
-		optional bool is_abridged_release_date = 7 [(description) = "Release date should be displayed as month-year only.  steam_release_date is the last day of the month."];
-		optional string coming_soon_display = 8 [(description) = "One of 'date_full', 'date_month', 'date_quarter', 'date_year', 'text_comingsoon', 'text_tba'"];
+		optional uint32 steam_release_date = 1;
+		optional uint32 original_release_date = 2;
+		optional uint32 original_steam_release_date = 3;
+		optional uint32 release_from_early_access_date = 11;
+		optional uint32 release_from_early_access_style = 12;
+		optional bool is_coming_soon = 4;
+		optional bool is_preload = 5;
+		optional string custom_release_date_message = 6;
+		optional bool is_abridged_release_date = 7;
+		optional string coming_soon_display = 8;
 		optional bool is_early_access = 10;
 		optional uint32 mac_release_date = 20;
 		optional uint32 linux_release_date = 21;
+		optional bool limited_launch_active = 22;
+		optional uint32 advance_access_date = 23;
 	}
 
 	message Platforms {
@@ -184,6 +274,9 @@ message StoreItem {
 		optional bool steamos_linux = 3;
 		optional .StoreItem.Platforms.VRSupport vr_support = 10;
 		optional .ESteamDeckCompatibilityCategory steam_deck_compat_category = 11 [default = k_ESteamDeckCompatibilityCategory_Unknown];
+		optional .ESteamOSCompatibilityCategory steam_os_compat_category = 12 [default = k_ESteamOSCompatibilityCategory_Unknown];
+		optional .ESteamDeckCompatibilityCategory steam_frame_compat_category = 13 [default = k_ESteamDeckCompatibilityCategory_Unknown];
+		optional .ESteamDeckCompatibilityCategory steam_machine_compat_category = 14 [default = k_ESteamDeckCompatibilityCategory_Unknown];
 	}
 
 	message PurchaseOption {
@@ -191,86 +284,136 @@ message StoreItem {
 			optional int64 discount_amount = 1;
 			optional string discount_description = 2;
 			optional uint32 discount_end_date = 3;
+			optional uint32 master_sub_appid = 4;
+		}
+
+		message RecurrenceInfo {
+			optional int32 packageid = 1;
+			optional int32 billing_agreement_type = 2;
+			optional int32 renewal_time_unit = 3;
+			optional int32 renewal_time_period = 4;
+			optional int64 renewal_price_in_cents = 5;
+			optional string formatted_renewal_price = 6;
 		}
 
 		optional int32 packageid = 1;
 		optional int32 bundleid = 2;
-		optional string purchase_option_name = 3 [(description) = "The name of the package or bundle"];
-		optional int64 final_price_in_cents = 5 [(description) = "Always set.  Includes any applicable non user-specific discounts."];
-		optional int64 original_price_in_cents = 6 [(description) = "If discounted, this is the price the item would normally cost."];
-		optional int64 user_final_price_in_cents = 7;
-		optional string formatted_final_price = 8 [(description) = "Always set.  Formatted with currency symbol and decimal, like '$10.00'."];
+		optional string purchase_option_name = 3;
+		optional int64 final_price_in_cents = 5;
+		optional int64 original_price_in_cents = 6;
+		optional string formatted_final_price = 8;
 		optional string formatted_original_price = 9;
-		optional int32 discount_pct = 10 [(description) = "If discounted, calculated from final price and original price."];
-		optional int32 user_discount_pct = 11;
-		optional int32 bundle_discount_pct = 12 [(description) = "If this is a bundle, the savings from buying the bundle.  If no bundle items are on active discount, this will be the same as discount_pct."];
-		repeated .StoreItem.PurchaseOption.Discount active_discounts = 20 [(description) = "Discounts included in discounted_price_in_cents."];
-		repeated .StoreItem.PurchaseOption.Discount user_active_discounts = 21 [(description) = "Additional discounts included in user_discounted_price_in_cents."];
-		repeated .StoreItem.PurchaseOption.Discount inactive_discounts = 22 [(description) = "Additional user-specific discounts that do not apply to the current user."];
-		optional bool user_can_purchase = 30;
+		optional int32 discount_pct = 10;
+		optional int32 bundle_discount_pct = 12;
+		optional bool is_free_to_keep = 13;
+		optional int64 price_before_bundle_discount = 14;
+		optional string formatted_price_before_bundle_discount = 15;
+		repeated .StoreItem.PurchaseOption.Discount active_discounts = 20;
 		optional bool user_can_purchase_as_gift = 31;
-		optional bool is_commercial_license = 40 [(description) = "This is a commercial license"];
-		optional bool should_suppress_discount_pct = 41 [(description) = "Don't show the discount percentage on a store capsule for this item."];
+		optional bool is_commercial_license = 40;
+		optional bool should_suppress_discount_pct = 41;
+		optional bool hide_discount_pct_for_compliance = 42 [default = false];
+		optional int32 included_game_count = 43 [default = 1];
+		optional int64 lowest_recent_price_in_cents = 44;
+		optional bool requires_shipping = 45;
+		optional .StoreItem.PurchaseOption.RecurrenceInfo recurrence_info = 46;
+		optional uint32 free_to_keep_ends = 47;
+		optional bool must_purchase_as_set = 48 [default = false];
+		optional string package_group = 49 [default = "default"];
+		optional bool is_edition = 50;
+		optional uint32 free_to_keep_base_package = 51;
+		optional bool price_cannot_be_displayed_as_discount = 52 [default = false];
+		optional int64 price_to_base_discount_on = 53;
+		optional uint32 free_with_master_sub_appid = 54;
+		optional string formatted_lowest_recent_price = 55;
 	}
 
 	message Screenshots {
 		message Screenshot {
-			optional string filename = 1 [(description) = "Path to file on media CDN.  Can access sized version by appending to SHA: '.1920x1080', '.600x338', '.116x65'"];
-			optional int32 ordinal = 2 [(description) = "Screenshots should be displayed in order of ascending ordinal; they are returned in-order but client may need to merge all_ages and mature_content_screenshots."];
+			optional string filename = 1;
+			optional int32 ordinal = 2;
 		}
 
-		repeated .StoreItem.Screenshots.Screenshot all_ages_screenshots = 2 [(description) = "Screenshots suitable for all ages."];
-		repeated .StoreItem.Screenshots.Screenshot mature_content_screenshots = 3 [(description) = "Screenshots that may contain mature content; these should only be shown after verifying age (age gate)."];
+		repeated .StoreItem.Screenshots.Screenshot all_ages_screenshots = 2;
+		repeated .StoreItem.Screenshots.Screenshot mature_content_screenshots = 3;
 	}
 
 	message Trailers {
 		message VideoSource {
-			optional string filename = 1 [(description) = "Substitute into trailer_url_format"];
-			optional string type = 2 [(description) = "'video/webm' or 'video/mp4'; can just put this directly in to a <source> tag."];
+			optional string filename = 1;
+			optional string type = 2;
+		}
+
+		message AdaptiveTrailer {
+			optional string cdn_path = 1;
+			optional string encoding = 2;
 		}
 
 		message Trailer {
 			optional string trailer_name = 1;
-			optional string trailer_url_format = 2 [(description) = "Format for URLs, should substitute filename for ${FILENAME} in the URL."];
-			repeated .StoreItem.Trailers.VideoSource trailer_480p = 3;
-			repeated .StoreItem.Trailers.VideoSource trailer_max = 4;
+			optional string trailer_url_format = 2;
+			optional .ETrailerCategory trailer_category = 13 [default = k_ETrailerCategory_Invalid];
 			repeated .StoreItem.Trailers.VideoSource microtrailer = 5;
-			optional string screenshot_medium = 10 [(description) = "293x165px.  Use trailer_url_format."];
-			optional string screenshot_full = 11 [(description) = "Same size as trailer_max.  Use trailer_url_format."];
-			optional int32 trailer_base_id = 12 [(description) = "Trailer ID.  For localized trailers, this will be the original trailer's ID"];
+			repeated .StoreItem.Trailers.AdaptiveTrailer adaptive_trailers = 6;
+			optional string captions_manifest = 7;
+			optional string screenshot_medium = 10;
+			optional string screenshot_full = 11;
+			optional int32 trailer_base_id = 12;
+			optional bool all_ages = 14;
 		}
 
-		repeated .StoreItem.Trailers.Trailer highlights = 1 [(description) = "Primary trailers for this app"];
-		repeated .StoreItem.Trailers.Trailer other_trailers = 2 [(description) = "Additional trailers; on the app page, these are shown after screenshots (highlights shown before)"];
+		repeated .StoreItem.Trailers.Trailer highlights = 1;
+		repeated .StoreItem.Trailers.Trailer other_trailers = 2;
 	}
 
 	message SupportedLanguage {
-		optional int32 elanguage = 1 [(description) = "ELanguage"];
+		optional int32 elanguage = 1 [default = -1];
+		optional int32 eadditionallanguage = 5 [default = -1];
 		optional bool supported = 2;
 		optional bool full_audio = 3;
 		optional bool subtitles = 4;
 	}
 
 	message FreeWeekend {
-		optional uint32 start_time = 1 [(description) = "When the free weekend starts."];
-		optional uint32 end_time = 2 [(description) = "When the free weekend ends."];
-		optional string text = 3 [(description) = "Text to show as a description of the free weekend."];
+		optional uint32 start_time = 1;
+		optional uint32 end_time = 2;
+		optional string text = 3;
+	}
+
+	message Link {
+		optional .EStoreLinkType link_type = 1 [default = k_EStoreLinkType_None];
+		optional string url = 2;
+		optional string text = 3;
+	}
+
+	message PackageGroup {
+		enum EPackageGroupDisplayType {
+			k_EPackageGroupDisplayType_Default = 0;
+			k_EPackageGroupDisplayType_Dropdown = 1;
+		}
+
+		optional string name = 1;
+		optional string heading = 2;
+		optional .StoreItem.PackageGroup.EPackageGroupDisplayType display_type = 3 [default = k_EPackageGroupDisplayType_Default];
+		optional string dropdown_title = 4;
+		optional string dropdown_description_bbcode = 5;
 	}
 
 	optional .EStoreItemType item_type = 1 [default = k_EStoreItemType_Invalid];
 	optional uint32 id = 2;
-	optional uint32 success = 3 [(description) = "EResult of this lookup action"];
+	optional uint32 success = 3;
 	optional bool visible = 4;
-	optional bool unvailable_for_country_restriction = 5 [(description) = "Indicates this app is visible in other regions, but not the requested reagion"];
+	optional bool unvailable_for_country_restriction = 5;
 	optional string name = 6;
-	optional string store_url_path = 7 [(description) = "The URL of this item's store page, to be appended to STORE_BASE_URL."];
-	optional uint32 appid = 9 [(description) = "If this is an app, or a single-app package, the steamworks appid."];
-	optional .EStoreAppType type = 10 [default = k_EStoreAppType_Game, (description) = "Type of app (Game, Software, Music).  For packages/bundles, this will be the most interesting type (eg Game + Soundtrack bundle will have type Game)"];
-	repeated .EStoreAppType included_types = 11 [(description) = "For packages/bundles, all types of included items"];
-	repeated uint32 included_appids = 12 [(description) = "For packages/bundles, all included appids"];
+	optional string store_url_path = 7;
+	optional uint32 appid = 9;
+	optional .EStoreAppType type = 10 [default = k_EStoreAppType_Game];
+	repeated .EStoreAppType included_types = 11;
+	repeated uint32 included_appids = 12;
 	optional bool is_free = 13;
 	optional bool is_early_access = 14;
 	optional .StoreItem.RelatedItems related_items = 15;
+	optional .StoreItem.IncludedItems included_items = 16;
 	repeated .EContentDescriptorID content_descriptorids = 20;
 	repeated uint32 tagids = 21;
 	optional .StoreItem.Categories categories = 22;
@@ -280,15 +423,54 @@ message StoreItem {
 	optional .StoreItem.Assets assets = 30;
 	optional .StoreItem.ReleaseInfo release = 31;
 	optional .StoreItem.Platforms platforms = 32;
-	optional .StoreGameRating game_rating = 33 [(description) = "Local ratings agency information, like ESRB or PEGI"];
-	optional .StoreItem.PurchaseOption best_purchase_option = 40 [(description) = "The cheapest way for the user to acquire this app or package (may be a bundle)."];
-	repeated .StoreItem.PurchaseOption purchase_options = 41 [(description) = "Different ways to buy this app or packages (packages can be purchased directly, but may also be included in bundles)."];
-	repeated .StoreItem.PurchaseOption accessories = 42 [(description) = "Additional packages or bundles associated with an app, but that do not contain the app."];
+	optional .StoreGameRating game_rating = 33;
+	optional bool is_coming_soon = 34;
+	optional .StoreItem.PurchaseOption best_purchase_option = 40;
+	repeated .StoreItem.PurchaseOption purchase_options = 41;
+	optional .StoreItem.PurchaseOption self_purchase_option = 43;
 	optional .StoreItem.Screenshots screenshots = 50;
 	optional .StoreItem.Trailers trailers = 51;
 	repeated .StoreItem.SupportedLanguage supported_languages = 52;
-	optional string store_url_path_override = 53 [(description) = "Navigate to this URL (relative to store home) when the store capsule for this item is clicked, instead of the default /app/... URL. Used by advertising apps that point to a sale page."];
-	optional .StoreItem.FreeWeekend free_weekend = 54 [(description) = "Information about a free weekend offer."];
+	optional string store_url_path_override = 53;
+	optional .StoreItem.FreeWeekend free_weekend = 54;
+	optional bool unlisted = 55;
+	optional uint32 game_count = 56;
+	optional string internal_name = 57;
+	optional string full_description_bbcode = 58;
+	optional bool is_free_temporarily = 59;
+	optional .StoreItem.Assets assets_without_overrides = 60;
+	optional .StoreBrowseFilterFailure user_filter_failure = 70;
+	repeated .StoreItem.Link links = 71;
+	optional string purchase_description_bbcode = 72;
+	repeated .StoreItem.PackageGroup package_groups = 74;
+}
+
+message StoreGameRating {
+	optional string type = 1;
+	optional string rating = 2;
+	repeated string descriptors = 3;
+	optional string interactive_elements = 4;
+	optional int32 required_age = 10;
+	optional bool use_age_gate = 11;
+	optional string image_url = 20;
+	optional string image_target = 21;
+}
+
+message StoreBrowseFilterFailure {
+	optional .EStoreBrowseFilterFailure filter_failure = 1 [default = k_EStoreBrowseFilterFailure_None];
+	optional bool already_owned = 5;
+	optional bool on_wishlist = 6;
+	optional bool ignored = 7;
+	optional bool not_in_users_language = 10;
+	optional bool not_on_users_platform = 11;
+	optional bool demo_for_owned_game = 12;
+	optional bool dlc_for_unowned_game = 13;
+	optional bool nonpreferred_product_early_access = 22;
+	optional bool nonpreferred_product_prepurchase = 23;
+	optional bool nonpreferred_product_software = 24;
+	optional bool nonpreferred_product_vr = 25;
+	repeated uint32 excluded_tagids = 21;
+	repeated .EContentDescriptorID excluded_content_descriptorids = 30;
 }
 
 message CStoreBrowse_GetItems_Response {
@@ -297,7 +479,7 @@ message CStoreBrowse_GetItems_Response {
 
 message CStoreBrowse_GetStoreCategories_Request {
 	optional string language = 1;
-	optional int32 elanguage = 2 [default = -1, (description) = "ELanguage"];
+	optional int32 elanguage = 2 [default = -1];
 }
 
 message CStoreBrowse_GetStoreCategories_Response {
@@ -306,21 +488,141 @@ message CStoreBrowse_GetStoreCategories_Response {
 		optional .EStoreCategoryType type = 2 [default = k_EStoreCategoryType_Category];
 		optional string internal_name = 3;
 		optional string display_name = 4;
-		optional string image_url = 5 [(description) = "Append to STORE_CDN_URL"];
-		optional bool show_in_search = 6 [(description) = "Indicates this category can link to search results showing all items in category."];
+		optional string image_url = 5;
+		optional bool show_in_search = 6;
+		optional bool computed = 7;
+		optional string edit_url = 8;
+		optional uint32 edit_sort_order = 9;
 	}
 
 	repeated .CStoreBrowse_GetStoreCategories_Response.Category categories = 1;
 }
 
+message CStoreBrowse_GetContentHubConfig_Request {
+	optional .StoreBrowseContext context = 1;
+	repeated .EContentDescriptorID excluded_content_descriptorids = 2;
+}
+
+message CStoreBrowse_GetContentHubConfig_Response {
+	message ContentHubConfig {
+		optional uint32 hubcategoryid = 1;
+		optional string type = 2;
+		optional string handle = 3;
+		optional string display_name = 4;
+		optional string url_path = 5;
+		repeated uint32 replaces_tags = 6;
+		repeated uint32 must_have_tags = 7;
+		repeated uint32 any_one_of_tags = 8;
+		repeated uint32 must_not_have_tags = 9;
+		optional string hub_description = 10;
+	}
+
+	repeated .CStoreBrowse_GetContentHubConfig_Response.ContentHubConfig hubconfigs = 1;
+}
+
+message CStoreBrowse_GetPriceStops_Request {
+	optional string country_code = 1;
+	optional string currency_code = 2;
+}
+
+message CStoreBrowse_GetPriceStops_Response {
+	message PriceStop {
+		optional string formatted_amount = 1;
+		optional int64 amount_in_cents = 2;
+	}
+
+	repeated .CStoreBrowse_GetPriceStops_Response.PriceStop price_stops = 1;
+	optional string currency_code = 2;
+}
+
+message CStoreBrowse_GetDLCForApps_Request {
+	optional .StoreBrowseContext context = 1;
+	optional .CStorePageFilter store_page_filter = 2;
+	repeated .StoreItemID appids = 3;
+	optional uint64 steamid = 4;
+}
+
+message CStoreBrowse_GetDLCForApps_Response {
+	message DLCData {
+		optional uint32 appid = 1;
+		optional uint32 parentappid = 2;
+		optional uint32 release_date = 3;
+		optional bool coming_soon = 4;
+		optional int64 price = 5;
+		optional uint32 discount = 6;
+		optional bool free = 7;
+	}
+
+	message PlaytimeForApp {
+		optional uint32 appid = 1;
+		optional uint32 playtime = 2;
+		optional uint32 last_played = 3;
+	}
+
+	repeated .CStoreBrowse_GetDLCForApps_Response.DLCData dlc_data = 1;
+	repeated .CStoreBrowse_GetDLCForApps_Response.PlaytimeForApp playtime = 2;
+}
+
+message CStoreBrowse_GetDLCForAppsSolr_Request {
+	optional .StoreBrowseContext context = 1;
+	repeated uint32 appids = 2;
+	optional string flavor = 3;
+	optional uint32 count = 4;
+	optional .CStorePageFilter store_page_filter = 5;
+}
+
+message CStoreBrowse_GetDLCForAppsSolr_Response {
+	message DLCList {
+		optional uint32 parent_appid = 1;
+		repeated uint32 dlc_appids = 2;
+	}
+
+	repeated .CStoreBrowse_GetDLCForAppsSolr_Response.DLCList dlc_lists = 1;
+}
+
+message CStoreBrowse_GetHardwareItems_Request {
+	repeated uint32 packageid = 1;
+	optional .StoreBrowseContext context = 2;
+}
+
+message CHardwarePackageDetails {
+	optional uint32 packageid = 1;
+	optional bool inventory_available = 3;
+	optional bool high_pending_orders = 4;
+	optional bool account_restricted_from_purchasing = 5;
+	optional bool requires_reservation = 6;
+	optional uint32 rtime_estimated_notification = 7;
+	optional string notificaton_token = 8;
+	optional int32 reservation_state = 9;
+	optional bool expired = 10;
+	optional uint32 time_expires = 11;
+	optional uint32 time_reserved = 12;
+	optional bool allow_quantity_purchase = 13;
+	optional int32 max_quantity_per_purchase = 14;
+	optional bool allow_purchase_in_country = 15;
+	optional uint32 estimated_delivery_soonest_business_days = 17;
+	optional uint32 estimated_delivery_latest_business_days = 18;
+	optional bool not_allowed_to_reserved_because_already_owned = 19;
+	optional uint32 appid_ownership_not_allowed_to_reserve = 20;
+	optional uint32 account_first_date_purchase_requirement = 21;
+	optional bool position_is_waitlist = 22;
+	optional string user_waitlist_token = 23;
+	optional bool queue_in_waitlist = 24;
+	optional string queue_waitlist_token = 25;
+	optional uint32 collection_time_active = 26;
+	optional bool reservation_not_allowed = 27;
+}
+
+message CStoreBrowse_GetHardwareItems_Response {
+	repeated .CHardwarePackageDetails details = 1;
+}
+
 service StoreBrowse {
-	option (service_description) = "APIs for accessing store item data";
-
-	rpc GetItems (.CStoreBrowse_GetItems_Request) returns (.CStoreBrowse_GetItems_Response) {
-		option (method_description) = "Get information about items on the store";
-	}
-
-	rpc GetStoreCategories (.CStoreBrowse_GetStoreCategories_Request) returns (.CStoreBrowse_GetStoreCategories_Response) {
-		option (method_description) = "Get category definitions for store.  This is a public-facing API (as compared to StoreCatalog.GetCategories, which is intended for PHP)";
-	}
+	rpc GetItems (.CStoreBrowse_GetItems_Request) returns (.CStoreBrowse_GetItems_Response);
+	rpc GetStoreCategories (.CStoreBrowse_GetStoreCategories_Request) returns (.CStoreBrowse_GetStoreCategories_Response);
+	rpc GetContentHubConfig (.CStoreBrowse_GetContentHubConfig_Request) returns (.CStoreBrowse_GetContentHubConfig_Response);
+	rpc GetPriceStops (.CStoreBrowse_GetPriceStops_Request) returns (.CStoreBrowse_GetPriceStops_Response);
+	rpc GetDLCForApps (.CStoreBrowse_GetDLCForApps_Request) returns (.CStoreBrowse_GetDLCForApps_Response);
+	rpc GetDLCForAppsSolr (.CStoreBrowse_GetDLCForAppsSolr_Request) returns (.CStoreBrowse_GetDLCForAppsSolr_Response);
+	rpc GetHardwareItems (.CStoreBrowse_GetHardwareItems_Request) returns (.CStoreBrowse_GetHardwareItems_Response);
 }

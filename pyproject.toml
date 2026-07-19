@@ -1,0 +1,190 @@
+[tool.poetry]
+# ``name`` is the distribution name on PyPI (``pip install pysteam-client``);
+# ``packages`` below keeps the import module ``steam`` unchanged so consumer
+# code still writes ``from steam.client import SteamClient``.  The upstream
+# ``steam`` distribution name on PyPI is owned by ValvePython since 2013,
+# so the fork lives under a scoped name here.
+name = "pysteam-client"
+version = "1.4.4"
+description = "Module for interacting with various Steam features"
+authors = ["Rossen Georgiev <rossen@rgp.io>"]
+license = "MIT"
+readme = "README.rst"
+homepage = "https://github.com/ValvePython/steam"
+repository = "https://github.com/H47R15/steam"
+keywords = ["valve", "steam", "steamid", "api", "webapi", "steamcommunity"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Natural Language :: English",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.13",
+]
+packages = [
+  { include = "steam" },
+  # Dev-only helpers exposed as poetry console scripts (see
+  # ``[tool.poetry.scripts]`` below).  Shipped alongside the runtime
+  # package so ``poetry install`` registers the ``pb-*`` entrypoints on
+  # PATH — the modules themselves are only imported when a script is
+  # explicitly invoked, so pulling them in has zero runtime cost for
+  # library consumers.
+  { include = "scripts" },
+]
+
+# ─── console scripts ─────────────────────────────────────────────
+#
+# After ``poetry install`` these are on PATH inside the venv, so a
+# maintainer can run e.g. ``poetry run pb-compile`` from the package
+# root without spelling out the full ``python scripts/…`` path.
+[tool.poetry.scripts]
+pb-fetch     = "scripts.pb_fetch:main"
+pb-compile   = "scripts.pb_compile:main"
+pb-services  = "scripts.pb_services:main"
+pb-gen-enums = "scripts.pb_gen_enums:main"
+pb-update    = "scripts.pb_update:main"
+vcr-webapi   = "scripts.vcr_webapi:main"    # regen vcr/webapi.yaml (needs STEAM_API_KEY)
+vcr-webauth  = "scripts.vcr_webauth:main"   # regen vcr/webauth_*.yaml (interactive)
+
+[tool.poetry.dependencies]
+# Pinned to Python 3.13.11.
+python =                "^3.13.11"
+
+# ─── runtime deps (from the original setup.py) ────────────────────
+#
+# The legacy ``win-inet-pton`` (py2.7 Windows shim) and
+# ``enum34`` (py<3.4 stdlib backport) constraints from setup.py
+# were dropped — this fork targets py3.13 only, both are provided
+# by the modern stdlib.
+pycryptodomex =         ">=3.7.0"
+requests =              ">=2.9.1"
+urllib3 =               "<2"
+vdf =                   ">=3.3"
+cachetools =            ">=3.0.0"
+# ``six`` is a py2/py3 compat shim.  Kept because the fork's
+# source still imports it in a few places; harmless on py3.13.
+six =                   ">=1.10.0"
+
+# ─── client extra (optional deps) ─────────────────────────────────
+#
+# The ``client`` extra pulls in the gevent-based SteamClient — same
+# split as the original setup.py's ``install_extras['client']``.
+# Enable with:  poetry install --extras client
+#
+# ``protobuf`` bumped from the original ``~=3.0`` to ``>=5.26,<7``.
+# The fork's ``steam/protobufs/*_pb2.py`` were originally protoc-3.x
+# generated (per-message ``_reflection.GeneratedProtocolMessageType``
+# + ``_sym_db.RegisterMessage``); protoc-5.x/6.x emits far cleaner
+# code (``_descriptor_pool.AddSerializedFile`` + ``_builder`` — 20×
+# smaller files, zero descriptor-mutation, works cleanly under
+# Pylance).  Runtime protobuf 5.26+ has ``google.protobuf.runtime_version``
+# which the modern codegen calls at import time to validate the
+# generator/runtime pair — 5.26 is the earliest release that ships
+# it, and py3.13 wheels ship from 5.28 onward.  Upper bound ``<7``
+# reserves the next major bump for a deliberate migration, not an
+# accidental one.
+gevent =                { version = ">=1.5.0",  optional = true }
+protobuf =              { version = ">=5.26,<7", optional = true }
+gevent-eventemitter =   { version = ">=2.1",    optional = true }
+
+[tool.poetry.extras]
+client = ["gevent", "protobuf", "gevent-eventemitter"]
+
+# ─── dev deps (from the original dev_requirements.txt) ────────────
+#
+# ``mock`` is part of the stdlib as ``unittest.mock`` on py3.3+,
+# but the fork's test files still ``import mock`` (the
+# py2.7-compatible pattern) so we keep the PyPI ``mock`` package
+# as a dev dep — it's a stdlib passthrough on modern Python,
+# harmless overhead, and rewriting the 7 test files to
+# ``from unittest import mock`` would be pure churn.
+# ``coveralls-python`` git fork was py2.7-specific and was dropped.
+# Everything else was bumped past the py3.13 wheel cliff (vcrpy
+# 2.x has no py3.13 wheels; 5.x does).
+[tool.poetry.group.dev.dependencies]
+mock =                  ">=5.0"
+vcrpy =                 ">=5.0"
+PyYAML =                ">=6.0"
+coverage =              ">=7.0"
+pytest =                ">=8.0"
+pytest-cov =            ">=4.0"
+coveralls =             ">=3.3"
+deptry =                "^0.23.0"
+# Typeshed stubs for the ``google.protobuf`` runtime — gives Pylance
+# the base ``Message`` class's methods (``ParseFromString`` /
+# ``SerializeToString`` / …) that the domain ``.pyi`` stubs below
+# inherit from.  Dev-only because it ships only ``.pyi`` files with
+# no runtime impact.
+types-protobuf =        ">=4.24"
+# ``mypy-protobuf`` ships a ``protoc-gen-mypy`` plugin that emits
+# a ``.pyi`` companion next to every ``*_pb2.py`` when protoc is
+# invoked with ``--mypy_out``.  Dev-only — used by the ``pb_compile``
+# Makefile target when regenerating from upstream ``.proto`` files;
+# never imported at runtime.
+#
+# ``mypy-protobuf`` bumped to the modern line now that the runtime
+# ``protobuf`` pin is ``>=5.26`` — 5.x mypy-protobuf matches the
+# 5.x/6.x protoc + runtime that Pylance's typeshed stubs are
+# generated against, so the emitted ``.pyi`` files line up with what
+# static analysers already expect.
+mypy-protobuf =         ">=3.6"
+
+# ─── deptry ignores ───────────────────────────────────────────────
+#
+# The client extras are legitimately optional runtime deps that the
+# fork's non-client modules don't import — deptry's DEP002 (unused)
+# would flag them under a default install, so ignore explicitly.
+python-dotenv = "^1.2.2"
+[tool.deptry.per_rule_ignores]
+DEP002 = ["gevent", "protobuf", "gevent-eventemitter", "six", "types-protobuf", "mypy-protobuf"]
+
+[tool.deptry.package_module_name_map]
+# Underscore vs hyphen in the extras names.
+gevent_eventemitter = "gevent-eventemitter"
+
+# ─── pyright / Pylance ─────────────────────────────────
+#
+# ``stubPath = "typings"`` points pyright at our local stub overrides
+# under ``typings/`` (default pyright convention, but must be enabled
+# explicitly).  Currently patches one typeshed bug:
+#   google/protobuf/internal/builder.pyi — ``BuildServices`` param typing
+# See the stub file's docstring for the full rationale.
+[tool.pyright]
+stubPath = "typings"
+
+# ─── semantic-release  ──────────────────
+[tool.semantic_release]
+version_toml = [ "pyproject.toml:tool.poetry.version" ]
+version_source = "toml"
+branch = "master"
+upload_to_PyPI = false
+github_release = false
+commit_author = "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+upload_to_release = false
+tag_format = "steam-v{version}"
+
+[tool.semantic_release.commit_parser_options]
+allowed_tags = [
+    "build",
+    "chore",
+    "ci",
+    "docs",
+    "feat",
+    "fix",
+    "perf",
+    "style",
+    "refactor",
+    "test",
+    "MAJOR",
+    "BREAKING",
+    "breaking",
+    "BREAKING CHANGE",
+    "breaking change",
+]
+minor_tags = ["feat"]
+patch_tags = ["fix", "perf"]
+major_tags = ["MAJOR", "BREAKING",  "BREAKING CHANGE", "breaking change"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,1031 @@
+syntax = "proto2";
+import "enums.proto";
+
+option optimize_for = SPEED;
+option py_generic_services = false;
+
+enum EJSRegisterMethodType {
+	k_EJSRegisterMethodType_Invalid = 0;
+	k_EJSRegisterMethodType_Function = 1;
+	k_EJSRegisterMethodType_Callback = 2;
+	k_EJSRegisterMethodType_Promise = 3;
+}
+
+enum EAccessibilityContrastMode {
+	k_EBrowserContrastMode_NoPreference = 0;
+	k_EBrowserContrastMode_More = 1;
+	k_EBrowserContrastMode_Less = 2;
+}
+
+message CMsgKeyUp {
+	optional uint32 browser_handle = 1;
+	optional uint32 keyCode = 2;
+	optional uint32 modifiers = 3;
+	optional uint32 nativeKeyCode = 4;
+}
+
+message CMsgKeyDown {
+	optional uint32 browser_handle = 1;
+	optional uint32 keyCode = 2;
+	optional uint32 modifiers = 3;
+	optional bool is_system_key = 4;
+	optional uint32 nativeKeyCode = 5;
+}
+
+message CMsgKeyChar {
+	optional uint32 browser_handle = 1;
+	optional uint32 unichar = 2;
+	optional uint32 modifiers = 3;
+	optional uint32 keyCode = 4;
+	optional uint32 nativeKeyCode = 5;
+}
+
+message CMsgMouseDown {
+	optional uint32 browser_handle = 1;
+	optional uint32 mouse_button = 2;
+	optional uint32 modifiers = 3;
+}
+
+message CMsgMouseUp {
+	optional uint32 browser_handle = 1;
+	optional uint32 mouse_button = 2;
+	optional uint32 modifiers = 3;
+	optional bool is_off_panel = 4;
+	optional int32 x = 5;
+	optional int32 y = 6;
+}
+
+message CMsgMouseDblClick {
+	optional uint32 browser_handle = 1;
+	optional uint32 mouse_button = 2;
+	optional uint32 modifiers = 3;
+}
+
+message CMsgMouseWheel {
+	optional uint32 browser_handle = 1;
+	optional int32 deltax = 2;
+	optional int32 deltay = 3;
+	optional uint32 modifiers = 4;
+}
+
+message CMsgMouseMove {
+	optional uint32 browser_handle = 1;
+	optional int32 x = 2;
+	optional int32 y = 3;
+	optional uint32 modifiers = 4;
+}
+
+message CMsgMouseLeave {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgBrowserCreate {
+	optional uint32 request_id = 1;
+	optional string useragent = 2;
+	optional string user_css = 3;
+	optional bool native_dropdowns = 4;
+	optional float dpi_scaling = 5;
+	optional uint32 initial_width = 6;
+	optional uint32 initial_height = 7;
+	optional string window_icon = 8;
+	optional string vroverlay_key = 9;
+	optional uint32 browser_type = 10;
+	optional int32 initial_top = 11 [default = -2147483648];
+	optional int32 initial_left = 12 [default = -2147483648];
+	optional bool only_allow_trusted_popups = 13;
+	optional string initial_url = 14;
+	optional fixed64 hwnd_parent = 15;
+	optional uint32 creation_flags = 16;
+}
+
+message CMsgBrowserCreateResponse {
+	optional uint32 browser_handle = 1;
+	optional uint32 request_id = 2;
+}
+
+message CMsgBrowserRemove {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgSetLocalFileRequestMapping {
+	message AdditionalRoute {
+		optional string relative_url = 1;
+		optional string local_path = 2;
+		optional string allowed_extensions = 3;
+		optional bool url_rewrite = 4;
+	}
+
+	optional uint32 browser_handle = 1;
+	optional string request_url = 2;
+	optional string default_local_path = 3;
+	repeated .CMsgSetLocalFileRequestMapping.AdditionalRoute routes = 4;
+}
+
+message CMsgBrowserErrorStrings {
+	optional uint32 browser_handle = 1;
+	optional string title = 2;
+	optional string header = 3;
+	optional string cache_miss = 4;
+	optional string bad_url = 5;
+	optional string connection_problem = 6;
+	optional string proxy_problem = 7;
+	optional string unknown = 8;
+}
+
+message CMsgBrowserSetName {
+	optional uint32 browser_handle = 1;
+	optional string name = 2;
+}
+
+message CMsgBrowserSize {
+	optional uint32 browser_handle = 1;
+	optional double width = 2;
+	optional double height = 3;
+}
+
+message CMsgBrowserSetMinSize {
+	optional uint32 browser_handle = 1;
+	optional double width = 2;
+	optional double height = 3;
+}
+
+message CMsgBrowserPosition {
+	optional uint32 browser_handle = 1;
+	optional double x = 2;
+	optional double y = 3;
+	optional double x_local = 4;
+	optional double y_local = 5;
+}
+
+message CMsgBrowserResized {
+	optional uint32 browser_handle = 1;
+	optional double x = 2;
+	optional double y = 3;
+	optional double width = 4;
+	optional double height = 5;
+	optional bool fullscreen = 6;
+	optional double dpi_horizontal = 7;
+	optional double dpi_vertical = 8;
+	optional string display_name = 9;
+	optional int32 display_width = 10;
+	optional int32 display_height = 11;
+}
+
+message CMsgPostURL {
+	optional uint32 browser_handle = 1;
+	optional string url = 2;
+	optional string post = 3;
+	optional uint32 pageserial = 4;
+	optional bool replace_entry = 5;
+}
+
+message CMsgAddHeader {
+	optional uint32 browser_handle = 1;
+	optional string key = 2;
+	optional string value = 3;
+	optional bool only_send_to_steam = 4;
+	optional bool send_in_xhr = 5;
+}
+
+message CMsgStopLoad {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgReload {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgGoForward {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgGoBack {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgWasHidden {
+	optional uint32 browser_handle = 1;
+	optional bool hidden = 2;
+}
+
+message CMsgSetWindowVisibility {
+	optional uint32 browser_handle = 1;
+	optional bool visible = 2;
+}
+
+message CMsgClearHistory {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgClearAllBrowsingData {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgCopy {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgPaste {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgExecuteJavaScript {
+	optional uint32 browser_handle = 1;
+	optional string script = 2;
+}
+
+message CMsgSetFocus {
+	optional uint32 browser_handle = 1;
+	optional bool focus = 2;
+}
+
+message CMsgHorizontalScrollBarSize {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgHorizontalScrollBarSizeResponse {
+	optional uint32 browser_handle = 1;
+	optional uint32 scroll_max = 6;
+	optional uint32 scroll = 7;
+	optional float zoom = 8;
+	optional bool visible = 9;
+	optional uint32 page_size = 10;
+}
+
+message CMsgVerticalScrollBarSize {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgVerticalScrollBarSizeResponse {
+	optional uint32 browser_handle = 1;
+	optional uint32 scroll_max = 6;
+	optional uint32 scroll = 7;
+	optional float zoom = 8;
+	optional bool visible = 9;
+	optional uint32 page_size = 10;
+}
+
+message CMsgFind {
+	optional uint32 browser_handle = 1;
+	optional string find = 2;
+	optional bool infind = 3;
+	optional bool reverse = 4 [default = false];
+}
+
+message CMsgStopFind {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgSetHorizontalScroll {
+	optional uint32 browser_handle = 1;
+	optional uint32 scroll = 2;
+}
+
+message CMsgSetVerticalScroll {
+	optional uint32 browser_handle = 1;
+	optional uint32 scroll = 2;
+}
+
+message CMsgSetZoomLevel {
+	optional uint32 browser_handle = 1;
+	optional double zoom = 2;
+}
+
+message CMsgViewSource {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgBrowserReady {
+	optional uint32 browser_handle = 1;
+	optional string vr_overlay_key = 2;
+	optional fixed64 hwnd_browser = 3;
+}
+
+message CMsgURLChanged {
+	optional uint32 browser_handle = 1;
+	optional string url = 2;
+	optional string postData = 3;
+	optional bool bIsRedirect = 4;
+	optional string pagetitle = 5;
+	optional bool bNewNavigation = 6;
+}
+
+message CHistoryEntry {
+	optional string url = 1;
+}
+
+message CMsgHistoryChanged {
+	optional uint32 browser_handle = 1;
+	optional uint32 index = 2;
+	repeated .CHistoryEntry entries = 3;
+}
+
+message CMsgLoadError {
+	optional uint32 browser_handle = 1;
+	optional int32 error_code = 2;
+	optional string url = 3;
+	optional string error_description = 4;
+}
+
+message CHTMLHeader {
+	optional string key = 1;
+	optional string value = 2;
+}
+
+message CHTMLPageSecurityInfo {
+	optional bool bIsSecure = 1 [default = false];
+	optional bool bHasCertError = 2 [default = false];
+	optional string issuerName = 3;
+	optional string certName = 4;
+	optional int32 certExpiry = 5 [default = 0];
+	optional int32 nCertBits = 6 [default = 0];
+	optional bool bIsEVCert = 7 [default = false];
+}
+
+message CMsgFinishedRequest {
+	optional uint32 browser_handle = 1;
+	optional string url = 2;
+	optional string pageTitle = 3;
+}
+
+message CMsgLoadedRequest {
+	optional uint32 browser_handle = 1;
+	optional string url = 2;
+	optional string pageTitle = 3;
+	repeated .CHTMLHeader headers = 5;
+}
+
+message CMsgFavIconURLChanged {
+	optional uint32 browser_handle = 1;
+	repeated string urls = 2;
+}
+
+message CMsgCtrlTabPressed {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgPageSecurity {
+	optional uint32 browser_handle = 1;
+	optional string url = 2;
+	optional .CHTMLPageSecurityInfo security_info = 3;
+}
+
+message CMsgStartRequest {
+	optional uint32 browser_handle = 1;
+	optional string url = 2;
+	optional string target = 3;
+	optional string postData = 4;
+	optional bool bIsRedirect = 5;
+}
+
+message CMsgStartRequestResponse {
+	optional uint32 browser_handle = 1;
+	optional bool bAllow = 2;
+}
+
+message CMsgShowPopup {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgHidePopup {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgSizePopup {
+	optional uint32 browser_handle = 1;
+	optional int32 x = 2;
+	optional int32 y = 3;
+	optional uint32 wide = 4;
+	optional uint32 tall = 5;
+}
+
+message CMsgOpenNewTab {
+	optional uint32 browser_handle = 1;
+	optional string url = 2;
+	optional bool bForeground = 3;
+}
+
+message CMsgPopupHTMLWindow {
+	optional uint32 browser_handle = 1;
+	optional string url = 2;
+	optional int32 x = 3 [default = -2147483648];
+	optional int32 y = 4 [default = -2147483648];
+	optional uint32 wide = 5;
+	optional uint32 tall = 6;
+	optional uint32 popup_index = 7;
+	optional bool trusted_creator = 8;
+	optional string name = 9;
+	optional uint64 hwnd = 10;
+	optional uint32 parent_popup_index = 11;
+	optional uint32 creation_flags = 12;
+}
+
+message CMsgSetHTMLTitle {
+	optional uint32 browser_handle = 1;
+	optional string title = 2;
+}
+
+message CMsgLoadingResource {
+	optional uint32 browser_handle = 1;
+	optional string url = 2;
+}
+
+message CMsgStatusText {
+	optional uint32 browser_handle = 1;
+	optional string text = 2;
+}
+
+message CMsgSetCursor {
+	optional uint32 browser_handle = 1;
+	optional uint32 cursor = 2;
+	optional bytes custom_data = 3;
+	optional uint32 wide = 4;
+	optional uint32 tall = 5;
+	optional uint32 xhotspot = 6;
+	optional uint32 yhotspot = 7;
+}
+
+message CMsgFileLoadDialog {
+	message Filter {
+		optional string name = 1;
+		repeated string patterns = 2;
+		optional bool is_default = 3;
+	}
+
+	optional uint32 browser_handle = 1;
+	optional uint32 owning_browser_handle = 2;
+	optional string title = 3;
+	optional string initialFile = 4;
+	repeated string accept_types = 5;
+	optional bool is_save = 6;
+	optional bool choose_directory = 7;
+	repeated .CMsgFileLoadDialog.Filter filters = 8;
+}
+
+message CMsgFileLoadDialogResponse {
+	optional uint32 browser_handle = 1;
+	optional uint32 owning_browser_handle = 2;
+	optional bool bsuccess = 3;
+	repeated string files = 4;
+}
+
+message CMsgRequestProcessInfo {
+	optional uint64 requestid = 1;
+}
+
+message CMsgProcessInfoNotification {
+	optional uint64 requestid = 1;
+	optional .EBrowserGPUStatus gpu_status = 2 [default = k_EBrowserGPUStatus_Invalid];
+	optional .EBrowserFeatureStatus canvas_2d = 3 [default = k_EBrowserFeatureStatus_Invalid];
+	optional .EBrowserFeatureStatus canvas_oop_rasterization = 4 [default = k_EBrowserFeatureStatus_Invalid];
+	optional .EBrowserFeatureStatus direct_rendering_display_compositor = 5 [default = k_EBrowserFeatureStatus_Invalid];
+	optional .EBrowserFeatureStatus gpu_compositing = 6 [default = k_EBrowserFeatureStatus_Invalid];
+	optional .EBrowserFeatureStatus multiple_raster_threads = 7 [default = k_EBrowserFeatureStatus_Invalid];
+	optional .EBrowserFeatureStatus opengl = 8 [default = k_EBrowserFeatureStatus_Invalid];
+	optional .EBrowserFeatureStatus rasterization = 9 [default = k_EBrowserFeatureStatus_Invalid];
+	optional .EBrowserFeatureStatus raw_draw = 10 [default = k_EBrowserFeatureStatus_Invalid];
+	optional .EBrowserFeatureStatus skia_graphite = 11 [default = k_EBrowserFeatureStatus_Invalid];
+	optional .EBrowserFeatureStatus video_decode = 13 [default = k_EBrowserFeatureStatus_Invalid];
+	optional .EBrowserFeatureStatus video_encode = 14 [default = k_EBrowserFeatureStatus_Invalid];
+	optional .EBrowserFeatureStatus vulkan = 15 [default = k_EBrowserFeatureStatus_Invalid];
+	optional .EBrowserFeatureStatus webgl = 16 [default = k_EBrowserFeatureStatus_Invalid];
+	optional .EBrowserFeatureStatus webgl2 = 17 [default = k_EBrowserFeatureStatus_Invalid];
+	optional .EBrowserFeatureStatus webgpu = 18 [default = k_EBrowserFeatureStatus_Invalid];
+	optional .EBrowserFeatureStatus webnn = 19 [default = k_EBrowserFeatureStatus_Invalid];
+}
+
+message CMsgShowToolTip {
+	optional uint32 browser_handle = 1;
+	optional string text = 2;
+}
+
+message CMsgUpdateToolTip {
+	optional uint32 browser_handle = 1;
+	optional string text = 2;
+}
+
+message CMsgHideToolTip {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgSearchResults {
+	optional uint32 browser_handle = 1;
+	optional int32 activeMatch = 2;
+	optional int32 results = 3;
+}
+
+message CMsgClose {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgSetSharedPaintBuffers {
+	optional uint32 browser_handle = 1;
+	optional uint32 wide = 2;
+	optional uint32 tall = 3;
+	optional uint64 source_pid = 4;
+	optional uint64 source_handle = 5;
+	optional uint64 handle = 6;
+}
+
+message CMsgAckSharedPaintBuffers {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgNeedsPaint {
+	optional uint32 browser_handle = 1;
+	optional uint32 scrollx = 10;
+	optional uint32 scrolly = 11;
+	optional float pagescale = 12;
+	optional uint32 pageserial = 15;
+	optional uint32 avg_frame_ms = 20;
+	optional float stddev_sum_frame_ms = 21;
+	optional uint32 long_frame_ms = 22;
+}
+
+message CMsgComboNeedsPaint {
+	optional uint32 browser_handle = 1;
+	optional uint64 rgba = 2;
+	optional uint32 combobox_wide = 3 [default = 0];
+	optional uint32 combobox_tall = 4 [default = 0];
+	optional uint64 shared_memory_handle = 5 [default = 0];
+	optional uint64 shared_memory_size = 7 [default = 0];
+}
+
+message CMsgNeedsSharedTexturePaint {
+	optional uint32 browser_handle = 1;
+	optional uint32 share_handle = 2;
+	optional uint32 width = 3;
+	optional uint32 height = 4;
+	optional uint32 scrollx = 5;
+	optional uint32 scrolly = 6;
+	optional float pagescale = 7;
+	optional uint32 pageserial = 8;
+}
+
+message CMsgGetZoom {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgGetZoomResponse {
+	optional uint32 browser_handle = 1;
+	optional float zoom = 2;
+}
+
+message CMsgLinkAtPosition {
+	optional uint32 browser_handle = 1;
+	optional uint32 x = 2;
+	optional uint32 y = 3;
+}
+
+message CMsgLinkAtPositionResponse {
+	optional uint32 browser_handle = 1;
+	optional uint32 x = 2;
+	optional uint32 y = 3;
+	optional string url = 4;
+	optional bool blivelink = 5;
+	optional bool binput = 6;
+}
+
+message CMsgScalePageToValue {
+	optional uint32 browser_handle = 1;
+	optional float scale = 2;
+	optional float x = 3;
+	optional float y = 4;
+}
+
+message CMsgSavePageToJPEG {
+	optional uint32 browser_handle = 1;
+	optional string url = 2;
+	optional string filename = 3;
+	optional uint32 width = 4;
+	optional uint32 height = 5;
+}
+
+message CMsgSavePageToJPEGResponse {
+	optional uint32 browser_handle = 1;
+	optional string url = 2;
+	optional string filename = 3;
+}
+
+message CMsgJSAlert {
+	optional uint32 browser_handle = 1;
+	optional string message = 2;
+}
+
+message CMsgJSConfirm {
+	optional uint32 browser_handle = 1;
+	optional string message = 2;
+}
+
+message CMsgJSDialogResponse {
+	optional uint32 browser_handle = 1;
+	optional bool result = 2;
+}
+
+message CMsgCanGoBackAndForward {
+	optional uint32 browser_handle = 1;
+	optional bool bgoback = 2;
+	optional bool bgoforward = 3;
+}
+
+message CMsgOpenSteamURL {
+	optional uint32 browser_handle = 1;
+	optional string url = 2;
+	optional string referrer = 3;
+}
+
+message CMsgSetCookie {
+	optional string key = 1;
+	optional string value = 2;
+	optional string path = 3;
+	optional string host = 4;
+	optional uint32 expires = 5;
+	optional bool secure = 6;
+	optional bool httponly = 7;
+	optional int32 samesite = 8;
+}
+
+message CMsgSetTargetFrameRate {
+	optional uint32 browser_handle = 1;
+	optional uint32 nTargetFrameRate = 2;
+}
+
+message CMsgPauseRepaint {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgFullRepaint {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgRequestFullScreen {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgExitFullScreen {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgToggleFindInPageDialog {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgSetPIDShuttingDown {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgDisableBackgroundThrottling {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgAckPIDShuttingDown {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgGetCookiesForURL {
+	optional uint32 browser_handle = 1;
+	optional string url = 2;
+}
+
+message CCookie {
+	optional string name = 1;
+	optional string value = 2;
+	optional string domain = 3;
+	optional string path = 4;
+}
+
+message CMsgGetCookiesForURLResponse {
+	optional uint32 browser_handle = 1;
+	optional string url = 2;
+	repeated .CCookie cookies = 3;
+}
+
+message CMsgNodeHasFocus {
+	optional uint32 browser_handle = 1;
+	optional bool bInput = 2;
+	optional string name = 3;
+	optional string elementtagname = 4;
+	optional string searchbuttontext = 5;
+	optional bool bHasMultipleInputs = 6;
+	optional string input_type = 7;
+	optional bool bIsMainFrame = 8;
+}
+
+message CMsgBuildID {
+	optional uint64 build_id = 1;
+}
+
+message CMsgOpenDevTools {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgCloseDevTools {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgUnlockH264 {
+	optional uint32 browser_handle = 1;
+	optional string unlock_code = 2;
+}
+
+message CMsgScreenInformationChanged {
+	optional uint32 browser_handle = 1;
+	optional double override_width = 2;
+	optional double override_height = 3;
+}
+
+message CMsgClearAllCookies {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgScreenDPI {
+	optional uint32 browser_handle = 1;
+	optional float dpi_scaling = 2;
+}
+
+message CMsgAckScreenDPI {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgAuthedSteamDomains {
+	repeated string domains = 1;
+}
+
+message CMsgSteamAuthNeeded {
+	optional bool filler = 1;
+}
+
+message CMsgSteamAuthCookiesSet {
+	optional bool success = 1;
+}
+
+message CMsgJSRegisterMethod {
+	optional uint32 browser_handle = 1;
+	optional string name = 2;
+	optional .EJSRegisterMethodType method_type = 3 [default = k_EJSRegisterMethodType_Invalid];
+}
+
+message CMsgJSValue {
+	message JSObjectProperty {
+		optional string name = 1;
+		optional .CMsgJSValue value = 2;
+	}
+
+	optional bool bool_value = 1;
+	optional int32 int_value = 2;
+	optional uint32 uint_value = 3;
+	optional double double_value = 4;
+	optional string string_value = 5;
+	optional uint64 function_handle = 6;
+	optional bytes bytes_value = 12;
+	optional bool is_array = 8;
+	repeated .CMsgJSValue array_values = 9;
+	optional bool is_object = 10;
+	repeated .CMsgJSValue.JSObjectProperty object_properties = 11;
+}
+
+message CMsgJSMethodCall {
+	optional uint32 browser_handle = 1;
+	optional uint32 owning_browser_handle = 2;
+	optional string name = 3;
+	repeated .CMsgJSValue arguments = 4;
+}
+
+message CMsgJSExecuteCallback {
+	optional uint32 browser_handle = 1;
+	optional uint32 owning_browser_handle = 2;
+	optional uint64 function_handle = 3;
+	repeated .CMsgJSValue arguments = 4;
+}
+
+message CMsgJSExecutePromise {
+	optional uint32 browser_handle = 1;
+	optional uint32 owning_browser_handle = 2;
+	optional uint64 promise_handle = 3;
+	optional string reject_reason = 4;
+	optional .CMsgJSValue argument = 5;
+}
+
+message CMsgJSReleaseCallback {
+	optional uint32 browser_handle = 1;
+	optional uint32 owning_browser_handle = 2;
+	optional uint64 function_handle = 3;
+}
+
+message CMsgJSRaiseException {
+	optional uint32 browser_handle = 1;
+	optional uint32 owning_browser_handle = 2;
+	optional string exception = 3;
+}
+
+message CMsgNotifyUserActivation {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgSetNetFakeLocalSystemState {
+	optional uint32 state = 1;
+}
+
+message CMsgDraggableRegionsChanged {
+	message DraggableRects {
+		optional int32 x = 1;
+		optional int32 y = 2;
+		optional int32 width = 3;
+		optional int32 height = 4;
+		optional bool draggable = 5;
+		optional bool transparent = 6;
+	}
+
+	optional uint32 browser_handle = 1;
+	repeated .CMsgDraggableRegionsChanged.DraggableRects rects = 2;
+}
+
+message CMsgResizeGripChanged {
+	optional uint32 browser_handle = 1;
+	optional int32 width = 2;
+	optional int32 height = 3;
+}
+
+message CMsgSetWindowPosition {
+	optional uint32 browser_handle = 1;
+	optional double x = 2;
+	optional double y = 3;
+	optional double width = 4;
+	optional double height = 5;
+	optional double min_width = 6;
+	optional double min_height = 7;
+	optional double max_width = 8;
+	optional double max_height = 9;
+}
+
+message CMsgShowWindow {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgHideWindow {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgBringWindowToFront {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgSetForegroundWindow {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgMaximizeRestoreWindow {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgMinimizeWindow {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgShowBrowserContextMenu {
+	message ContextCommand {
+		optional int32 id = 1;
+		optional string label = 2;
+	}
+
+	optional uint32 browser_handle = 1;
+	repeated .CMsgShowBrowserContextMenu.ContextCommand custom_commands = 2;
+	optional uint32 type_flags = 3;
+	optional string page_url = 4;
+	optional int32 coord_x = 5;
+	optional int32 coord_y = 6;
+	optional string link_url = 7;
+	optional string unfiltered_link_url = 8;
+	optional string selection_text = 9;
+	optional string misspelled_word = 10;
+	optional uint32 edit_state_flags = 11;
+}
+
+message CMsgHandleContextMenuCommand {
+	optional uint32 browser_handle = 1;
+	optional int32 command_id = 2;
+}
+
+message CMsgTouchGesture {
+	optional uint32 browser_handle = 1;
+	optional int32 id = 2;
+	optional uint32 gesture = 3;
+	optional double x = 4;
+	optional double y = 5;
+	optional double width = 6;
+	optional double height = 7;
+	optional uint32 tap_count = 8;
+	optional double pinch_scale = 9;
+}
+
+message CMsgSetTouchGesturesToCancel {
+	optional uint32 browser_handle = 1;
+	repeated uint32 gestures = 2;
+}
+
+message CMsgImeSetComposition {
+	optional uint32 browser_handle = 1;
+	optional string text = 2;
+}
+
+message CMsgImeCommitText {
+	optional uint32 browser_handle = 1;
+	optional string text = 2;
+}
+
+message CMsgImeCancelComposition {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgImeCompositionRangeChanged {
+	optional uint32 browser_handle = 1;
+	optional double x = 2;
+	optional double y = 3;
+}
+
+message CMsgInspectElement {
+	optional uint32 browser_handle = 1;
+	optional uint32 x = 2;
+	optional uint32 y = 3;
+}
+
+message CMsgDisableF5 {
+	optional uint32 browser_handle = 1;
+	optional bool disable = 2;
+}
+
+message CMsgStartDownload {
+	optional uint32 browser_handle = 1;
+	optional string url = 2;
+}
+
+message CMsgSetWindowStackingOrder {
+	optional uint32 browser_handle = 1;
+	optional uint32 estackingorder = 2;
+}
+
+message CMsgBrowserViewPostMessageToParentRequest {
+	optional uint32 browser_handle = 1;
+	optional string message = 2;
+	optional string args = 3;
+	optional string requesting_url = 4;
+}
+
+message CMsgBlockedRequest {
+	optional uint32 browser_handle = 1;
+	optional string url = 2;
+}
+
+message CMsgBrowserFocusChanged {
+	optional uint32 browser_handle = 1;
+	optional bool focused = 2;
+}
+
+message CMsgRenderProcessTerminated {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgSetProtocolBlockList {
+	optional uint32 browser_handle = 1;
+	optional string list = 2;
+}
+
+message CMsgSetForceDeviceScaleFactors {
+	optional double dpi_scale = 1;
+	optional double browser_scale = 2;
+}
+
+message CMsgSetUIMode {
+	optional int32 ui_mode = 1;
+}
+
+message CMsgSetSteamBetaName {
+	optional string steam_beta_name = 1;
+}
+
+message CMsgSetSteamID {
+	optional uint64 steam_id = 1;
+}
+
+message CMsgPopupCreated {
+	optional uint32 browser_handle = 1;
+}
+
+message CMsgSetVRKeyboardVisibility {
+	optional uint32 browser_handle = 1;
+	optional bool visible = 2;
+}
+
+message CMsgRestartJSContext {
+}
+
+message CMsgSetAccessibilitySettings {
+	optional bool reduced_motion_enabled = 1;
+	optional .EAccessibilityContrastMode preferred_contrast = 2 [default = k_EBrowserContrastMode_NoPreference];
+	optional uint32 minimum_font_size = 3;
+}
+
+message CMsgSetBrowserViewDomainRequestMapping {
+	optional string request_domain = 1;
+	optional string default_local_path = 2;
+}

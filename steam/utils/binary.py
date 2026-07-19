@@ -35,7 +35,7 @@ class StructReader(object):
         self.offset += n
         return self.data[self.offset - n:self.offset]
 
-    def read_cstring(self, terminator=b'\x00'):
+    def read_cstring(self, terminator: bytes = b'\x00') -> bytes:
         """Reads a single null termianted string
 
         :return: string without bytes

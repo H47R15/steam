@@ -1,0 +1,287 @@
+syntax = "proto2";
+import "steammessages_base.proto";
+import "steammessages_unified_base.proto";
+import "clientmetrics.proto";
+import "enums.proto";
+
+option py_generic_services = true;
+
+enum ESteamPipeWorkType {
+	k_ESteamPipeClientWorkType_Invalid = 0;
+	k_ESteamPipeClientWorkType_StageFromChunkStores = 1;
+}
+
+enum ESteamPipeOperationType {
+	k_ESteamPipeOperationType_Invalid = 0;
+	k_ESteamPipeOperationType_DecryptCPU = 1;
+	k_ESteamPipeOperationType_DiskRead = 2;
+	k_ESteamPipeOperationType_DiskWrite = 3;
+}
+
+enum EClipShareMethod {
+	k_EClipShareMethod_Chat = 1;
+	k_EClipShareMethod_Clipboard = 2;
+	k_EClipShareMethod_File = 3;
+	k_EClipShareMethod_SendClip = 4;
+	k_EClipShareMethod_SaveToMedia = 5;
+	k_EClipShareMethod_CreateLink = 6;
+}
+
+enum EClipRangeMethod {
+	k_EClipRangeMethod_CreateClipButton = 1;
+	k_EClipRangeMethod_Highlight = 2;
+	k_EClipRangeMethod_BeginEndButtons = 3;
+	k_EClipRangeMethod_ContextMenu = 4;
+	k_EClipRangeMethod_Drag = 5;
+	k_EClipRangeMethod_EntireClip = 6;
+	k_EClipRangeMethod_PhaseRecording = 7;
+}
+
+message CClientMetrics_AppInterfaceCreation {
+	optional string raw_version = 1;
+	optional string requested_interface_type = 2;
+}
+
+message CClientMetrics_AppInterfaceMethodCounts {
+	optional string interface_name = 1;
+	optional string method_name = 2;
+	optional uint32 call_count = 3;
+}
+
+message CClientMetrics_AppInterfaceStats_Notification {
+	optional uint64 game_id = 1;
+	repeated .CClientMetrics_AppInterfaceCreation interfaces_created = 2;
+	repeated .CClientMetrics_AppInterfaceMethodCounts methods_called = 3;
+	optional uint32 session_length_seconds = 4;
+}
+
+message CClientMetrics_IPv6Connectivity_Result {
+	optional uint32 protocol_tested = 1;
+	optional uint32 connectivity_state = 2;
+}
+
+message CClientMetrics_IPv6Connectivity_Notification {
+	optional uint32 cell_id = 1;
+	repeated .CClientMetrics_IPv6Connectivity_Result results = 2;
+	optional bool private_ip_is_rfc6598 = 3;
+}
+
+message CClientMetrics_SteamPipeWorkStats_Operation {
+	optional .ESteamPipeOperationType type = 1 [default = k_ESteamPipeOperationType_Invalid];
+	optional uint32 num_ops = 2;
+	optional uint64 num_bytes = 3;
+	optional uint64 busy_time_ms = 4;
+	optional uint64 idle_time_ms = 5;
+	optional uint64 sum_run_time_ms = 6;
+	optional uint64 sum_wait_time_ms = 7;
+}
+
+message CClientMetrics_SteamPipeWorkStats_Notification {
+	optional uint32 appid = 1;
+	optional uint32 depotid = 2;
+	optional .ESteamPipeWorkType work_type = 3 [default = k_ESteamPipeClientWorkType_Invalid];
+	repeated .CClientMetrics_SteamPipeWorkStats_Operation operations = 4;
+	optional uint32 hardware_type = 5;
+}
+
+message CClientMetrics_ReportReactUsage_Notification {
+	message RouteData {
+		optional string route = 1;
+		optional uint32 count = 2;
+	}
+
+	message ComponentData {
+		optional string component = 1;
+		optional uint32 count = 2;
+	}
+
+	message ActionData {
+		optional string action = 1;
+		optional uint32 count = 2;
+	}
+
+	optional string product = 1;
+	optional string version = 2;
+	repeated .CClientMetrics_ReportReactUsage_Notification.RouteData routes = 3;
+	repeated .CClientMetrics_ReportReactUsage_Notification.ComponentData components = 4;
+	repeated .CClientMetrics_ReportReactUsage_Notification.ActionData actions = 5;
+}
+
+message CClientMetrics_ReportClientError_Notification {
+	message Error {
+		optional string identifier = 1;
+		optional string message = 2;
+		optional uint32 count = 3;
+		optional string context = 4;
+		optional string url = 5;
+	}
+
+	optional string product = 1;
+	optional string version = 2;
+	repeated .CClientMetrics_ReportClientError_Notification.Error errors = 3;
+	repeated string tags = 4;
+}
+
+message CClientMetrics_ClientBootstrap_Notification {
+	optional .CClientMetrics_ClientBootstrap_Summary summary = 1;
+}
+
+message CClientMetrics_DownloadRates_Notification {
+	message StatsInfo {
+		optional uint32 source_type = 1;
+		optional uint32 source_id = 2;
+		optional uint64 bytes = 3;
+		optional string host_name = 4;
+		optional uint64 microseconds = 5;
+		optional bool used_ipv6 = 6;
+		optional bool proxied = 7;
+		optional bool used_http2 = 8;
+		optional uint32 cache_hits = 9;
+		optional uint32 cache_misses = 10;
+		optional uint64 hit_bytes = 11;
+		optional uint64 miss_bytes = 12;
+		optional uint32 chunks_scored = 13;
+		optional double sum_chunk_scores = 14;
+	}
+
+	optional uint32 cell_id = 1;
+	repeated .CClientMetrics_DownloadRates_Notification.StatsInfo stats = 2;
+	optional uint32 throttling_kbps = 3;
+	optional uint32 os_type = 4;
+	optional uint32 device_type = 5;
+}
+
+message CClientMetrics_ContentValidation_Notification {
+	optional int32 validation_result = 1;
+	optional uint32 app_id = 2;
+	optional bool staged_files = 3;
+	optional bool user_initiated = 4;
+	optional bool early_out = 5;
+	optional uint32 chunks_scanned = 6;
+	optional uint32 chunks_corrupt = 7;
+	optional uint64 bytes_scanned = 8;
+	optional uint64 chunk_bytes_corrupt = 9;
+	optional uint64 total_file_size_corrupt = 10;
+}
+
+message CClientMetrics_CloudAppSyncStats_Notification {
+	optional uint32 app_id = 1;
+	optional uint32 platform_type = 2;
+	optional bool preload = 3;
+	optional bool blocking_app_launch = 4;
+	optional uint32 files_uploaded = 5;
+	optional uint32 files_downloaded = 6;
+	optional uint32 files_deleted = 7;
+	optional uint64 bytes_uploaded = 8;
+	optional uint64 bytes_downloaded = 9;
+	optional uint64 microsec_total = 10;
+	optional uint64 microsec_init_caches = 11;
+	optional uint64 microsec_validate_state = 12;
+	optional uint64 microsec_ac_launch = 13;
+	optional uint64 microsec_ac_prep_user_files = 14;
+	optional uint64 microsec_ac_exit = 15;
+	optional uint64 microsec_build_sync_list = 16;
+	optional uint64 microsec_delete_files = 17;
+	optional uint64 microsec_download_files = 18;
+	optional uint64 microsec_upload_files = 19;
+	optional uint32 hardware_type = 20;
+	optional uint32 files_managed = 21;
+}
+
+message CClientMetrics_ContentDownloadResponse_Counts_Notification {
+	optional uint32 cell_id = 1;
+	optional .CClientMetrics_ContentDownloadResponse_Hosts data = 2;
+}
+
+message CClientMetrics_ReportClientArgs_Notification {
+	repeated string client_args = 1;
+	optional bool gpu_webview_regkey_disabled = 2;
+	optional bool suppress_gpu_chrome = 3;
+	optional bool browser_not_supported = 4;
+	optional bool hw_accel_video_regkey_disabled = 5;
+	optional bool mini_mode_enabled = 6;
+	optional bool fps_counter_enabled = 7;
+	optional bool library_low_bandwidth_mode_enabled = 8;
+	optional bool library_low_perf_mode_enabled = 9;
+	optional .EGRMode gr_mode = 10 [default = k_EGRMode_Never];
+}
+
+message CClientMetrics_ReportLinuxStats_Notification {
+	optional int32 glibc_version_major = 1;
+	optional int32 glibc_version_minor = 2;
+	optional int32 account_type = 3;
+	optional int32 launcher_type = 4;
+	optional int32 game_server_appid = 5;
+	optional string process_name = 6;
+}
+
+message CClientMetrics_ReportAccessibilitySettings_Notification {
+	optional float accessibility_desktop_ui_scale = 1;
+	optional bool accessibility_screen_reader_enabled = 2;
+	optional bool accessibility_high_contrast_mode = 3;
+	optional bool accessibility_reduce_motion = 4;
+	optional string accessibility_color_filter_name = 5;
+}
+
+message CClientMetrics_ClipShare_Notification {
+	optional uint32 eresult = 1 [default = 2];
+	optional .EClipShareMethod share_method = 2 [default = k_EClipShareMethod_Chat];
+	optional float seconds = 3;
+	optional uint64 bytes = 4;
+	optional fixed64 gameid = 5;
+}
+
+message CClientMetrics_ClipRange_Notification {
+	message RelativeRangeEdge {
+		optional .EClipRangeMethod original_range_method = 1 [default = k_EClipRangeMethod_CreateClipButton];
+		optional .EClipRangeMethod latest_range_method = 2 [default = k_EClipRangeMethod_CreateClipButton];
+		optional int32 delta_ms = 3;
+	}
+
+	optional .EClipRangeMethod original_range_method = 1 [default = k_EClipRangeMethod_CreateClipButton];
+	optional .CClientMetrics_ClipRange_Notification.RelativeRangeEdge start = 2;
+	optional .CClientMetrics_ClipRange_Notification.RelativeRangeEdge end = 3;
+	optional float seconds = 4;
+	optional fixed64 gameid = 5;
+}
+
+message CClientMetrics_EndGameRecording_Notification {
+	optional .EGameRecordingType recording_type = 1 [default = k_EGameRecordingType_Unknown];
+	optional float seconds = 2;
+	optional uint64 bytes = 3;
+	optional fixed64 gameid = 4;
+	optional bool instant_clip = 5;
+}
+
+message CClientMetrics_GamePerformance_Notification {
+	message FrameRate {
+		optional fixed64 gameid = 1;
+		optional uint32 frame_rate = 2;
+		optional int32 session_seconds = 3;
+		optional uint32 framegen_frame_rate = 4;
+		optional .GamePerformanceSettings game_settings = 5;
+	}
+
+	repeated .CClientMetrics_GamePerformance_Notification.FrameRate frame_rates = 2;
+	optional .UserSystemInformation system_info = 3;
+}
+
+service ClientMetrics {
+	rpc ClientAppInterfaceStatsReport (.CClientMetrics_AppInterfaceStats_Notification) returns (.NoResponse);
+	rpc ClientIPv6ConnectivityReport (.CClientMetrics_IPv6Connectivity_Notification) returns (.NoResponse);
+	rpc SteamPipeWorkStatsReport (.CClientMetrics_SteamPipeWorkStats_Notification) returns (.NoResponse);
+	rpc ReportReactUsage (.CClientMetrics_ReportReactUsage_Notification) returns (.NoResponse);
+	rpc ReportClientError (.CClientMetrics_ReportClientError_Notification) returns (.NoResponse);
+	rpc ClientBootstrapReport (.CClientMetrics_ClientBootstrap_Notification) returns (.NoResponse);
+	rpc ClientDownloadRatesReport (.CClientMetrics_DownloadRates_Notification) returns (.NoResponse);
+	rpc ClientContentValidationReport (.CClientMetrics_ContentValidation_Notification) returns (.NoResponse);
+	rpc ClientCloudAppSyncStats (.CClientMetrics_CloudAppSyncStats_Notification) returns (.NoResponse);
+	rpc ClientDownloadResponseCodeCounts (.CClientMetrics_ContentDownloadResponse_Counts_Notification) returns (.NoResponse);
+	rpc ReportClientArgs (.CClientMetrics_ReportClientArgs_Notification) returns (.NoResponse);
+	rpc ReportLinuxStats (.CClientMetrics_ReportLinuxStats_Notification) returns (.NoResponse);
+	rpc ReportAccessibilitySettings (.CClientMetrics_ReportAccessibilitySettings_Notification) returns (.NoResponse);
+	rpc ReportClipShare (.CClientMetrics_ClipShare_Notification) returns (.NoResponse);
+	rpc ReportClipRange (.CClientMetrics_ClipRange_Notification) returns (.NoResponse);
+	rpc ReportEndGameRecording (.CClientMetrics_EndGameRecording_Notification) returns (.NoResponse);
+	rpc ReportGamePerformance (.CClientMetrics_GamePerformance_Notification) returns (.NoResponse);
+}

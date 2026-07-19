@@ -1,13 +1,17 @@
-import sys
 import time
+from typing import Callable
 
-if sys.version_info >= (3,3):
-    _monotonic = time.monotonic
-else:
-    _monotonic = time.time  # not really monotonic vOv
+_monotonic = time.monotonic
 
 
 class ConstantRateLimit(object):
+    times: int
+    seconds: int
+    exit_wait: bool
+    sleep_func: Callable[[float], None]
+    rate: float
+    _ref: float
+
     def __init__(self, times, seconds, exit_wait=False, sleep_func=time.sleep):
         """Context manager for enforcing constant rate on code inside the block .
 

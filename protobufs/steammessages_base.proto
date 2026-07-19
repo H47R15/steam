@@ -2,16 +2,10 @@ syntax = "proto2";
 import "google/protobuf/descriptor.proto";
 
 option optimize_for = SPEED;
-option py_generic_services = true;
-option (force_php_generation) = true;
 
 extend .google.protobuf.MessageOptions {
 	optional int32 msgpool_soft_limit = 50000 [default = 32];
 	optional int32 msgpool_hard_limit = 50001 [default = 384];
-}
-
-extend .google.protobuf.FileOptions {
-	optional bool force_php_generation = 50000 [default = false];
 }
 
 extend .google.protobuf.FieldOptions {
@@ -66,6 +60,7 @@ enum EProtoClanEventType {
 	k_EClanSeasonUpdate = 33;
 	k_EClanCrosspostEvent = 34;
 	k_EClanInGameEventGeneral = 35;
+	k_EClanCreatorHome = 36;
 }
 
 enum PartnerEventNotificationType {
@@ -87,7 +82,17 @@ message CMsgIPAddressBucket {
 	optional fixed64 bucket = 2;
 }
 
+message CMsgGCRoutingProtoBufHeader {
+	optional uint64 dst_gcid_queue = 1;
+	optional uint32 dst_gc_dir_index = 2;
+}
+
 message CMsgProtoBufHeader {
+	enum ESessionDisposition {
+		k_ESessionDispositionNormal = 0;
+		k_ESessionDispositionDisconnect = 1;
+	}
+
 	optional fixed64 steamid = 1;
 	optional int32 client_sessionid = 2;
 	optional uint32 routing_appid = 3;
@@ -104,7 +109,6 @@ message CMsgProtoBufHeader {
 	optional uint64 messageid = 18 [default = 18446744073709551615];
 	optional uint32 publisher_group_id = 19;
 	optional uint32 sysid = 20;
-	optional uint64 trace_tag = 21;
 	optional uint32 webapi_key_id = 25;
 	optional bool is_from_external_source = 26;
 	repeated uint32 forward_to_sysid = 27;
@@ -115,11 +119,33 @@ message CMsgProtoBufHeader {
 	optional string debug_source = 34;
 	optional uint32 debug_source_string_index = 35;
 	optional uint64 token_id = 36;
+	optional .CMsgGCRoutingProtoBufHeader routing_gc = 37;
+	optional .CMsgProtoBufHeader.ESessionDisposition session_disposition = 38 [default = k_ESessionDispositionNormal];
+	optional string wg_token = 39;
+	optional string webui_auth_key = 40;
+	repeated int32 exclude_client_sessionids = 41;
+	optional fixed64 admin_request_spoofing_steamid = 43;
+	optional bool is_valveds = 44;
+	optional fixed64 trace_tag = 45;
 
 	oneof ip_addr {
 		uint32 ip = 15;
 		bytes ip_v6 = 29;
 	}
+}
+
+message CMsgKubeRPCPacket {
+	message Hdr {
+		optional fixed64 jobid_source = 10 [default = 18446744073709551615];
+		optional fixed64 jobid_target = 11 [default = 18446744073709551615];
+		optional int32 eresult = 13 [default = 2];
+		optional string target_job_name = 12;
+		optional string error_message = 14;
+		optional string reply_address = 42;
+	}
+
+	optional .CMsgKubeRPCPacket.Hdr hdr = 1;
+	optional bytes payload = 2;
 }
 
 message CMsgMulti {
@@ -139,6 +165,8 @@ message CMsgAuthTicket {
 	optional uint32 h_steam_pipe = 5;
 	optional uint32 ticket_crc = 6;
 	optional bytes ticket = 7;
+	optional bytes server_secret = 8;
+	optional uint32 ticket_type = 9;
 }
 
 message CCDDBAppDetailCommon {
@@ -154,6 +182,10 @@ message CCDDBAppDetailCommon {
 	optional bool has_adult_content = 12;
 	optional bool is_visible_in_steam_china = 13;
 	optional uint32 app_type = 14;
+	optional bool has_adult_content_sex = 15;
+	optional bool has_adult_content_violence = 16;
+	repeated uint32 content_descriptorids = 17;
+	repeated uint32 content_descriptorids_including_dlc = 18;
 }
 
 message CMsgAppRights {
@@ -177,7 +209,6 @@ message CMsgAppRights {
 }
 
 message CCuratorPreferences {
-	optional uint32 supported_languages = 1;
 	optional bool platform_windows = 2;
 	optional bool platform_mac = 3;
 	optional bool platform_linux = 4;
@@ -235,6 +266,7 @@ message CCommunity_ClanAnnouncementInfo {
 	optional int32 voteupcount = 14;
 	optional int32 votedowncount = 15;
 	optional .EBanContentCheckResult ban_check_result = 16 [default = k_EBanContentCheckResult_NotScanned];
+	optional bool banned = 17;
 }
 
 message CClanEventData {
@@ -268,6 +300,8 @@ message CClanEventData {
 	repeated uint32 referenced_appids = 28;
 	optional uint32 build_id = 29;
 	optional string build_branch = 30;
+	optional bool unlisted = 31;
+	optional uint32 rtime_created = 32;
 }
 
 message CBilling_Address {
@@ -292,6 +326,15 @@ message CPackageReservationStatus {
 	optional bool expired = 6;
 	optional uint32 time_expires = 7;
 	optional uint32 time_reserved = 8;
+	optional uint32 rtime_estimated_notification = 9;
+	optional string notificaton_token = 10;
+	optional int32 queue_head_position_at_reservation = 11;
+	optional int32 queue_head_position_now = 12;
+	optional bool position_is_waitlist = 13;
+	optional string user_waitlist_token = 14;
+	optional bool queue_in_waitlist = 15;
+	optional string queue_waitlist_token = 16;
+	optional uint32 collection_time_active = 17;
 }
 
 message CMsgKeyValuePair {
@@ -301,4 +344,50 @@ message CMsgKeyValuePair {
 
 message CMsgKeyValueSet {
 	repeated .CMsgKeyValuePair pairs = 1;
+}
+
+message UserContentDescriptorPreferences {
+	message ContentDescriptor {
+		optional uint32 content_descriptorid = 1;
+		optional uint32 timestamp_added = 2;
+	}
+
+	repeated .UserContentDescriptorPreferences.ContentDescriptor content_descriptors_to_exclude = 1;
+}
+
+message UserSystemInformation {
+	optional string manufacturer = 1;
+	optional string model = 2;
+	optional string dx_video_card = 3;
+	optional int32 dx_vendorid = 4;
+	optional int32 dx_deviceid = 5;
+	optional uint32 num_gpu = 6;
+	optional uint64 system_ram = 7;
+	optional string os = 8;
+	optional string cpu_vendor = 9;
+	optional string cpu_name = 10;
+	optional uint32 gaming_device_type = 11;
+	optional string dx_driver_version = 12;
+	optional string adapter_description = 14;
+	optional string driver_version = 15;
+	optional string driver_date = 16;
+	optional uint32 vram_size = 17;
+	optional uint32 screen_width = 18;
+	optional uint32 screen_height = 19;
+	optional bool precise_frame_rate = 20;
+}
+
+message GamePerformanceSettings {
+	enum EGamePerformanceSetting {
+		k_EGamePerformanceSetting_NotSet = 0;
+		k_EGamePerformanceSetting_Low = 1;
+		k_EGamePerformanceSetting_Medium = 2;
+		k_EGamePerformanceSetting_High = 3;
+		k_EGamePerformanceSetting_Ultra = 4;
+		k_EGamePerformanceSetting_Custom = 5;
+	}
+
+	optional .GamePerformanceSettings.EGamePerformanceSetting setting = 1 [default = k_EGamePerformanceSetting_NotSet];
+	optional uint32 game_resolution_width = 2;
+	optional uint32 game_resolution_height = 3;
 }

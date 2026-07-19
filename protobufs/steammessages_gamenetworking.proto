@@ -1,0 +1,26 @@
+syntax = "proto2";
+import "steammessages_base.proto";
+import "steammessages_unified_base.proto";
+
+option py_generic_services = true;
+
+message CGameNetworking_AllocateFakeIP_Request {
+	optional uint32 app_id = 1;
+	optional uint32 num_fake_ports = 2;
+}
+
+message CGameNetworking_AllocateFakeIP_Response {
+	optional fixed32 fake_ip = 1;
+	repeated uint32 fake_ports = 2;
+}
+
+message CGameNetworking_ReleaseFakeIP_Notification {
+	optional uint32 app_id = 1;
+	optional fixed32 fake_ip = 2;
+	repeated uint32 fake_ports = 3;
+}
+
+service GameNetworking {
+	rpc AllocateFakeIP (.CGameNetworking_AllocateFakeIP_Request) returns (.CGameNetworking_AllocateFakeIP_Response);
+	rpc NotifyReleaseFakeIP (.CGameNetworking_ReleaseFakeIP_Notification) returns (.NoResponse);
+}

@@ -1,0 +1,12 @@
+# GitHub Sponsors config — powers the "Sponsor" button on the repo header.
+#
+# Schema reference:
+#   https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
+#
+# ``custom:`` accepts up to 4 URLs; a ``mailto:`` link routes the Sponsor
+# button to the maintainer's email client rather than a hosted sponsorship
+# page.  If / when hosted channels get set up for this fork, add entries
+# above ``custom:`` — e.g. ``github: <username>``, ``ko_fi: <username>``,
+# ``patreon: <username>``, ``open_collective: <slug>``.
+custom:
+  - "mailto:nikoovic@gmail.com"

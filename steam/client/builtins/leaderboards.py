@@ -1,7 +1,11 @@
 """
 Reading the leaderboards with :class:`SteamLeaderboard` is as easy as iterating over a list.
 """
+from __future__ import annotations
+
 import logging
+from typing import TYPE_CHECKING, Any, Optional
+
 from steam.core.msg import MsgProto
 from steam.enums import EResult, ELeaderboardDataRequest, ELeaderboardSortMethod, ELeaderboardDisplayType
 from steam.enums.emsg import EMsg
@@ -9,7 +13,59 @@ from steam.utils import _range, chunks
 from steam.utils.throttle import ConstantRateLimit
 
 
-class Leaderboards(object):
+class _LeaderboardsMixinHost:  # pragma: no cover
+    """Structural type describing the surface the :class:`Leaderboards`
+    mixin (and the :class:`SteamLeaderboard` objects it hands out)
+    require from the host client — typically :class:`SteamClient`
+    which inherits from :class:`CMClient` (source of :meth:`sleep`)
+    and defines :meth:`send_job_and_wait` itself.
+
+    ``Leaderboards`` is a mixin — it never runs standalone; it's always
+    combined into a ``SteamClient`` MRO where these methods live on
+    the co-mixed base classes.  Declaring them on a Protocol-ish base
+    class here lets Pylance resolve ``self.send_job_and_wait(...)``
+    (on the mixin) and ``self._steam.send_job_and_wait(...)`` /
+    ``self._steam.sleep(...)`` (on :class:`SteamLeaderboard`) under
+    ``TYPE_CHECKING`` without dragging the concrete ``SteamClient``
+    type into a runtime import (which would cause a circular import
+    at load time — the ``steam.client`` package imports this module
+    during its own ``__init__``).
+
+    Only referenced from the ``TYPE_CHECKING``-guarded ``_HostBase``
+    alias below and from the string-quoted ``_steam`` annotation on
+    :class:`SteamLeaderboard`, so this class body is dead code at
+    runtime.
+    """
+
+    def send_job_and_wait(
+        self,
+        message: MsgProto,
+        body_params: Optional[dict] = None,
+        timeout: Optional[float] = None,
+        raises: bool = False,
+    ) -> Any:
+        """Round-trip a job-flagged message and block until the
+        response arrives.  Implemented on :class:`.SteamClient`."""
+        ...
+
+    def sleep(self, seconds: float) -> None:
+        """Cooperative sleep that yields to other greenlets.
+        Implemented on :class:`.CMClient`."""
+        ...
+
+
+# ``Leaderboards`` is a mixin — at runtime it derives from ``object``
+# (so instances placed in the SteamClient MRO don't add another
+# ancestor beyond the concrete bases already there).  Under
+# ``TYPE_CHECKING`` we pretend it derives from the host-surface stub
+# above so Pylance resolves the co-mixed attributes cleanly.
+if TYPE_CHECKING:
+    _HostBase = _LeaderboardsMixinHost
+else:
+    _HostBase = object
+
+
+class Leaderboards(_HostBase):
     def __init__(self, *args, **kwargs):
         super(Leaderboards, self).__init__(*args, **kwargs)
 
@@ -74,6 +130,12 @@ class SteamLeaderboard(object):
     sort_method = ELeaderboardSortMethod.NONE      #: :class:`steam.enums.common.ELeaderboardSortMethod`
     display_type = ELeaderboardDisplayType.NONE    #: :class:`steam.enums.common.ELeaderboardDisplayType`
     data_request = ELeaderboardDataRequest.Global  #: :class:`steam.enums.common.ELeaderboardDataRequest`
+
+    #: Owning :class:`.SteamClient` (co-mixed with :class:`Leaderboards`);
+    #: annotated via the host-surface stub so Pylance resolves the
+    #: ``send_job_and_wait`` / ``sleep`` calls without a runtime import
+    #: back into :mod:`steam.client`.
+    _steam: "_LeaderboardsMixinHost"
 
     def __init__(self, steam, app_id, name, data=None):
         self._steam = steam
