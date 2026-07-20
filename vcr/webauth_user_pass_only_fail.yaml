@@ -260,4 +260,95 @@ interactions:
     status:
       code: 429
       message: Too Many Requests
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '40'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/getrsakey/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA02Sy2oeQAiF3+Vfd+HdMS9THEchtKGhSaCl9N072dWNoHI438E/j7ePqn57ezy9
+        //zoL4/Xj/39ub71768vP87j6XG2kUEkTu7Qir11odgICRIFIZJLqwPPKV2caQt541AYQfnaI4od
+        GKSywyHapFARMhC2lPZhkHJTs0StqwTqWqN7ka40oPIdsmtvIkdCw6sXV28z8RgLHUPwk2a+yLjw
+        zHQsh6VyQslQJTgGQdP3Oj1jtwfuLJZ7RZQK2harG8R13epDq/PEhT0D2cF1cHB4CJ1XOon4Robe
+        9WnCFGfzNS9r7UYWl/G8gQAs7AyxiwCo3nzdi18hux5sVJZ1QcVcDIpjN5RK5VLI3Ef2hMARC0ew
+        QfZLkcmsWEwSc8+P3Bxr+RCH1dVKumbBvZSA8By2y4/ZJy8rQkGSNfsMLeemWu1Q5JEXkj2KTElL
+        ovTx/0v0r9f7EoAAgHfx/vzSb+/58jkUxoVrwWc9/v4DBk3G9lcCAAA=
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '383'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Set-Cookie:
+      - steamCountry=ES%7Ce57ef8ab19b71328985e32a4ea86ae24; path=/; secure; HttpOnly;
+        SameSite=None
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '577'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/dologin/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA8srzckBAE/8yyUEAAAA
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - close
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '24'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 429
+      message: Too Many Requests
 version: 1

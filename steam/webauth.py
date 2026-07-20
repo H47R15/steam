@@ -129,12 +129,19 @@ class WebAuth(object):
         import pathlib
         import tempfile
 
+        # ``captcha_url`` is ``str | None`` per its property signature —
+        # narrow to ``str`` here.  The ``captcha_gid == -1`` guard above
+        # rules out the None branch, but Pylance / mypy don't correlate
+        # the two, so bind to a local and assert.
+        url = self.captcha_url
+        assert url is not None  # invariant: guarded by captcha_gid check
+
         dest_dir = pathlib.Path(dest_dir) if dest_dir else pathlib.Path(tempfile.gettempdir())
         dest_dir.mkdir(parents=True, exist_ok=True)
         path = dest_dir / ("steam_captcha_%s.png" % self.captcha_gid)
 
         try:
-            resp = self.session.get(self.captcha_url, timeout=15)
+            resp = self.session.get(url, timeout=15)
         except requests.exceptions.RequestException as e:
             raise HTTPError(str(e))
         resp.raise_for_status()

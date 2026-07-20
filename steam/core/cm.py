@@ -87,6 +87,22 @@ class CMClient(EventEmitter):
     _heartbeat_loop = None
     _LOG = logging.getLogger("CMClient")
 
+    #: Seconds of incoming-message silence before the connection is
+    #: considered dead and force-disconnected from the heartbeat loop.
+    #: Steam's own heartbeat interval is negotiated at logon (usually
+    #: ~9s); anything past ``3×`` that means the far end has gone
+    #: silent both ways.  Set to ``0`` to disable staleness detection
+    #: (matches the pre-fix behaviour where the heartbeat loop fired
+    #: sends forever regardless of whether Steam was still there).
+    cm_stale_seconds = 30
+
+    #: Monotonic-ish timestamp of the last raw message read off the
+    #: socket.  Stamped in :meth:`_recv_messages` for every inbound
+    #: message (of any kind — encryption handshake, multi-frames,
+    #: heartbeats, service responses).  Read by :meth:`__heartbeat`
+    #: to decide whether the CM has gone silent.
+    _last_recv_time = 0.0
+
     def __init__(self, protocol=PROTOCOL_TCP):
         self.cm_servers = CMServerList()
 
@@ -162,6 +178,11 @@ class CMClient(EventEmitter):
         assert server_addr is not None
         self.current_server_addr = server_addr
         self.connected = True
+        # Prime the recv-time stamp — otherwise the heartbeat staleness
+        # check would compare ``now()`` against ``0.0`` (a huge delta)
+        # before the first message arrives and force-disconnect us
+        # during the encryption handshake.
+        self._last_recv_time = time()
         self.emit(self.EVENT_CONNECTED)
         self._recv_loop = gevent.spawn(self._recv_messages)
         self._connecting = False
@@ -195,6 +216,7 @@ class CMClient(EventEmitter):
                      '_seen_logon',
                      '_recv_loop',
                      '_heartbeat_loop',
+                     '_last_recv_time',
                      ]:
             self.__dict__.pop(name, None)
 
@@ -232,6 +254,12 @@ class CMClient(EventEmitter):
         for message in self.connection:
             if not self.connected:
                 break
+
+            # Stamp before decryption / dispatch — the value we care
+            # about is "did the socket produce bytes recently", not
+            # "was the payload well-formed".  A stalled remote is a
+            # stalled remote regardless of what it last sent us.
+            self._last_recv_time = time()
 
             if self.channel_key:
                 if self.channel_hmac:
@@ -365,10 +393,39 @@ class CMClient(EventEmitter):
             data = data[4+size:]
 
     def __heartbeat(self, interval):
+        """Send keepalive heartbeats + watch for one-way socket death.
+
+        Steam's CM protocol expects heartbeats every ``interval`` seconds
+        (negotiated at logon).  On its own that's not a keepalive — a
+        black-hole socket accepts our sends and produces nothing back,
+        and the loop would fire into the void forever.
+
+        The staleness gate closes that hole: if we haven't received
+        ANYTHING from Steam in :attr:`cm_stale_seconds` seconds, the
+        connection is treated as dead — we tear it down so
+        :attr:`EVENT_DISCONNECTED` fires and consumers can reconnect
+        via :meth:`reconnect` / their own retry logic.  Steam's own
+        traffic (multi-frames, session pings, message deliveries)
+        arrives well within a healthy interval; any longer silence
+        is almost certainly a routing failure the OS-level socket
+        hasn't reported yet.
+        """
         message = MsgProto(EMsg.ClientHeartBeat)
 
         while True:
             self.sleep(interval)
+
+            if self.cm_stale_seconds > 0 and self._last_recv_time > 0:
+                elapsed = time() - self._last_recv_time
+                if elapsed > self.cm_stale_seconds:
+                    self._LOG.warning(
+                        "CM went silent — %.1fs since last inbound message "
+                        "(> %ds threshold).  Force-disconnecting.",
+                        elapsed, self.cm_stale_seconds,
+                    )
+                    gevent.spawn(self.disconnect)
+                    return
+
             self.send(message)
 
     def _handle_logon(self, msg):

@@ -79,6 +79,33 @@ else:
 
 
 class Apps(_HostBase):
+    """PICS product info, licenses, access tokens, and ticket flows.
+
+    ``Apps`` is a mixin composed into :class:`.SteamClient` — you don't
+    instantiate it directly, you get its methods via a ``SteamClient``
+    instance.  Everything here is CM protocol (not HTTP), so it needs
+    an active CM session (see ``anonymous_login`` / ``cli_login`` /
+    ``login`` on the client).
+
+    The headline method is :meth:`get_product_info`, which fetches the
+    canonical Steam metadata for a batch of apps and / or packages —
+    name, type, oslist, launch configs, depots, DRM, everything Steam
+    keeps in its PICS catalogue.  See the `PICS wiki page
+    <https://github.com/H47R15/steam/wiki/PICS>`_ for the full recipe
+    and a comparison of when to use PICS vs. store HTTP vs. Web API.
+
+    Also on this mixin:
+
+    * :meth:`get_player_count` — current concurrent players for an app.
+    * :meth:`get_access_tokens` — per-app / per-package tokens used to
+      unlock the licensed portions of a PICS response.
+    * :meth:`get_changes_since` — poll for what's changed in PICS since
+      a known change-number; the primitive Steam's own launcher uses.
+    * :meth:`get_app_ticket` / :meth:`get_encrypted_app_ticket` — app
+      ownership tickets.
+    * :meth:`get_depot_key` — depot decryption key for CDN downloads.
+    """
+
     licenses: dict = {}  #: :class:`dict` Accounts' package licenses
 
     def __init__(self, *args, **kwargs):
@@ -114,56 +141,91 @@ class Apps(_HostBase):
             return EResult(resp.eresult)
 
     def get_product_info(self, apps=[], packages=[], meta_data_only=False, raw=False, auto_access_tokens=True, timeout=15):
-        """Get product info for apps and packages
+        """Fetch PICS product info for a batch of apps and / or packages.
 
-        :param apps: items in the list should be either just ``app_id``, or :class:`dict`
+        This is the batched entry point to Steam's authoritative app /
+        package metadata catalogue.  Passes list-of-appids in over the
+        CM protocol, gets ``{name, type, oslist, depots, config, …}``
+        back per entry.  Hundreds of apps per call — Steam pages large
+        batches across multiple response chunks internally, still one
+        method invocation from the caller's side.
+
+        For a full walkthrough — recipe patterns, change-number polling,
+        access-token gating, when to use PICS vs. store HTTP vs.
+        Web API — see the `PICS wiki page
+        <https://github.com/H47R15/steam/wiki/PICS>`_.
+
+        :param apps: appids to fetch.  Each item is either an ``int`` or
+            a ``dict`` like ``{'appid': 570, 'access_token': ...}`` for
+            licensed content.
         :type  apps: :class:`list`
-        :param packages: items in the list should be either just ``package_id``, or :class:`dict`
+        :param packages: same shape but with ``packageid`` keys.  Package
+            tokens live on ``client.licenses[<packageid>].access_token``
+            after login — see :attr:`licenses`.
         :type  packages: :class:`list`
-        :param meta_data_only: only meta data will be returned in the reponse (e.g. change number, missing_token, sha1)
+        :param meta_data_only: skip the VDF payload; response only
+            carries ``_change_number``, ``_sha``, ``_size``,
+            ``_missing_token``.  Fast when you're just checking whether
+            an app has changed since your last read.
         :type  meta_data_only: :class:`bool`
-        :param raw: Data buffer for each app is returned as bytes in its' original form. Apps buffer is text VDF, and package buffer is binary VDF
+        :param raw: return the payload as raw bytes under ``_buffer``
+            instead of parsing the VDF.  Apps buffer is text VDF,
+            package buffer is binary VDF.
         :type  raw: :class:`bool`
-        :param auto_access_token: automatically request and fill access tokens
-        :type  auto_access_token: :class:`bool`
-        :return: dict with ``apps`` and ``packages`` containing their info, see example below
-        :rtype: :class:`dict`, :class:`None`
+        :param auto_access_tokens: default ``True`` — the client calls
+            :meth:`get_access_tokens` first and threads them in.  Turn
+            off when you already have tokens or want to skip the extra
+            round-trip.
+        :type  auto_access_tokens: :class:`bool`
+        :param timeout: seconds per response chunk (not per call).  A
+            batch of 500 apps arrives across several chunks; each chunk
+            respects this timeout.
+        :type  timeout: :class:`int`
+        :return: ``{'apps': {appid: {...}, ...}, 'packages': {pkgid: {...}, ...}}``,
+            or ``None`` if both lists were empty.  Each entry carries
+            the VDF payload plus ``_change_number`` / ``_sha`` /
+            ``_size`` / ``_missing_token`` bookkeeping.
+        :rtype: :class:`dict` or :class:`None`
+
+        The **common recipe** — anonymous batched name lookup:
 
         .. code:: python
 
-            {'apps':     {570: {...}, ...},
-             'packages': {123: {...}, ...}
-            }
+            client = SteamClient()
+            assert client.anonymous_login() == client.EResult.OK
 
-        Access token is needed to access full information for certain apps, and also package info.
-        Each app and package has its' own access token.
-        If a token is required then ``_missing_token=True`` in the response.
+            resp = client.get_product_info(
+                apps=[570, 730, 553850],   # Dota 2, CS2, Helldivers 2
+                timeout=30,
+            )
+            names = {aid: info['common']['name']
+                     for aid, info in resp['apps'].items()}
+            # {570: 'Dota 2', 730: 'Counter-Strike 2', 553850: 'HELLDIVERS™ 2'}
 
-        App access tokens are obtained by calling :meth:`get_access_tokens`, and are returned only
-        when the account has a license for the specified app. Example code:
+        **Licensed content** — entries come back with
+        ``_missing_token=True`` when the token wasn't supplied.  With
+        ``auto_access_tokens=True`` (default) the client requests them
+        automatically; if you want to bring your own or handle it
+        yourself:
 
         .. code:: python
 
-            result = client.get_product_info(apps=[123])
-
+            result = client.get_product_info(apps=[123], auto_access_tokens=False)
             if result['apps'][123]['_missing_token']:
-                tokens = client.get_access_token(apps=[123])
+                tokens = client.get_access_tokens(app_ids=[123])
+                result = client.get_product_info(apps=[{
+                    'appid': 123,
+                    'access_token': tokens['apps'][123],
+                }])
 
-                result = client.get_product_info(apps=[{'appid': 123,
-                                                        'access_token': tokens['apps'][123]
-                                                        }])
-
-        .. note::
-            It is best to just request access token for all apps, before sending a product info
-            request.
-
-        Package tokens are located in the account license list. See :attr:`.licenses`
+        **Package tokens** live on the account's license list:
 
         .. code:: python
 
-            result = client.get_product_info(packages=[{'packageid': 123,
-                                                        'access_token': client.licenses[123].access_token,
-                                                        }])
+            result = client.get_product_info(packages=[{
+                'packageid': 123,
+                'access_token': client.licenses[123].access_token,
+            }])
         """
         if not apps and not packages:
             return

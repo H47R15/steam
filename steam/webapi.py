@@ -182,6 +182,97 @@ class WebAPI(object):
         interface, method = method_path.split('.', 1)
         return getattr(getattr(self, interface), method)(**kwargs)
 
+    def batch_call(self, method_path, id_param, ids,
+                   chunk_size=100, join_char=',', **extra_params):
+        """Batch a Web API call over a list of IDs, chunking transparently.
+
+        Many Steam Web API endpoints take a delimited list of IDs in a
+        single parameter — e.g. ``ISteamUser.GetPlayerSummaries`` accepts
+        up to **100** comma-separated ``steamids``,
+        ``ISteamUserStats.GetPlayerAchievements`` handles per-app checks
+        one at a time, etc.  Steam's per-endpoint caps vary; this helper
+        chunks the input list so callers don't have to.
+
+        Batching happens client-side.  Each chunk is one round-trip;
+        results are returned in call order.
+
+        :param method_path: ``Interface.Method`` (e.g.
+            ``ISteamUser.GetPlayerSummaries``), same shape :meth:`call`
+            takes.
+        :type  method_path: :class:`str`
+        :param id_param: name of the parameter on that method that
+            accepts the delimited list (e.g. ``steamids`` for
+            ``GetPlayerSummaries``).
+        :type  id_param: :class:`str`
+        :param ids: the full list of IDs to batch across.  Coerced to
+            strings before joining.
+        :type  ids: :class:`list`
+        :param chunk_size: max items per call.  Default 100 — matches
+            ``GetPlayerSummaries``.  Consult Steam's docs for other
+            endpoints; ``IStoreBrowseService.GetItems`` caps at 50,
+            some newer service methods at 25.
+        :type  chunk_size: :class:`int`
+        :param join_char: separator for the ID list.  Comma for
+            classic ``I*`` interfaces; some ``*Service`` methods want
+            a JSON array instead — for those, pre-serialize and use
+            :meth:`call` directly.
+        :type  join_char: :class:`str`
+        :param extra_params: passed verbatim to every chunked call.
+        :return: list of per-chunk responses, in the order they were
+            issued (so ``sum(len(r['response']['players'])
+            for r in results)`` reassembles a ``GetPlayerSummaries``
+            batch).
+        :rtype: :class:`list`
+
+        Example — batch player summaries for 250 steamids across 3
+        round-trips:
+
+        .. code:: python
+
+            api = WebAPI(key='ABC...')
+            steamids = [76561198010623137, 76561198010623138, ...]  # 250 items
+            chunks = api.batch_call(
+                'ISteamUser.GetPlayerSummaries',
+                id_param='steamids',
+                ids=steamids,
+                chunk_size=100,
+            )
+            # 250 items → 3 chunks of 100/100/50 = 3 HTTP calls
+            all_players = [
+                p
+                for chunk in chunks
+                for p in chunk['response']['players']
+            ]
+
+        Example — batch app-owned lookup with an extra parameter:
+
+        .. code:: python
+
+            chunks = api.batch_call(
+                'ISteamUser.GetPlayerBans',
+                id_param='steamids',
+                ids=some_steamids,
+                chunk_size=100,
+            )
+
+        For endpoints whose ID parameter is a JSON array (typical of
+        ``*Service`` methods like ``IStoreBrowseService.GetItems``),
+        this helper isn't the right shape — build the JSON payload
+        yourself and loop over :meth:`call`.
+        """
+        if not ids:
+            return []
+        if chunk_size < 1:
+            raise ValueError("chunk_size must be >= 1")
+
+        results = []
+        for start in range(0, len(ids), chunk_size):
+            chunk = ids[start:start + chunk_size]
+            joined = join_char.join(str(x) for x in chunk)
+            resp = self.call(method_path, **{id_param: joined}, **extra_params)
+            results.append(resp)
+        return results
+
 
     def doc(self):
         """

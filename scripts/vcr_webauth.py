@@ -193,6 +193,22 @@ def main() -> int:
                 email_code = input(
                     'Steam Guard email code (5 chars, from the email Steam sent): '
                 ).strip()
+            except wa.CaptchaRequiredLoginIncorrect:
+                # SUBCLASS of ``CaptchaRequired`` — must come FIRST or
+                # Python's except-matching catches it under the parent
+                # branch below and this handler goes unreached.
+                if not expect_success:
+                    # FAIL path with a wrong password + captcha demand —
+                    # we're recording the incorrect-password flow, so
+                    # bailing here is the intended terminal state.
+                    raise
+                path = auth.save_captcha_image()
+                print()
+                print(f'  Captcha wrong AND password wrong — reload both.')
+                print(f'    file://{path}')
+                captcha = input('  Captcha text: ').strip()
+                new_pw = getpass('  Password (fresh — no echo): ')
+                auth = wa.WebAuth(u, new_pw)
             except wa.CaptchaRequired:
                 # Steam's anti-abuse gate — usually triggered by too many
                 # failed logins recently.  Download the challenge PNG to a
@@ -206,19 +222,6 @@ def main() -> int:
                 print(f'    file://{path}')
                 print(f'    or run:  open {path}')
                 captcha = input('  Captcha text: ').strip()
-            except wa.CaptchaRequiredLoginIncorrect:
-                if not expect_success:
-                    # FAIL path with a wrong password + captcha demand —
-                    # we're recording the incorrect-password flow, so
-                    # bailing here is the intended terminal state.
-                    raise
-                path = auth.save_captcha_image()
-                print()
-                print(f'  Captcha wrong AND password wrong — reload both.')
-                print(f'    file://{path}')
-                captcha = input('  Captcha text: ').strip()
-                new_pw = getpass('  Password (fresh — no echo): ')
-                auth = wa.WebAuth(u, new_pw)
             except wa.LoginIncorrect as exc:
                 # ``LoginIncorrect`` from a null-body response fires when
                 # Steam's anti-abuse cooldown is still active — often

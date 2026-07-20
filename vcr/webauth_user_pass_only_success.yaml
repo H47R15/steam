@@ -590,4 +590,668 @@ interactions:
     status:
       code: 200
       message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '40'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/getrsakey/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA02Sy2oeQAiF3+Vfd+HdMS9THEchtKGhSaCl9N072dWNoHI438E/j7ePqn57ezy9
+        //zoL4/Xj/39ub71768vP87j6XG2kUEkTu7Qir11odgICRIFIZJLqwPPKV2caQt541AYQfnaI4od
+        GKSywyHapFARMhC2lPZhkHJTs0StqwTqWqN7ka40oPIdsmtvIkdCw6sXV28z8RgLHUPwk2a+yLjw
+        zHQsh6VyQslQJTgGQdP3Oj1jtwfuLJZ7RZQK2harG8R13epDq/PEhT0D2cF1cHB4CJ1XOon4Robe
+        9WnCFGfzNS9r7UYWl/G8gQAs7AyxiwCo3nzdi18hux5sVJZ1QcVcDIpjN5RK5VLI3Ef2hMARC0ew
+        QfZLkcmsWEwSc8+P3Bxr+RCH1dVKumbBvZSA8By2y4/ZJy8rQkGSNfsMLeemWu1Q5JEXkj2KTElL
+        ovTx/0v0r9f7EoAAgHfx/vzSb+/58jkUxoVrwWc9/v4DBk3G9lcCAAA=
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '383'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Set-Cookie:
+      - steamCountry=ES%7Ce57ef8ab19b71328985e32a4ea86ae24; path=/; secure; HttpOnly;
+        SameSite=None
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '577'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/dologin/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA6tWKi5NTk4tLlaySkvMKU7VUSpKLSzNLEotji8pz09LTC7JL1KyKikqBcrkApUl
+        pqcqWSkp1QIAiOnwszgAAAA=
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '74'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Set-Cookie:
+      - steamLoginSecure=0%7C%7CBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB; path=/;
+        secure; HttpOnly; SameSite=None
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '580'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/dologin/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA6tWKi5NTk4tLlayKikqTdVRKkotLM0sSi2OLynPT0tMLskvUrJKS8wpBkrl5Kdn
+        5sUn5+cW5KSWpEI01AIA/v7WokEAAAA=
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '80'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '40'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/getrsakey/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA02Sy2oeQAiF3+Vfd+HdMS9THEchtKGhSaCl9N072dWNoHI438E/j7ePqn57ezy9
+        //zoL4/Xj/39ub71768vP87j6XG2kUEkTu7Qir11odgICRIFIZJLqwPPKV2caQt541AYQfnaI4od
+        GKSywyHapFARMhC2lPZhkHJTs0StqwTqWqN7ka40oPIdsmtvIkdCw6sXV28z8RgLHUPwk2a+yLjw
+        zHQsh6VyQslQJTgGQdP3Oj1jtwfuLJZ7RZQK2harG8R13epDq/PEhT0D2cF1cHB4CJ1XOon4Robe
+        9WnCFGfzNS9r7UYWl/G8gQAs7AyxiwCo3nzdi18hux5sVJZ1QcVcDIpjN5RK5VLI3Ef2hMARC0ew
+        QfZLkcmsWEwSc8+P3Bxr+RCH1dVKumbBvZSA8By2y4/ZJy8rQkGSNfsMLeemWu1Q5JEXkj2KTElL
+        ovTx/0v0r9f7EoAAgHfx/vzSb+/58jkUxoVrwWc9/v4DBk3G9lcCAAA=
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '383'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Set-Cookie:
+      - steamCountry=ES%7Ce57ef8ab19b71328985e32a4ea86ae24; path=/; secure; HttpOnly;
+        SameSite=None
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '567'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/dologin/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA03NUQrCMBAE0Kss+61iW7S2p/AGJabTNtCmupsoQby7AUX8nDcD82SN1kKV28HM
+        ig0vOZgR3PJ5hlHQHeKGRGmNQlNcjHch0SWRYAsfculHChPITkaMzaDk/EfMNWTd8YYFt+gE2oXH
+        OuTVKr/D76rzQI+e2yDxT0eXiZu6aOrmWFWH8lQV+5Jfbz0pxtq5AAAA
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '156'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '40'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/getrsakey/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA02Sy2oeQAiF3+Vfd+HdMS9THEchtKGhSaCl9N072dWNoHI438E/j7ePqn57ezy9
+        //zoL4/Xj/39ub71768vP87j6XG2kUEkTu7Qir11odgICRIFIZJLqwPPKV2caQt541AYQfnaI4od
+        GKSywyHapFARMhC2lPZhkHJTs0StqwTqWqN7ka40oPIdsmtvIkdCw6sXV28z8RgLHUPwk2a+yLjw
+        zHQsh6VyQslQJTgGQdP3Oj1jtwfuLJZ7RZQK2harG8R13epDq/PEhT0D2cF1cHB4CJ1XOon4Robe
+        9WnCFGfzNS9r7UYWl/G8gQAs7AyxiwCo3nzdi18hux5sVJZ1QcVcDIpjN5RK5VLI3Ef2hMARC0ew
+        QfZLkcmsWEwSc8+P3Bxr+RCH1dVKumbBvZSA8By2y4/ZJy8rQkGSNfsMLeemWu1Q5JEXkj2KTElL
+        ovTx/0v0r9f7EoAAgHfx/vzSb+/58jkUxoVrwWc9/v4DBk3G9lcCAAA=
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '383'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Set-Cookie:
+      - steamCountry=ES%7Ce57ef8ab19b71328985e32a4ea86ae24; path=/; secure; HttpOnly;
+        SameSite=None
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '573'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/dologin/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA03NXQrCMBAE4Kss+1wFLbU/p/AGZU2nbaBNdZMoQby7AUV8nG8G5sk+GgPvuRtl
+        8Sh4zUEmcMfnBeJBd6gdE6UtKs1xFWdDoksixQ4u5NJNFGaQmUXFZPBk3UfkGrLuuWDFLVqF78Nj
+        G/Nq09/hd9U7YMDAXdD4p5PNxG19aOv2VJbVsWnKuuLXG6KkWVK5AAAA
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '156'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '40'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/getrsakey/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA02Sy2oeQAiF3+Vfd+HdMS9THEchtKGhSaCl9N072dWNoHI438E/j7ePqn57ezy9
+        //zoL4/Xj/39ub71768vP87j6XG2kUEkTu7Qir11odgICRIFIZJLqwPPKV2caQt541AYQfnaI4od
+        GKSywyHapFARMhC2lPZhkHJTs0StqwTqWqN7ka40oPIdsmtvIkdCw6sXV28z8RgLHUPwk2a+yLjw
+        zHQsh6VyQslQJTgGQdP3Oj1jtwfuLJZ7RZQK2harG8R13epDq/PEhT0D2cF1cHB4CJ1XOon4Robe
+        9WnCFGfzNS9r7UYWl/G8gQAs7AyxiwCo3nzdi18hux5sVJZ1QcVcDIpjN5RK5VLI3Ef2hMARC0ew
+        QfZLkcmsWEwSc8+P3Bxr+RCH1dVKumbBvZSA8By2y4/ZJy8rQkGSNfsMLeemWu1Q5JEXkj2KTElL
+        ovTx/0v0r9f7EoAAgHfx/vzSb+/58jkUxoVrwWc9/v4DBk3G9lcCAAA=
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '383'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Set-Cookie:
+      - steamCountry=ES%7Ce57ef8ab19b71328985e32a4ea86ae24; path=/; secure; HttpOnly;
+        SameSite=None
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '569'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/dologin/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA03NUQ6CMBAE0Kts9huNSBDLKbwBWcsCTaDIbqtpjHe3icb4OW8mmSdqtJZVsR1o
+        Vi5wyYFGxhYvM5My3FnckCCtUWCKC3kXElwTCO/Yh1z6EcLEYCcSshkUnP8I3ULWPRYovEUnrF14
+        rENerfI7/K46z9xzj22Q+Kejy4SmKU1jTlVVH8+mPpT4egPCEpuMuQAAAA==
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '157'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: GET
+    uri: https://steamcommunity.com/login/rendercaptcha/?gid=9719796335289501
+  response:
+    body:
+      string: !!binary |
+        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
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '6098'
+      Content-Security-Policy:
+      - 'default-src blob: data: https: ''unsafe-inline'' ''unsafe-eval''; script-src
+        ''self'' ''unsafe-inline'' ''unsafe-eval'' https://community.fastly.steamstatic.com/
+        https://cdn.fastly.steamstatic.com/steamcommunity/public/assets/ https://api.steampowered.com/
+        https://recaptcha.net https://www.google.com/recaptcha/ https://www.gstatic.cn/recaptcha/
+        https://www.gstatic.com/recaptcha/ https://www.youtube.com/ https://s.ytimg.com;
+        object-src ''none''; connect-src ''self'' https://community.fastly.steamstatic.com/
+        https://store.steampowered.com/ https://checkout.steampowered.com/ wss://community.steam-api.com/websocket/
+        https://api.steampowered.com/ https://login.steampowered.com/ https://help.steampowered.com/
+        https://steam.tv/ https://steamcommunity.com/ https://*.valvesoftware.com
+        https://*.steambeta.net https://*.discovery.beta.steamserver.net https://*.steamcontent.com
+        https://steambroadcast.akamaized.net https://steambroadcast-test.akamaized.net
+        https://broadcast.st.dl.eccdnx.com https://lv.queniujq.cn https://steambroadcastchat.akamaized.net
+        http://127.0.0.1:27060 ws://127.0.0.1:27060; frame-src ''self'' steam: https://store.steampowered.com/
+        https://help.steampowered.com/ https://login.steampowered.com/ https://checkout.steampowered.com/
+        https://www.youtube.com https://www.youtube-nocookie.com https://www.google.com
+        https://sketchfab.com https://player.vimeo.com https://medal.tv https://www.google.com/recaptcha/
+        https://recaptcha.net/recaptcha/ https://help.steampowered.com/; frame-ancestors
+        ''self'' https://steamloopback.host ;'
+      Content-Type:
+      - image/png
+      Server:
+      - nginx
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '593'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/dologin/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA6tWKi5NTk4tLlaySkvMKU7VUSpKLSzNLEotji8pz09LTC7JL1KyKikqBcrkApUl
+        pqcqWSkp1QIAiOnwszgAAAA=
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '74'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Set-Cookie:
+      - steamLoginSecure=0%7C%7CBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB; path=/;
+        secure; HttpOnly; SameSite=None
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - identity
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '598'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-steam/1.4.4 python-requests/2.34.2
+    method: POST
+    uri: https://steamcommunity.com/login/dologin/
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA8srzckBAE/8yyUEAAAA
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - close
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '24'
+      Content-Type:
+      - application/json; charset=utf-8
+      Server:
+      - nginx
+      Vary:
+      - Accept-Encoding
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 429
+      message: Too Many Requests
 version: 1
