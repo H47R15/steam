@@ -18,7 +18,7 @@ import asyncio
 import time
 import unittest
 from collections.abc import Callable
-from typing import Any
+from typing import Any, cast
 from unittest import mock
 
 from tests.test_aio_client import _OK, _FakeEmitter, _run
@@ -467,7 +467,18 @@ class TaskIQIntegrationTests(unittest.TestCase):
                 async def _login(c: Any) -> None:
                     await c.anonymous_login()
 
-                dep = register_steam_client(broker, client, on_start=_login)
+                # ``FakeBroker`` implements the two-method subset of
+                # ``AsyncBroker`` (``add_event_handler``) that
+                # ``register_steam_client`` actually touches — a full
+                # ``AsyncBroker`` would need a redis / whatever backing
+                # and defeat the whole point of a unit test.  Cast to
+                # ``Any`` at the boundary so Pylance / mypy don't flag
+                # the structural mismatch.
+                dep = register_steam_client(
+                    cast(Any, broker),
+                    client,
+                    on_start=_login,
+                )
                 # Startup handler was registered — run it.  The key
                 # is the ``TaskiqEvents`` enum (not the bare string
                 # "startup") because that's what the helper feeds

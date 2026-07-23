@@ -1,3 +1,39 @@
+## 1.7.9
+
+### Fixed
+- **``.gitignore`` silently ignoring top-level docs**.  The file
+  starts with ``*`` (deny-all) and had no allowlist entries for
+  ``README.*`` / ``SECURITY.md`` / ``CHANGES.md`` / ``LICENSE.*``.
+  Files tracked before this rule (``LICENSE``, ``CHANGES.md``) kept
+  working, but any new top-level doc was silently swallowed —
+  which is exactly what happened to ``README.rst`` in 1.7.8: the
+  commit stripped ``README.md`` and referenced ``README.rst`` in
+  ``pyproject.toml``, but git never added ``README.rst`` because
+  the ``*`` rule ignored it.  ``poetry build`` in the release
+  workflow then failed with ``No such file or directory:
+  README.rst``.  Fix: explicit allowlist entries for all top-level
+  docs.
+- **README ships in BOTH ``.rst`` and ``.md``** so both platforms
+  render their preferred format — GitHub picks ``README.md`` (with
+  the mermaid architecture diagram + rendered badges); PyPI reads
+  ``README.rst`` as declared in ``pyproject.toml`` ``readme =``.
+  Content is mirrored between the two.
+
+### Fixed (from 1.7.8's uncommitted queue)
+- 4 Pylance findings on the async surface — none were runtime
+  bugs, all type-check-only:
+  - ``events()`` return-type widened to ``AsyncGenerator[..., None]``
+    (was ``AsyncIterator``) so callers can ``await agen.aclose()``.
+  - ``prometheus_hook`` uses ``labelnames=`` kwarg for
+    ``prometheus_client`` stability across stub versions; the
+    lazy import carries a
+    ``# type: ignore[import-not-found, unused-ignore]`` that keeps
+    both Pylance (when the pkg is absent) and mypy (when it's
+    present) quiet.
+  - TaskIQ integration test casts the ``FakeBroker`` to ``Any`` at
+    the ``register_steam_client`` boundary — the fake intentionally
+    implements only the two-method subset the helper touches.
+
 ## 1.7.8
 
 ### Changed
@@ -16,6 +52,22 @@
   `MCP wiki page
   <https://github.com/H47R15/steam/wiki/MCP>`_.  Sits between
   the Python-versions and License badges.
+
+### Fixed
+- 4 Pylance findings on the async surface — none were real
+  runtime bugs, all were type-check-only:
+  - ``events()`` return-type widened to ``AsyncGenerator`` (was
+    ``AsyncIterator``) so callers can ``await agen.aclose()``.
+  - ``prometheus_hook`` now uses ``labelnames=`` kwarg for
+    prometheus_client stability across stub versions.
+  - ``prometheus_client`` lazy import carries an
+    ``import-not-found, unused-ignore`` type-ignore that keeps
+    both Pylance (when the pkg is absent) and mypy (when it's
+    present) quiet.
+  - TaskIQ integration test casts the ``FakeBroker`` to ``Any``
+    at the ``register_steam_client`` boundary — the fake
+    intentionally implements only the two-method subset the
+    helper touches.
 
 ## 1.7.7
 

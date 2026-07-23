@@ -27,7 +27,7 @@ import dataclasses
 import logging
 import threading
 import time
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncGenerator, Callable
 from concurrent.futures import Future
 from typing import (
     Any,
@@ -591,7 +591,7 @@ class AsyncSteamClient:
         self,
         *names: str,
         buffer_size: int = _EVENT_QUEUE_MAX,
-    ) -> AsyncIterator[tuple[str, tuple[Any, ...]]]:
+    ) -> AsyncGenerator[tuple[str, tuple[Any, ...]]]:
         """Async iterator over the given event names.  Yields
         ``(name, args_tuple)`` pairs.  Loop teardown detaches the
         listeners.

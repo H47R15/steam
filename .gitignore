@@ -50,6 +50,21 @@
 !poetry.lock
 !pyrightconfig.json
 
+# Top-level docs — silently ignored by the leading ``*`` rule if
+# they're first added after this .gitignore was written (files that
+# were already tracked when the rule landed continue to be tracked,
+# which is how ``LICENSE`` + ``CHANGES.md`` slipped through — but
+# any new doc file needs an explicit allowlist).  Was the root cause
+# of the 1.7.8 publish workflow failing: ``poetry build`` couldn't
+# find ``README.rst`` because git had silently ignored it.
+!README.md
+!README.rst
+!SECURITY.md
+!CHANGES.md
+!LICENSE
+!LICENSE.*
+!NOTICE
+
 # Poetry build output — never committed; the publish workflow regenerates it.
 dist/
 

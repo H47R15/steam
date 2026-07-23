@@ -205,9 +205,21 @@ def prometheus_hook(
     ``error`` tag value for ``rpc.failed``.
     """
     # Lazy — don't drag ``prometheus_client`` into the module graph
-    # for users who don't want it.
+    # for users who don't want it.  ``type: ignore`` because the
+    # symbols aren't visible to Pylance / mypy when
+    # ``prometheus_client`` is absent from the type-check environment;
+    # the runtime ``ImportError`` guard below is the real safety net.
     try:
-        from prometheus_client import Counter, Gauge, Histogram
+        # ``import-not-found`` covers the case where
+        # ``prometheus_client`` isn't in the Pylance-visible env;
+        # ``unused-ignore`` silences mypy when it CAN see the module
+        # (dev machines that installed prometheus_client for other
+        # reasons).  One pragma keeps both toolchains quiet.
+        from prometheus_client import (  # type: ignore[import-not-found, unused-ignore]
+            Counter,
+            Gauge,
+            Histogram,
+        )
     except ImportError as e:  # pragma: no cover
         raise RuntimeError(
             "prometheus_hook requires ``prometheus_client``; "
@@ -218,22 +230,26 @@ def prometheus_hook(
     if registry is not None:
         kw["registry"] = registry
 
+    # ``labelnames=`` (kwarg) is the stable spelling across
+    # prometheus_client 0.x → 0.19+.  Older stubs (which some IDE
+    # setups still carry) mistype the third positional arg as
+    # something other than a ``list[str]``, so pass by name.
     rpc_total = Counter(
         "rpc_total",
         "pysteam.aio RPC calls",
-        ["method", "outcome"],
+        labelnames=["method", "outcome"],
         **kw,
     )
     rpc_duration = Histogram(
         "rpc_duration_seconds",
         "pysteam.aio RPC latency",
-        ["method", "outcome"],
+        labelnames=["method", "outcome"],
         **kw,
     )
     connect_events = Counter(
         "connect_events_total",
         "pysteam.aio CM connection events",
-        ["event"],
+        labelnames=["event"],
         **kw,
     )
     reconnect_gauge = Gauge(
