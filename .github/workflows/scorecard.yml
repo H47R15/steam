@@ -58,7 +58,13 @@ jobs:
           # which the ``id-token: write`` permission above provides.
           publish_results: true
 
-      - name: Upload artifact (retention: 5 days)
+      # ``name:`` was previously "Upload artifact (retention: 5 days)"
+      # — the second ``:`` inside the parenthetical broke YAML
+      # parsing (``mapping values are not allowed here``), which is
+      # what caused the "workflow file issue" that failed the run
+      # instantly with no logs.  Quoting or removing the extra colon
+      # is enough; the whole tree renders otherwise-valid YAML.
+      - name: "Upload SARIF artifact (5-day retention)"
         uses: actions/upload-artifact@v4
         with:
           name: SARIF file
