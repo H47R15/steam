@@ -1,3 +1,15 @@
+## 1.7.2
+
+### Fixed
+- Regenerated ``poetry.lock`` so ``poetry install`` succeeds
+  against the 1.7.1 ``pyproject.toml`` — the 1.7.1 release
+  added ``ruff`` / ``black`` / ``mypy`` / ``pip-audit`` as
+  dev dependencies but shipped without a matching lock-file
+  refresh, so every CI job failed with "pyproject.toml
+  changed significantly since poetry.lock was last generated".
+  1.7.1 never made it past the quality gate to PyPI; 1.7.2
+  is the effective 1.7.1 release with a working install.
+
 ## 1.7.1
 
 ### Added
