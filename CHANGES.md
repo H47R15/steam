@@ -1,3 +1,20 @@
+## 1.7.3
+
+### Fixed
+- Add ``pydantic >= 2.0`` as a runtime dependency.  ``steam.mcp.tools``
+  imports it at module-top for the MCP tool input/output schemas, so
+  it can't be lazy — 1.7.1 / 1.7.2 shipped without declaring it and
+  every CI job that touched ``steam.mcp`` failed with
+  ``ModuleNotFoundError: No module named 'pydantic'``.  Pydantic is
+  already present in every FastAPI / TaskIQ / MCP-SDK stack, so
+  promoting it to a hard dep costs almost nothing.
+- ``deptry`` config: ``taskiq`` + ``prometheus_client`` are now in
+  BOTH the ``DEP001`` (missing-from-deps) and ``DEP003``
+  (transitive) ignore lists.  1.7.1 only had ``DEP003`` — that
+  passed locally where they were transitively installed but tripped
+  ``DEP001`` in a fresh CI venv where they were absent.
+- Regenerated ``poetry.lock`` to match.
+
 ## 1.7.2
 
 ### Fixed

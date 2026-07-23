@@ -5,7 +5,7 @@
 # ``steam`` distribution name on PyPI is owned by ValvePython since 2013,
 # so the fork lives under a scoped name here.
 name = "pysteam-client"
-version = "1.7.2"
+version = "1.7.3"
 description = "Module for interacting with various Steam features"
 authors = ["Rossen Georgiev <rossen@rgp.io>"]
 license = "MIT"
@@ -64,6 +64,14 @@ cachetools =            ">=3.0.0"
 # ``six`` is a py2/py3 compat shim.  Kept because the fork's
 # source still imports it in a few places; harmless on py3.13.
 six =                   ">=1.10.0"
+# Required by ``steam.mcp`` (tool input / output schemas) — the
+# only module that imports it at top-level.  Pydantic 2.x is
+# small, py3.13-native, and already present in most async Python
+# stacks (fastapi / taskiq / mcp-sdk all depend on it), so
+# promoting to a hard dep costs almost nothing but simplifies
+# the install story (``pip install pysteam-client`` gives you
+# working MCP tools out of the box).
+pydantic =              ">=2.0,<3"
 
 # ─── client extra (optional deps) ─────────────────────────────────
 #
@@ -165,13 +173,26 @@ DEP002 = [
     "urllib3",
 ]
 # Optional integrations import their frameworks lazily inside
-# helper functions (``steam.aio.integrations.taskiq``,
-# ``steam.aio.status.prometheus_hook``, ``steam.mcp.tools``).
-# These aren't runtime deps of ``pysteam-client`` — they come in
-# via the caller's own environment when they opt into the
-# integration.  Deptry can't see the ``inside a function``
-# import guard, so flag as intentional here.
-DEP003 = ["taskiq", "prometheus_client", "pydantic"]
+# helper functions (``steam.aio.integrations.taskiq`` calls
+# ``from taskiq import TaskiqEvents`` inside ``_register_lifecycle``;
+# ``steam.aio.status.prometheus_hook`` imports ``prometheus_client``
+# only when invoked).  These are user-supplied — installed by the
+# caller when they wire the integration up — so ``pysteam-client``
+# itself doesn't depend on them.  ``DEP001`` is the correct rule
+# for "imported but not declared" (an earlier version of this
+# file used ``DEP003`` — that's for transitive dep detection and
+# doesn't apply when the package isn't in the environment at all,
+# which is exactly the CI case).  ``pydantic`` moved out of this
+# list — it's now a hard runtime dep (see above), imported at
+# module top-level by ``steam/mcp/tools.py``.
+DEP001 = ["taskiq", "prometheus_client"]
+# Local dev environments that already have taskiq / prometheus_client
+# installed (e.g. via another package in the same conda env or via
+# ``poetry install --with dev`` on a machine that historically had
+# more deps) see these as DEP003 rather than DEP001 — deptry can
+# tell they're not in ``pyproject.toml`` but they resolve at import.
+# Cover both rules so the run is consistent across dev + CI.
+DEP003 = ["taskiq", "prometheus_client"]
 DEP004 = ["dotenv", "vcr"]
 
 [tool.deptry.package_module_name_map]
