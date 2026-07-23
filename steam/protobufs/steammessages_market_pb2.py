@@ -40,5 +40,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CECONMARKET_ISMARKETPLACEALLOWED_RESPONSE']._serialized_end=384
   _globals['_ECONMARKET']._serialized_start=386
   _globals['_ECONMARKET']._serialized_end=509
-_builder.BuildServices(DESCRIPTOR, 'steammessages_market_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_market_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

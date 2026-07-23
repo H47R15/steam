@@ -46,5 +46,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CSYSTEMMANAGER_WRITEFILE_RESPONSE']._serialized_end=261
   _globals['_SYSTEMMANAGER']._serialized_start=264
   _globals['_SYSTEMMANAGER']._serialized_end=453
-_builder.BuildServices(DESCRIPTOR, 'webuimessages_systemmanager_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'webuimessages_systemmanager_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

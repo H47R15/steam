@@ -48,5 +48,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CCOMMUNITY_GETLINKFILTERLISTVERSION_RESPONSE']._serialized_end=554
   _globals['_COMMUNITYLINKFILTER']._serialized_start=557
   _globals['_COMMUNITYLINKFILTER']._serialized_end=929
-_builder.BuildServices(DESCRIPTOR, 'steammessages_linkfilter_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_linkfilter_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

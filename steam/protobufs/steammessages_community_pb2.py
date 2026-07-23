@@ -175,5 +175,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CCOMMUNITY_SETRECOMMENDATIONBOTREVIEWSTATUS_RESPONSE']._serialized_end=8140
   _globals['_COMMUNITY']._serialized_start=9193
   _globals['_COMMUNITY']._serialized_end=12452
-_builder.BuildServices(DESCRIPTOR, 'steammessages_community_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_community_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

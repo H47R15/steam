@@ -212,5 +212,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CSTEAMTV_APPCHEER_RESPONSE']._serialized_end=8807
   _globals['_STEAMTV']._serialized_start=9823
   _globals['_STEAMTV']._serialized_end=13129
-_builder.BuildServices(DESCRIPTOR, 'steammessages_steamtv_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_steamtv_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

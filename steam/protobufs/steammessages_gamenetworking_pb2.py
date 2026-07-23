@@ -42,5 +42,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CGAMENETWORKING_RELEASEFAKEIP_NOTIFICATION']._serialized_end=357
   _globals['_GAMENETWORKING']._serialized_start=360
   _globals['_GAMENETWORKING']._serialized_end=558
-_builder.BuildServices(DESCRIPTOR, 'steammessages_gamenetworking_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_gamenetworking_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

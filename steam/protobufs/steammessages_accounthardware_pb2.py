@@ -118,5 +118,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CACCOUNTHARDWARE_REGISTERSTEAMMACHINE_RESPONSE']._serialized_end=4407
   _globals['_ACCOUNTHARDWARE']._serialized_start=4779
   _globals['_ACCOUNTHARDWARE']._serialized_end=6941
-_builder.BuildServices(DESCRIPTOR, 'steammessages_accounthardware_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_accounthardware_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

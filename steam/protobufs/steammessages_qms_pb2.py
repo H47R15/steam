@@ -64,5 +64,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_QUEUEDMATCHMAKING']._serialized_end=2418
   _globals['_QUEUEDMATCHMAKINGGAMEHOST']._serialized_start=2421
   _globals['_QUEUEDMATCHMAKINGGAMEHOST']._serialized_end=2815
-_builder.BuildServices(DESCRIPTOR, 'steammessages_qms_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_qms_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

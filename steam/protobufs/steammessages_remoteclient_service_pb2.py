@@ -41,5 +41,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_REMOTECLIENT']._serialized_end=1569
   _globals['_REMOTECLIENTSTEAMCLIENT']._serialized_start=1572
   _globals['_REMOTECLIENTSTEAMCLIENT']._serialized_end=2379
-_builder.BuildServices(DESCRIPTOR, 'steammessages_remoteclient_service_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_remoteclient_service_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

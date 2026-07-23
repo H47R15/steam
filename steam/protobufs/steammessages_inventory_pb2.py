@@ -86,5 +86,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_INVENTORY']._serialized_end=3770
   _globals['_INVENTORYCLIENT']._serialized_start=3772
   _globals['_INVENTORYCLIENT']._serialized_end=3867
-_builder.BuildServices(DESCRIPTOR, 'steammessages_inventory_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_inventory_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

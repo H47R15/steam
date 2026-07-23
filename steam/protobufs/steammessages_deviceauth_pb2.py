@@ -118,5 +118,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CDEVICEAUTH_GETBORROWERPLAYHISTORY_RESPONSE_LENDERHISTORY']._serialized_end=2926
   _globals['_DEVICEAUTH']._serialized_start=2929
   _globals['_DEVICEAUTH']._serialized_end=4915
-_builder.BuildServices(DESCRIPTOR, 'steammessages_deviceauth_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_deviceauth_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

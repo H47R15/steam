@@ -60,5 +60,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_VIDEOCLIENT']._serialized_end=1288
   _globals['_FOVASVIDEO']._serialized_start=1290
   _globals['_FOVASVIDEO']._serialized_end=1413
-_builder.BuildServices(DESCRIPTOR, 'steammessages_video_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_video_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

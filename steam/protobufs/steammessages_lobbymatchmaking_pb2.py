@@ -42,5 +42,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_LOBBYMATCHMAKINGLEGACY_GETLOBBYSTATUS_RESPONSE']._serialized_end=409
   _globals['_LOBBYMATCHMAKINGLEGACY']._serialized_start=544
   _globals['_LOBBYMATCHMAKINGLEGACY']._serialized_end=683
-_builder.BuildServices(DESCRIPTOR, 'steammessages_lobbymatchmaking_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_lobbymatchmaking_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

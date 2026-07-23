@@ -68,5 +68,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CSHADER_REPORTBUCKETPROCESSINGCOMPLETE_RESPONSE']._serialized_end=1499
   _globals['_SHADER']._serialized_start=1502
   _globals['_SHADER']._serialized_end=2199
-_builder.BuildServices(DESCRIPTOR, 'steammessages_shader_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_shader_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

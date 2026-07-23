@@ -230,5 +230,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CGAMERECORDING_STATECHANGED_NOTIFICATION']._serialized_end=9261
   _globals['_GAMERECORDING']._serialized_start=10541
   _globals['_GAMERECORDING']._serialized_end=15387
-_builder.BuildServices(DESCRIPTOR, 'webuimessages_gamerecording_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'webuimessages_gamerecording_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

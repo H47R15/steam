@@ -165,5 +165,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CSTOREBROWSE_GETHARDWAREITEMS_RESPONSE']._serialized_end=12542
   _globals['_STOREBROWSE']._serialized_start=15201
   _globals['_STOREBROWSE']._serialized_end=15897
-_builder.BuildServices(DESCRIPTOR, 'steammessages_storebrowse_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_storebrowse_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

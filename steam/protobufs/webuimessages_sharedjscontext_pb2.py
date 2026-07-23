@@ -45,5 +45,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CSHAREDJSCONTEXT_GETDESIREDSTEAMUIWINDOWS_RESPONSE']._serialized_end=466
   _globals['_SHAREDJSCONTEXT']._serialized_start=469
   _globals['_SHAREDJSCONTEXT']._serialized_end=626
-_builder.BuildServices(DESCRIPTOR, 'webuimessages_sharedjscontext_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'webuimessages_sharedjscontext_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

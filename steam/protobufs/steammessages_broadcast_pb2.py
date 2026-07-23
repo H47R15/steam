@@ -212,5 +212,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_BROADCAST']._serialized_end=15277
   _globals['_BROADCASTCLIENT']._serialized_start=15280
   _globals['_BROADCASTCLIENT']._serialized_end=16431
-_builder.BuildServices(DESCRIPTOR, 'steammessages_broadcast_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_broadcast_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

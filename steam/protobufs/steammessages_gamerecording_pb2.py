@@ -71,5 +71,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_GAMERECORDINGCLIP']._serialized_end=2315
   _globals['_VIDEOCLIP']._serialized_start=2318
   _globals['_VIDEOCLIP']._serialized_end=2893
-_builder.BuildServices(DESCRIPTOR, 'steammessages_gamerecording_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_gamerecording_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

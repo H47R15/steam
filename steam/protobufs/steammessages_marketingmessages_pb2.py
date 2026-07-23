@@ -135,5 +135,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CMARKETINGMESSAGE_GETMARKETINGMESSAGESFORAPPS_RESPONSE']._serialized_end=6252
   _globals['_MARKETINGMESSAGES']._serialized_start=8363
   _globals['_MARKETINGMESSAGES']._serialized_end=11461
-_builder.BuildServices(DESCRIPTOR, 'steammessages_marketingmessages_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_marketingmessages_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

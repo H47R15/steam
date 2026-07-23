@@ -62,5 +62,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_TESTSERVERFROMCLIENT']._serialized_end=1333
   _globals['_TESTEXTERNALPRIVILEGE']._serialized_start=1335
   _globals['_TESTEXTERNALPRIVILEGE']._serialized_end=1429
-_builder.BuildServices(DESCRIPTOR, 'steammessages_unified_test_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_unified_test_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

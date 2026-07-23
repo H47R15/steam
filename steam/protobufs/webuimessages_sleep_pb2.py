@@ -63,5 +63,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CSLEEPMANAGER_REQUESTSLEEP_RESPONSE']._serialized_end=853
   _globals['_SLEEPMANAGER']._serialized_start=1017
   _globals['_SLEEPMANAGER']._serialized_end=1660
-_builder.BuildServices(DESCRIPTOR, 'webuimessages_sleep_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'webuimessages_sleep_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

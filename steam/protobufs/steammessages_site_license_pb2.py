@@ -70,5 +70,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_SITEMANAGERCLIENT']._serialized_end=1887
   _globals['_SITELICENSE']._serialized_start=1890
   _globals['_SITELICENSE']._serialized_end=2441
-_builder.BuildServices(DESCRIPTOR, 'steammessages_site_license_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_site_license_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

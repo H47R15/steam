@@ -97,5 +97,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CBLUETOOTHMANAGER_SETTRUSTED_RESPONSE']._serialized_end=2409
   _globals['_BLUETOOTHMANAGER']._serialized_start=2412
   _globals['_BLUETOOTHMANAGER']._serialized_end=3683
-_builder.BuildServices(DESCRIPTOR, 'webuimessages_bluetooth_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'webuimessages_bluetooth_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

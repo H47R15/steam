@@ -95,5 +95,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CAUDIO_SETSPEAKERCONFIGURATION_RESPONSE']._serialized_end=1723
   _globals['_AUDIO']._serialized_start=1726
   _globals['_AUDIO']._serialized_end=3096
-_builder.BuildServices(DESCRIPTOR, 'webuimessages_audio_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'webuimessages_audio_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

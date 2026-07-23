@@ -76,5 +76,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_GAMESERVERS']._serialized_end=2754
   _globals['_GAMESERVERCLIENT']._serialized_start=2757
   _globals['_GAMESERVERCLIENT']._serialized_end=2887
-_builder.BuildServices(DESCRIPTOR, 'steammessages_gameservers_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_gameservers_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

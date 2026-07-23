@@ -76,5 +76,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CTWOFACTOR_REMOVEAUTHENTICATORVIACHALLENGECONTINUE_RESPONSE']._serialized_end=3161
   _globals['_TWOFACTOR']._serialized_start=3444
   _globals['_TWOFACTOR']._serialized_end=4345
-_builder.BuildServices(DESCRIPTOR, 'steammessages_twofactor_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_twofactor_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

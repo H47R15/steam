@@ -48,5 +48,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CSTEAMNOTIFICATION_PREFERENCESUPDATED_NOTIFICATION']._serialized_end=815
   _globals['_STEAMNOTIFICATIONCLIENT']._serialized_start=2229
   _globals['_STEAMNOTIFICATIONCLIENT']._serialized_end=2442
-_builder.BuildServices(DESCRIPTOR, 'steammessages_notifications_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_notifications_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

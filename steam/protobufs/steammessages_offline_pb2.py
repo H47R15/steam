@@ -47,5 +47,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_COFFLINE_GETUNSIGNEDOFFLINELOGONTICKET_RESPONSE']._serialized_end=560
   _globals['_OFFLINE']._serialized_start=563
   _globals['_OFFLINE']._serialized_end=813
-_builder.BuildServices(DESCRIPTOR, 'steammessages_offline_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_offline_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

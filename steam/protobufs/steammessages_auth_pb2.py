@@ -157,5 +157,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_AUTHENTICATIONSUPPORT']._serialized_end=12138
   _globals['_CLOUDGAMING']._serialized_start=12141
   _globals['_CLOUDGAMING']._serialized_end=12341
-_builder.BuildServices(DESCRIPTOR, 'steammessages_auth_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_auth_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

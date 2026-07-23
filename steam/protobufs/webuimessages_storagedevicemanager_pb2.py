@@ -75,5 +75,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CSTORAGEDEVICEMANAGER_TRIMALL_RESPONSE']._serialized_end=2011
   _globals['_STORAGEDEVICEMANAGER']._serialized_start=2014
   _globals['_STORAGEDEVICEMANAGER']._serialized_end=2797
-_builder.BuildServices(DESCRIPTOR, 'webuimessages_storagedevicemanager_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'webuimessages_storagedevicemanager_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

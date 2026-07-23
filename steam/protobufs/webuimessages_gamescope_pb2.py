@@ -63,5 +63,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CGAMESCOPE_SETDISPLAYPOWERSTATE_RESPONSE']._serialized_end=1479
   _globals['_GAMESCOPE']._serialized_start=1597
   _globals['_GAMESCOPE']._serialized_end=2072
-_builder.BuildServices(DESCRIPTOR, 'webuimessages_gamescope_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'webuimessages_gamescope_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

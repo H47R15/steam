@@ -80,5 +80,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_GAMENOTIFICATIONS']._serialized_end=3129
   _globals['_GAMENOTIFICATIONSCLIENT']._serialized_start=3132
   _globals['_GAMENOTIFICATIONSCLIENT']._serialized_end=3353
-_builder.BuildServices(DESCRIPTOR, 'steammessages_gamenotifications_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_gamenotifications_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

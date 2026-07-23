@@ -102,5 +102,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_USERACCOUNT']._serialized_end=6447
   _globals['_EMBEDDEDCLIENT']._serialized_start=6450
   _globals['_EMBEDDEDCLIENT']._serialized_end=6584
-_builder.BuildServices(DESCRIPTOR, 'steammessages_useraccount_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_useraccount_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

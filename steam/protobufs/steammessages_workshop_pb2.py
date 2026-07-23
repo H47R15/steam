@@ -40,5 +40,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CWORKSHOP_GETEULASTATUS_RESPONSE']._serialized_end=259
   _globals['_WORKSHOP']._serialized_start=261
   _globals['_WORKSHOP']._serialized_end=357
-_builder.BuildServices(DESCRIPTOR, 'steammessages_workshop_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_workshop_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

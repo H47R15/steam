@@ -372,5 +372,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CHATUSABILITY']._serialized_end=29407
   _globals['_CHATUSABILITYCLIENT']._serialized_start=29410
   _globals['_CHATUSABILITYCLIENT']._serialized_end=29549
-_builder.BuildServices(DESCRIPTOR, 'steammessages_chat_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_chat_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

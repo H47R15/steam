@@ -177,5 +177,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_STORE']._serialized_end=13131
   _globals['_STORECLIENT']._serialized_start=13133
   _globals['_STORECLIENT']._serialized_end=13244
-_builder.BuildServices(DESCRIPTOR, 'steammessages_store_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_store_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

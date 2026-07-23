@@ -100,5 +100,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_TRANSPORTVALIDATION']._serialized_end=3634
   _globals['_TRANSPORTVALIDATIONCLIENT']._serialized_start=3637
   _globals['_TRANSPORTVALIDATIONCLIENT']._serialized_end=3781
-_builder.BuildServices(DESCRIPTOR, 'webuimessages_transportvalidation_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'webuimessages_transportvalidation_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

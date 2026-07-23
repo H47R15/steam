@@ -73,5 +73,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CHARDWAREUPDATE_ENUMERATEDEVICES_RESPONSE_DEVICE']._serialized_end=1231
   _globals['_HARDWAREUPDATE']._serialized_start=1453
   _globals['_HARDWAREUPDATE']._serialized_end=2212
-_builder.BuildServices(DESCRIPTOR, 'webuimessages_hardwareupdate_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'webuimessages_hardwareupdate_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

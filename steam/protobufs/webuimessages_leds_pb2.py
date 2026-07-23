@@ -81,5 +81,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CLEDMANAGER_SETMANAGERMODE_RESPONSE']._serialized_end=1512
   _globals['_LEDMANAGER']._serialized_start=1722
   _globals['_LEDMANAGER']._serialized_end=2498
-_builder.BuildServices(DESCRIPTOR, 'webuimessages_leds_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'webuimessages_leds_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

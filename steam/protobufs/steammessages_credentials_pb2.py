@@ -58,5 +58,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CCREDENTIALS_GETACCOUNTAUTHSECRET_RESPONSE']._serialized_end=1934
   _globals['_CREDENTIALS']._serialized_start=1937
   _globals['_CREDENTIALS']._serialized_end=2546
-_builder.BuildServices(DESCRIPTOR, 'steammessages_credentials_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_credentials_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

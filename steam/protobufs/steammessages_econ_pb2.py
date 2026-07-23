@@ -82,5 +82,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CECON_GETASSETPROPERTYSCHEMA_RESPONSE']._serialized_end=4011
   _globals['_ECON']._serialized_start=4196
   _globals['_ECON']._serialized_end=4780
-_builder.BuildServices(DESCRIPTOR, 'steammessages_econ_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_econ_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

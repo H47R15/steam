@@ -121,5 +121,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_STEAMOSMANAGER']._serialized_end=5184
   _globals['_STEAMOSSLS']._serialized_start=5187
   _globals['_STEAMOSSLS']._serialized_end=5540
-_builder.BuildServices(DESCRIPTOR, 'webuimessages_steamos_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'webuimessages_steamos_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

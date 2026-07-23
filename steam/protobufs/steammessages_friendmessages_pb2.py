@@ -89,5 +89,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_FRIENDMESSAGES']._serialized_end=4768
   _globals['_FRIENDMESSAGESCLIENT']._serialized_start=4771
   _globals['_FRIENDMESSAGESCLIENT']._serialized_end=5111
-_builder.BuildServices(DESCRIPTOR, 'steammessages_friendmessages_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_friendmessages_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

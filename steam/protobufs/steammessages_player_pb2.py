@@ -361,5 +361,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_PLAYER']._serialized_end=25972
   _globals['_PLAYERCLIENT']._serialized_start=25975
   _globals['_PLAYERCLIENT']._serialized_end=26762
-_builder.BuildServices(DESCRIPTOR, 'steammessages_player_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_player_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

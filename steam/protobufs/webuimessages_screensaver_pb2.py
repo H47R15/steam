@@ -45,5 +45,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CSCREENSAVER_ACTIVESTATECHANGED_NOTIFICATION']._serialized_end=257
   _globals['_SCREENSAVER']._serialized_start=260
   _globals['_SCREENSAVER']._serialized_end=467
-_builder.BuildServices(DESCRIPTOR, 'webuimessages_screensaver_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'webuimessages_screensaver_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

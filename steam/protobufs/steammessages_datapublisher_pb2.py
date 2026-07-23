@@ -60,5 +60,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_DATAPUBLISHER']._serialized_end=2462
   _globals['_VALVEHWSURVEY']._serialized_start=2464
   _globals['_VALVEHWSURVEY']._serialized_end=2587
-_builder.BuildServices(DESCRIPTOR, 'steammessages_datapublisher_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_datapublisher_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

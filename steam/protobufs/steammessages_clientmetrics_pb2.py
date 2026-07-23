@@ -102,5 +102,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CCLIENTMETRICS_GAMEPERFORMANCE_NOTIFICATION_FRAMERATE']._serialized_end=5730
   _globals['_CLIENTMETRICS']._serialized_start=6530
   _globals['_CLIENTMETRICS']._serialized_end=8021
-_builder.BuildServices(DESCRIPTOR, 'steammessages_clientmetrics_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_clientmetrics_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

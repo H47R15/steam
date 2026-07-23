@@ -44,5 +44,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CKEYESCROW_RESPONSE']._serialized_end=567
   _globals['_SECRETS']._serialized_start=626
   _globals['_SECRETS']._serialized_end=691
-_builder.BuildServices(DESCRIPTOR, 'steammessages_secrets_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_secrets_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

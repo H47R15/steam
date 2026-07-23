@@ -68,5 +68,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CPARTNERAPPS_DOWNLOAD_RESPONSE']._serialized_end=1555
   _globals['_PARTNERAPPS']._serialized_start=1558
   _globals['_PARTNERAPPS']._serialized_end=2723
-_builder.BuildServices(DESCRIPTOR, 'steammessages_partnerapps_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_partnerapps_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

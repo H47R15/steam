@@ -156,5 +156,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CSTEAMINPUTSERVICE_CONTROLLERBATTERYSTATE_NOTIFICATION']._serialized_end=8048
   _globals['_STEAMINPUTMANAGER']._serialized_start=8358
   _globals['_STEAMINPUTMANAGER']._serialized_end=12253
-_builder.BuildServices(DESCRIPTOR, 'webuimessages_steaminput_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'webuimessages_steaminput_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

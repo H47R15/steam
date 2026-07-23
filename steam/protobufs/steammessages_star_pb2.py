@@ -88,5 +88,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CSTAR_RESPONSE']._serialized_end=1821
   _globals['_STAR']._serialized_start=2020
   _globals['_STAR']._serialized_end=2153
-_builder.BuildServices(DESCRIPTOR, 'steammessages_star_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_star_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

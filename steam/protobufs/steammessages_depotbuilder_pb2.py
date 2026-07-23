@@ -64,5 +64,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CCONTENTBUILDER_SIGNINSTALLSCRIPT_RESPONSE']._serialized_end=2096
   _globals['_CONTENTBUILDER']._serialized_start=2099
   _globals['_CONTENTBUILDER']._serialized_end=2766
-_builder.BuildServices(DESCRIPTOR, 'steammessages_depotbuilder_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_depotbuilder_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

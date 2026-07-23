@@ -158,5 +158,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CLOUD']._serialized_end=9547
   _globals['_CLOUDCLIENT']._serialized_start=9550
   _globals['_CLOUDCLIENT']._serialized_end=9732
-_builder.BuildServices(DESCRIPTOR, 'steammessages_cloud_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_cloud_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

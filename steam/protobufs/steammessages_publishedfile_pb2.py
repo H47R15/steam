@@ -243,5 +243,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_PUBLISHEDFILE']._serialized_end=20588
   _globals['_PUBLISHEDFILECLIENT']._serialized_start=20591
   _globals['_PUBLISHEDFILECLIENT']._serialized_end=20869
-_builder.BuildServices(DESCRIPTOR, 'steammessages_publishedfile_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_publishedfile_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

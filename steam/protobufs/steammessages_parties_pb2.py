@@ -62,5 +62,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CPARTIES_DESTROYBEACON_RESPONSE']._serialized_end=1045
   _globals['_PARTIES']._serialized_start=1048
   _globals['_PARTIES']._serialized_end=1600
-_builder.BuildServices(DESCRIPTOR, 'steammessages_parties_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_parties_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

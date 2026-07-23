@@ -78,5 +78,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CONTENTSERVERDIRECTORY']._serialized_end=3890
   _globals['_DEPOTCONTENTDETECTION']._serialized_start=3893
   _globals['_DEPOTCONTENTDETECTION']._serialized_end=4062
-_builder.BuildServices(DESCRIPTOR, 'steammessages_contentsystem_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_contentsystem_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

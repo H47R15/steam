@@ -44,5 +44,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CACHIEVEMENTS_GETINFO_RESPONSE_INFO']._serialized_end=378
   _globals['_ACHIEVEMENTS']._serialized_start=380
   _globals['_ACHIEVEMENTS']._serialized_end=476
-_builder.BuildServices(DESCRIPTOR, 'webuimessages_achievements_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'webuimessages_achievements_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

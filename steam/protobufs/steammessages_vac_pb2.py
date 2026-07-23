@@ -44,5 +44,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CFILEVERIFICATION_STEAMSERVICECHECK_RESPONSE']._serialized_end=633
   _globals['_FILEVERIFICATION']._serialized_start=636
   _globals['_FILEVERIFICATION']._serialized_end=873
-_builder.BuildServices(DESCRIPTOR, 'steammessages_vac_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_vac_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

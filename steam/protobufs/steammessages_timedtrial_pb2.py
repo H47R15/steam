@@ -48,5 +48,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CTIMEDTRIAL_RESETPLAYTIME_RESPONSE']._serialized_end=586
   _globals['_TIMEDTRIAL']._serialized_start=589
   _globals['_TIMEDTRIAL']._serialized_end=883
-_builder.BuildServices(DESCRIPTOR, 'steammessages_timedtrial_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_timedtrial_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

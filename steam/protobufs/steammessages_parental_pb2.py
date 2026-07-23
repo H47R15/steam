@@ -109,5 +109,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_PARENTAL']._serialized_end=4340
   _globals['_PARENTALCLIENT']._serialized_start=4343
   _globals['_PARENTALCLIENT']._serialized_end=4657
-_builder.BuildServices(DESCRIPTOR, 'steammessages_parental_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'steammessages_parental_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

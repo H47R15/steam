@@ -46,5 +46,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CUSER_GETSAVEDHARDWAREINFO_RESPONSE']._serialized_end=370
   _globals['_USER']._serialized_start=373
   _globals['_USER']._serialized_end=571
-_builder.BuildServices(DESCRIPTOR, 'webuimessages_user_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'webuimessages_user_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

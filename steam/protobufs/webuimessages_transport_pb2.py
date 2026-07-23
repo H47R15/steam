@@ -44,5 +44,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CTRANSPORTAUTH_STARTSHUTDOWN_NOTIFICATION']._serialized_end=225
   _globals['_TRANSPORTAUTH']._serialized_start=228
   _globals['_TRANSPORTAUTH']._serialized_end=427
-_builder.BuildServices(DESCRIPTOR, 'webuimessages_transport_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'webuimessages_transport_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)

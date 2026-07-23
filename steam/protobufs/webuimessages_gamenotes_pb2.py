@@ -42,5 +42,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CGAMENOTES_UPLOADIMAGE_RESPONSE']._serialized_end=224
   _globals['_GAMENOTES']._serialized_start=226
   _globals['_GAMENOTES']._serialized_end=325
-_builder.BuildServices(DESCRIPTOR, 'webuimessages_gamenotes_pb2', _globals)
+_builder.BuildServices(DESCRIPTOR, 'webuimessages_gamenotes_pb2', _globals)  # pyright: ignore[reportArgumentType]
 # @@protoc_insertion_point(module_scope)
