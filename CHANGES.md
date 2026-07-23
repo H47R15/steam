@@ -1,3 +1,19 @@
+## 1.7.4
+
+### Fixed
+- **urllib3 CVEs**.  Relax the ``urllib3 = "<2"`` pin to
+  ``">=1.26,<3"``.  The previous ``<2`` pin forced CI's fresh
+  poetry venv onto urllib3 1.26.20, which pip-audit flagged with
+  five open CVEs (PYSEC-2026-141 / -1994 / -1996 / -1998 / -1999)
+  — all fixed in urllib3 2.x.  The fork has zero direct urllib3
+  imports (``requests`` is the only consumer); the earlier
+  comment claiming "cert-verification breakage in the fork under
+  urllib3 2.x" was unsourced and nothing in the tree exercises
+  the code path.  New constraint matches ``requests``'s own
+  accepted range.
+- Regenerated ``poetry.lock`` so ``pip-audit`` sees the newer
+  urllib3.
+
 ## 1.7.3
 
 ### Fixed

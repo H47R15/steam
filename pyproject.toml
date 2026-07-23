@@ -5,7 +5,7 @@
 # ``steam`` distribution name on PyPI is owned by ValvePython since 2013,
 # so the fork lives under a scoped name here.
 name = "pysteam-client"
-version = "1.7.3"
+version = "1.7.4"
 description = "Module for interacting with various Steam features"
 authors = ["Rossen Georgiev <rossen@rgp.io>"]
 license = "MIT"
@@ -58,7 +58,14 @@ python =                "^3.13.11"
 # by the modern stdlib.
 pycryptodomex =         ">=3.7.0"
 requests =              ">=2.9.1"
-urllib3 =               "<2"
+# Allow urllib3 2.x — the fork has zero direct urllib3 imports
+# (``requests`` is the only consumer), and pip-audit flagged five
+# CVEs against the 1.26.x line (PYSEC-2026-141 / -1994 / -1996 /
+# -1998 / -1999) that are all fixed in 2.x.  Prior comment about
+# "cert-verification breakage in the fork" was unsourced — nothing
+# in the tree actually exercises the code path.  Constraint
+# matches ``requests``'s own accepted range.
+urllib3 =               ">=1.26,<3"
 vdf =                   ">=3.3"
 cachetools =            ">=3.0.0"
 # ``six`` is a py2/py3 compat shim.  Kept because the fork's
@@ -165,11 +172,11 @@ DEP002 = [
     # imported from ``steam/``.  Users install / invoke these
     # themselves; the package doesn't need them at runtime.
     "ruff", "black", "mypy", "pip-audit",
-    # Pinned as a hard runtime dep to keep the ``<2`` bound —
-    # ``requests`` (which we DO import) picks it up transitively
-    # and would auto-resolve to 2.x otherwise, which broke a few
-    # cert-verification code paths in the fork.  Deptry doesn't
-    # see the transitive-with-pin motivation; ignore here.
+    # Declared as a hard runtime dep to keep an explicit version
+    # range under our control (see ``[tool.poetry.dependencies]``
+    # for the constraint + rationale).  We don't import it directly
+    # — ``requests`` does — so deptry's DEP002 (unused) is a false
+    # positive.  Ignore.
     "urllib3",
 ]
 # Optional integrations import their frameworks lazily inside
