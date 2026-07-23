@@ -1,3 +1,67 @@
+## 1.7.0
+
+### Added
+- **Production hardening for `steam.aio`**:
+  - `client.status` — JSON-serialisable `ClientStatus` dataclass
+    (connected, logged_on, cell_id, reconnect state / attempts,
+    last_activity_at, uptime). Safe to return from a FastAPI
+    `/health` handler directly.
+  - `metrics_hook=` constructor argument on `AsyncSteamClient`
+    firing on `client.started` / `client.closed` / `cm.connected`
+    / `cm.disconnected` / `reconnect.started` /
+    `reconnect.succeeded` / `reconnect.failed` / `rpc.started` /
+    `rpc.succeeded` / `rpc.failed`. Callback-based — the library
+    stays free of Prometheus / StatsD deps. A raising hook is
+    caught + logged so a broken metrics implementation never
+    takes down the RPC path.
+  - `prometheus_hook()` factory in `steam.aio.status` — one call
+    returns a ready-made `MetricsHook` backed by
+    `prometheus_client` counters + histograms. `prometheus_client`
+    imported lazily.
+  - `asyncio` cancellation now kills the underlying gevent
+    greenlet — a cancelled `asyncio.wait_for(client.get_product_info(...))`
+    actually stops the sync work instead of orphaning a socket
+    read.
+- **`steam.aio.AsyncSteamPool`** — multi-account pool.
+  Concurrent bringup, round-robin selection, `acquire(account_id)`,
+  per-member failure isolation, `replace_member()` for post-start
+  recovery. `AsyncSteamPool` + `PoolMember` + `PoolMemberStatus`
+  exported from `steam.aio`.
+- **`steam.aio.integrations.fastapi`** — `steam_client_lifespan`
+  / `steam_pool_lifespan` context managers + `get_steam_client`
+  / `get_steam_pool` `Depends` providers. FastAPI imported
+  lazily.
+- **`steam.aio.integrations.taskiq`** — `register_steam_client` /
+  `register_steam_pool` wire startup + shutdown hooks onto a
+  TaskIQ broker and return a sync dependency function for
+  `TaskiqDepends`. TaskIQ imported lazily.
+- **`steam.mcp` package** — expose `AsyncSteamClient` as
+  Model-Context-Protocol tools an LLM agent can call.
+  Framework-agnostic tool definitions (Pydantic input / output
+  schemas + async handlers) at `steam.mcp.tools`; FastMCP
+  adapter at `steam.mcp.server`. Three built-in tools:
+  `steam.status`, `steam.get_product_info`, `steam.send_um`.
+  Adapter works with the official `mcp` SDK
+  (`mcp.server.fastmcp.FastMCP`) and the standalone `fastmcp`
+  package — both imported lazily.
+- Extensive new test coverage — status snapshot, metrics hook
+  fires on the right events, hook exceptions don't kill RPCs,
+  cancellation kills the greenlet, pool concurrent bringup /
+  round-robin / failure isolation, FastAPI lifespan wiring,
+  TaskIQ dependency registration, MCP tool schemas + FastMCP
+  registration. 120 mocked + 1 live smoke test.
+- Wiki pages: `AsyncSteamClient`, `Pool`, `FastAPI-Integration`,
+  `TaskIQ-Integration`, `MCP`.
+
+### Changed
+- `AsyncSteamClient` public API grew — new `status` property,
+  `metrics_hook=` kwarg. No breaking changes to existing methods.
+- `_require_ready()` now runs BEFORE dereferencing `self._sync`
+  in every public method, so a call before `start()` raises the
+  typed `SteamNotStartedError` instead of `AttributeError`.
+- README updated with async / FastAPI / MCP quick-start snippets
+  and a fresh source-tree layout.
+
 ## 1.6.0
 
 ### Added

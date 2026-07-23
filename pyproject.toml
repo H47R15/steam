@@ -5,7 +5,7 @@
 # ``steam`` distribution name on PyPI is owned by ValvePython since 2013,
 # so the fork lives under a scoped name here.
 name = "pysteam-client"
-version = "1.6.0"
+version = "1.7.0"
 description = "Module for interacting with various Steam features"
 authors = ["Rossen Georgiev <rossen@rgp.io>"]
 license = "MIT"
