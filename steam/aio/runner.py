@@ -20,12 +20,14 @@ Not part of the public API — an implementation detail of
 ``steam.mcp`` server (or any other async surface) can reuse it
 without also importing the full client facade.
 """
+
 from __future__ import annotations
 
 import queue
 import threading
+from collections.abc import Callable
 from concurrent.futures import Future
-from typing import Any, Callable, Optional
+from typing import Any
 
 
 class _ShutdownSentinel:
@@ -79,16 +81,18 @@ class GeventRunner:
         # onto the queue but never wake the hub.
         self._ready = threading.Event()
         self._stopped = threading.Event()
-        self._init_error: Optional[BaseException] = None
+        self._init_error: BaseException | None = None
         # Populated inside the runner thread once the gevent hub
         # exists; the caller thread only ever reads them, and
         # ``_ready.wait()`` establishes happens-before with the
         # assignments inside ``_run``.
         self._async_watcher: Any = None
         self._done: Any = None
-        self._work_queue: "queue.Queue[Any]" = queue.Queue()
+        self._work_queue: queue.Queue[Any] = queue.Queue()
         self._thread = threading.Thread(
-            target=self._run, name=name, daemon=True,
+            target=self._run,
+            name=name,
+            daemon=True,
         )
         # ``id(future) -> greenlet`` for in-flight submissions.
         # Written by ``_exec_one`` on the runner thread, read from
@@ -97,7 +101,7 @@ class GeventRunner:
         # for get/set/pop of a single key — this is the same
         # rationale ``concurrent.futures`` itself relies on for
         # its internal state.
-        self._greenlets: "dict[int, Any]" = {}
+        self._greenlets: dict[int, Any] = {}
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -170,7 +174,7 @@ class GeventRunner:
     # Work submission
     # ------------------------------------------------------------------
 
-    def submit(self, fn: Callable[[], Any]) -> Future:
+    def submit(self, fn: Callable[[], Any]) -> Future[Any]:
         """Enqueue ``fn`` for execution on the gevent thread.
 
         Returns a ``concurrent.futures.Future`` — bridge to
@@ -180,7 +184,7 @@ class GeventRunner:
             raise RuntimeError(f"{self._name} not started")
         if self._stopped.is_set():
             raise RuntimeError(f"{self._name} is stopped")
-        fut: Future = Future()
+        fut: Future[Any] = Future()
         self._work_queue.put((fn, fut))
         watcher = self._async_watcher
         if watcher is not None:
@@ -208,7 +212,7 @@ class GeventRunner:
             fn, fut = item
             gevent.spawn(self._exec_one, fn, fut)
 
-    def cancel_future(self, fut: Future) -> bool:
+    def cancel_future(self, fut: Future[Any]) -> bool:
         """Kill the greenlet backing ``fut``, if any.  Safe from
         any thread; the kill is scheduled through a new submission
         so it happens on the runner thread (killing a greenlet
@@ -231,14 +235,18 @@ class GeventRunner:
         # because the future itself carries the ``GreenletExit``
         # exception once the target actually dies.
         try:
-            self.submit(lambda g=greenlet: g.kill(block=False))
+
+            def _kill(g: Any = greenlet) -> None:
+                g.kill(block=False)
+
+            self.submit(_kill)
         except RuntimeError:
             # Runner already stopped — greenlets on that hub are
             # already dead, so nothing to kill.
             return False
         return True
 
-    def _exec_one(self, fn: Callable[[], Any], fut: Future) -> None:
+    def _exec_one(self, fn: Callable[[], Any], fut: Future[Any]) -> None:
         """Body of the per-work greenlet.  Runs ``fn`` synchronously
         on the gevent thread and writes the outcome into ``fut``.
 

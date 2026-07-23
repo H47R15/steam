@@ -32,9 +32,59 @@ on:
     types: [published]
 
 jobs:
+  # ─── Quality gate ───────────────────────────────────────────────
+  #
+  # Before we even build a wheel, run the same checks the CI
+  # workflow runs on every PR.  A release created from a green
+  # ``master`` will already have passed these once, but re-running
+  # them here is defense-in-depth: the release could be cut from a
+  # topic branch, from a tag pushed without a corresponding
+  # branch-head, or from an author who bypassed branch protection.
+  # The publish job below has ``needs: [quality, build]`` so a
+  # single lint / type / test failure blocks the PyPI upload.
+  quality:
+    name: Quality gate (lint + types + tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: "1.8.5"
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - name: Cache poetry venv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-py3.13-${{ hashFiles('poetry.lock') }}
+      - name: Install dev dependencies + client extras
+        run: poetry install --with dev --extras client
+      - name: ruff check
+        run: poetry run ruff check .
+      - name: black --check
+        run: |
+          poetry run black --check \
+            steam/aio steam/mcp \
+            tests/test_aio_client.py \
+            tests/test_aio_prod.py \
+            tests/test_aio_integration.py
+      - name: mypy --strict
+        run: poetry run mypy
+      - name: pytest
+        run: poetry run pytest --tb=short --strict-markers
+      - name: deptry
+        run: poetry run deptry .
+      - name: pip-audit
+        run: poetry run pip-audit
+
   build:
     name: Build wheel + sdist
     runs-on: ubuntu-latest
+    needs: quality
     steps:
       - uses: actions/checkout@v4
 

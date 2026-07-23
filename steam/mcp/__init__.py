@@ -36,14 +36,15 @@ Example
     register_steam_tools(server, client)
     # server.run() as usual
 """
+
 from .server import register_steam_tools
 from .tools import (
-    SteamStatusInput,
-    SteamStatusOutput,
     GetProductInfoInput,
     GetProductInfoOutput,
     SendUmInput,
     SendUmOutput,
+    SteamStatusInput,
+    SteamStatusOutput,
     SteamToolBinding,
     build_steam_tool_bindings,
 )

@@ -19,22 +19,19 @@ AsyncSteamClient`` continues to work.  The private ``_GeventRunner``
 name is preserved as a re-export from :mod:`steam.aio.runner` so
 early adopters who reached in for it aren't broken by the split.
 """
+
 from __future__ import annotations
 
 import asyncio
 import dataclasses
 import logging
 import threading
+import time
+from collections.abc import AsyncIterator, Callable
 from concurrent.futures import Future
 from typing import (
     Any,
-    AsyncIterator,
-    Callable,
-    Optional,
-    Tuple,
 )
-
-import time
 
 from .errors import (
     AsyncSteamError,
@@ -46,15 +43,14 @@ from .errors import (
 )
 from .runner import GeventRunner
 from .status import (
-    ClientStatus,
-    MetricsHook,
     RECONNECT_FAILED,
     RECONNECT_IDLE,
     RECONNECT_RECONNECTING,
+    ClientStatus,
+    MetricsHook,
     _invoke_hook,
     _noop_hook,
 )
-
 
 # Re-export the internal name so early adopters who imported it
 # directly aren't broken by the module split.  New code should use
@@ -95,7 +91,7 @@ class ReconnectPolicy:
 
     enabled: bool = True
     max_delay: int = 30
-    max_attempts: Optional[int] = None
+    max_attempts: int | None = None
 
 
 @dataclasses.dataclass
@@ -114,7 +110,7 @@ class _LastLogin:
     # 2FA / mail codes are one-shot by definition — replaying them
     # doesn't make sense, so we don't cache them either.  If a
     # session dies mid-2FA flow, the caller has to redrive login.
-    login_id: Optional[int] = None
+    login_id: int | None = None
 
 
 class AsyncSteamClient:
@@ -180,14 +176,14 @@ class AsyncSteamClient:
         self._runner = GeventRunner(name="pysteam-cm")
         self._sync: Any = None
         self._closed = False
-        self._loop: Optional[asyncio.AbstractEventLoop] = None
+        self._loop: asyncio.AbstractEventLoop | None = None
         self._reconnect_policy = reconnect
         self._metrics_hook = metrics_hook
         # State the reconnect loop needs.  ``_last_login`` remembers
         # WHAT to replay; ``_intentional_disconnect`` marks the
         # brief window during ``close()`` where a ``'disconnected'``
         # event MUST NOT trigger a reconnect.
-        self._last_login: Optional[_LastLogin] = None
+        self._last_login: _LastLogin | None = None
         self._intentional_disconnect = False
         self._reconnect_greenlet: Any = None
         # Reconnect state + activity + uptime bookkeeping for
@@ -195,8 +191,8 @@ class AsyncSteamClient:
         # so :attr:`status` on an unstarted client is safe.
         self._reconnect_state = RECONNECT_IDLE
         self._reconnect_attempts = 0
-        self._last_activity_at: Optional[float] = None
-        self._started_at: Optional[float] = None
+        self._last_activity_at: float | None = None
+        self._started_at: float | None = None
         # Event bridge: (event_name → set[asyncio.Queue]) maps
         # active subscribers.  All access is from the runner thread
         # via the sync client's ``.on(...)`` callback + the
@@ -204,10 +200,10 @@ class AsyncSteamClient:
         # mutex protects the dict shape from concurrent
         # mutation across the two threads.
         self._subscribers_lock = threading.Lock()
-        self._subscribers: "dict[str, set[asyncio.Queue]]" = {}
+        self._subscribers: dict[str, set[asyncio.Queue[Any]]] = {}
         # Sync-side listeners we registered (event_name → callback)
         # so ``close()`` can detach them cleanly.
-        self._sync_listeners: "list[tuple[str, Callable]]" = []
+        self._sync_listeners: list[tuple[str, Callable[..., Any]]] = []
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -228,9 +224,14 @@ class AsyncSteamClient:
 
         def _make_sync() -> Any:
             # Import inside the runner thread so ``steam.client``'s
-            # gevent-touching init happens on the right hub.
+            # gevent-touching init happens on the right hub.  Typed
+            # ``Any`` because ``SteamClient`` isn't mypy-typed
+            # upstream — the ``no-untyped-call`` warning is genuine
+            # but unavoidable until upstream ships stubs; we keep
+            # the boundary here.
             from steam.client import SteamClient
-            return SteamClient()
+
+            return SteamClient()  # type: ignore[no-untyped-call]
 
         self._sync = await self._await_fut(self._runner.submit(_make_sync))
         self._started_at = time.monotonic()
@@ -264,7 +265,7 @@ class AsyncSteamClient:
             {"intentional": bool(self._intentional_disconnect)},
         )
 
-    async def _await_fut(self, cfut: Future) -> Any:
+    async def _await_fut(self, cfut: Future[Any]) -> Any:
         """Bridge a ``concurrent.futures.Future`` into the current
         loop as an awaitable.  ``asyncio.wrap_future`` handles the
         callback registration and cancellation semantics.
@@ -285,7 +286,7 @@ class AsyncSteamClient:
         self,
         fn: Callable[[], Any],
         *,
-        method: Optional[str] = None,
+        method: str | None = None,
     ) -> Any:
         """Submit ``fn`` to the runner and await the result — the
         one funnel every public method routes through, so lifecycle
@@ -374,7 +375,8 @@ class AsyncSteamClient:
         # reads a bound method off the sync client for submission.
         self._require_ready()
         result = await self._call(
-            self._sync.anonymous_login, method="anonymous_login",
+            self._sync.anonymous_login,
+            method="anonymous_login",
         )
         self._last_login = _LastLogin(kind="anonymous")
         self._raise_login_if_needed(result, raise_on_error)
@@ -385,10 +387,10 @@ class AsyncSteamClient:
         username: str,
         password: str = "",
         *,
-        login_key: Optional[str] = None,
-        auth_code: Optional[str] = None,
-        two_factor_code: Optional[str] = None,
-        login_id: Optional[int] = None,
+        login_key: str | None = None,
+        auth_code: str | None = None,
+        two_factor_code: str | None = None,
+        login_id: int | None = None,
         raise_on_error: bool = True,
     ) -> Any:
         """Log in with credentials.  See ``SteamClient.login`` for
@@ -470,8 +472,8 @@ class AsyncSteamClient:
 
     async def get_product_info(
         self,
-        apps: Optional[list] = None,
-        packages: Optional[list] = None,
+        apps: list[int] | None = None,
+        packages: list[int] | None = None,
         *,
         meta_data_only: bool = False,
         raw: bool = False,
@@ -511,7 +513,7 @@ class AsyncSteamClient:
     async def send_um_and_wait(
         self,
         method_name: str,
-        params: Optional[dict] = None,
+        params: dict[str, Any] | None = None,
         *,
         timeout: float = 10.0,
         raises: bool = False,
@@ -553,8 +555,8 @@ class AsyncSteamClient:
     async def wait_event(
         self,
         name: str,
-        timeout: Optional[float] = None,
-    ) -> Tuple[Any, ...]:
+        timeout: float | None = None,
+    ) -> tuple[Any, ...]:
         """Wait for a single occurrence of ``name`` from the sync
         client's event emitter and return its args as a tuple.
         On timeout raises :class:`SteamRPCTimeoutError`.
@@ -568,14 +570,16 @@ class AsyncSteamClient:
         client's convention.
         """
         self._require_ready()
-        q: asyncio.Queue = asyncio.Queue(maxsize=1)
+        q: asyncio.Queue[Any] = asyncio.Queue(maxsize=1)
         self._add_subscriber(name, q)
         try:
             if timeout is None:
-                return await q.get()
+                item: tuple[Any, ...] = await q.get()
+                return item
             try:
-                return await asyncio.wait_for(q.get(), timeout=timeout)
-            except asyncio.TimeoutError as e:
+                item = await asyncio.wait_for(q.get(), timeout=timeout)
+                return item
+            except TimeoutError as e:
                 raise SteamRPCTimeoutError(
                     timeout,
                     f"Timed out waiting for event {name!r}",
@@ -587,7 +591,7 @@ class AsyncSteamClient:
         self,
         *names: str,
         buffer_size: int = _EVENT_QUEUE_MAX,
-    ) -> AsyncIterator[Tuple[str, Tuple[Any, ...]]]:
+    ) -> AsyncIterator[tuple[str, tuple[Any, ...]]]:
         """Async iterator over the given event names.  Yields
         ``(name, args_tuple)`` pairs.  Loop teardown detaches the
         listeners.
@@ -602,7 +606,7 @@ class AsyncSteamClient:
         self._require_ready()
         if not names:
             raise ValueError("events() requires at least one event name")
-        q: asyncio.Queue = asyncio.Queue(maxsize=buffer_size)
+        q: asyncio.Queue[Any] = asyncio.Queue(maxsize=buffer_size)
         # A single queue serves all names — each event pushed
         # carries its own name in the tuple so the iterator can
         # tell them apart.  Multiplexing keeps the queue count
@@ -618,7 +622,7 @@ class AsyncSteamClient:
             for name in names:
                 self._remove_subscriber(name, q)
 
-    def _add_subscriber(self, name: str, q: asyncio.Queue) -> None:
+    def _add_subscriber(self, name: str, q: asyncio.Queue[Any]) -> None:
         with self._subscribers_lock:
             fresh_name = name not in self._subscribers
             self._subscribers.setdefault(name, set()).add(q)
@@ -630,7 +634,7 @@ class AsyncSteamClient:
             # never register more than one sync listener per name.
             self._install_sync_listener(name, self._make_forwarder(name))
 
-    def _remove_subscriber(self, name: str, q: asyncio.Queue) -> None:
+    def _remove_subscriber(self, name: str, q: asyncio.Queue[Any]) -> None:
         with self._subscribers_lock:
             queues = self._subscribers.get(name)
             if queues is None:
@@ -667,7 +671,7 @@ class AsyncSteamClient:
         return _forward
 
     @staticmethod
-    def _enqueue(q: asyncio.Queue, payload: Any, name: str) -> None:
+    def _enqueue(q: asyncio.Queue[Any], payload: Any, name: str) -> None:
         """Put ``payload`` on ``q`` from the asyncio thread; on
         overflow drop the oldest event and log a warning."""
         try:
@@ -725,9 +729,14 @@ class AsyncSteamClient:
             # Already reconnecting — sync client emits several
             # 'disconnected' events in a row during a bad flap; we
             # only want one worker.
-            greenlet_alive = getattr(
-                self._reconnect_greenlet, "dead", True,
-            ) is False
+            greenlet_alive = (
+                getattr(
+                    self._reconnect_greenlet,
+                    "dead",
+                    True,
+                )
+                is False
+            )
             if greenlet_alive:
                 return
         import gevent
@@ -743,7 +752,7 @@ class AsyncSteamClient:
         policy = self._reconnect_policy
         max_attempts = policy.max_attempts
         attempt = 0
-        last_error: Optional[BaseException] = None
+        last_error: BaseException | None = None
         self._reconnect_state = RECONNECT_RECONNECTING
         self._reconnect_attempts = 0
         sync.emit("aio.reconnecting")
@@ -765,7 +774,8 @@ class AsyncSteamClient:
                 )
                 _log.error(
                     "aio: reconnect gave up after %d attempts (last=%r)",
-                    attempt - 1, last_error,
+                    attempt - 1,
+                    last_error,
                 )
                 return
             try:
@@ -810,7 +820,8 @@ class AsyncSteamClient:
                 # once ``max_attempts`` is hit.
                 last_error = e
                 _log.warning(
-                    "aio: relogin after reconnect failed: %r", e,
+                    "aio: relogin after reconnect failed: %r",
+                    e,
                 )
                 continue
             self._reconnect_state = RECONNECT_IDLE
@@ -871,7 +882,7 @@ class AsyncSteamClient:
         return bool(getattr(self._sync, "connected", False))
 
     @property
-    def username(self) -> Optional[str]:
+    def username(self) -> str | None:
         """Currently-logged-in username, or ``None`` if anonymous / logged out."""
         return getattr(self._sync, "username", None)
 
@@ -887,7 +898,8 @@ class AsyncSteamClient:
         Cheap — builds a fresh dataclass each call, no caching."""
         uptime = (
             time.monotonic() - self._started_at
-            if self._started_at is not None else None
+            if self._started_at is not None
+            else None
         )
         return ClientStatus(
             started=self._sync is not None,
@@ -928,7 +940,7 @@ class AsyncSteamClient:
                     ),
                     timeout=5.0,
                 )
-            except (asyncio.TimeoutError, Exception):  # noqa: BLE001
+            except (TimeoutError, Exception):  # noqa: BLE001
                 # Runner may be slow or wedged — the ``runner.stop``
                 # call below will kill the thread with prejudice.
                 pass
@@ -957,7 +969,7 @@ class AsyncSteamClient:
     # Async context manager
     # ------------------------------------------------------------------
 
-    async def __aenter__(self) -> "AsyncSteamClient":
+    async def __aenter__(self) -> AsyncSteamClient:
         await self.start()
         return self
 

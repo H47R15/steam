@@ -1,3 +1,7 @@
+.. image:: https://raw.githubusercontent.com/H47R15/steam/master/.github/cover.png
+   :alt: pysteam-client
+   :align: center
+
 steam
 =====
 

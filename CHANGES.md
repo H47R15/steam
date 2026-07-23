@@ -1,3 +1,42 @@
+## 1.7.1
+
+### Added
+- **CI quality gates** — the ``Publish`` workflow now runs
+  ruff + black + mypy (strict, on ``steam.aio`` + ``steam.mcp``)
+  + deptry + pip-audit BEFORE building the wheel.  A failing
+  lint / type-check / test blocks the PyPI upload.
+- The ``CI`` workflow (renamed from the old ``Tests`` workflow)
+  runs the same gates on every push + PR as four independent
+  jobs, so the GitHub UI shows which specific gate failed.
+  Concurrency-cancel is on — pushing a fix doesn't wait for
+  the previous build.
+- ``[tool.black]`` / ``[tool.ruff]`` / ``[tool.mypy]`` sections
+  in ``pyproject.toml``, scoped to the new modules so we can
+  ratchet toward strict lint incrementally without rewriting the
+  whole legacy tree in one go.
+- ``ruff``, ``black``, ``mypy``, ``pip-audit`` added as dev
+  dependencies so ``poetry install --with dev`` bootstraps
+  everything CI runs.
+- Cover image at the top of README.rst — rendered on both GitHub
+  and PyPI via the absolute ``raw.githubusercontent.com`` URL.
+- CI quality gates …
+
+### Changed
+- ``steam.aio.integrations.taskiq`` now registers its
+  startup / shutdown handlers with ``TaskiqEvents.WORKER_STARTUP``
+  / ``TaskiqEvents.WORKER_SHUTDOWN`` (the correct enum), not
+  the bare ``"startup"`` / ``"shutdown"`` strings.  Fixes a
+  latent bug — the string form was rejected by newer TaskIQ
+  versions.  Test updated to match.
+- Every ``steam/aio/**/*.py`` and ``steam/mcp/**/*.py`` file
+  now passes ``mypy --strict`` and ``ruff check`` / ``black
+  --check``.  Type annotations tightened (generic params on
+  ``list`` / ``dict`` / ``Queue`` / ``Future`` / ``itertools.cycle``,
+  narrowed return types in the FastAPI ``Depends`` providers).
+- New black formatting applied to ``steam/aio`` + ``steam/mcp``
+  + async tests.  No functional change; diffs are purely
+  whitespace + import ordering.
+
 ## 1.7.0
 
 ### Added

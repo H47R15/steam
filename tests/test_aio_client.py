@@ -19,12 +19,14 @@ Pure Python, no live network.  Verifies:
 Tests use plain ``asyncio.run`` — no ``pytest-asyncio`` dependency
 so they run under the repo's default test config.
 """
+
 from __future__ import annotations
 
 import asyncio
 import time
 import unittest
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 from unittest import mock
 
 
@@ -167,7 +169,8 @@ class GeventRunnerTests(unittest.TestCase):
             runner.submit(_install_ticker).result(timeout=5)
             time.sleep(0.3)
             self.assertGreaterEqual(
-                counter["n"], 3,
+                counter["n"],
+                3,
                 f"background greenlet only ticked {counter['n']} times — "
                 "the gevent hub is stalling between submits",
             )
@@ -225,7 +228,9 @@ class AsyncSteamClientTests(unittest.TestCase):
 
         async def _do(c: Any) -> dict:
             return await c.get_product_info(
-                apps=[440], meta_data_only=True, timeout=7.5,
+                apps=[440],
+                meta_data_only=True,
+                timeout=7.5,
             )
 
         result = self._run_with_stub(_do, Stub)
@@ -240,7 +245,12 @@ class AsyncSteamClientTests(unittest.TestCase):
 
         class Stub(_FakeEmitter):
             def send_um_and_wait(
-                self, method_name: str, params: dict, *, timeout: float, raises: bool,
+                self,
+                method_name: str,
+                params: dict,
+                *,
+                timeout: float,
+                raises: bool,
             ) -> dict:
                 received["method_name"] = method_name
                 received["params"] = params
@@ -424,7 +434,9 @@ class EventBridgeTests(unittest.TestCase):
                         await asyncio.sleep(0.05)
                         client._runner.submit(  # noqa: SLF001
                             lambda: client._sync.emit(  # noqa: SLF001
-                                "channel_secured", "arg-a", "arg-b",
+                                "channel_secured",
+                                "arg-a",
+                                "arg-b",
                             ),
                         )
 

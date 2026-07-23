@@ -73,12 +73,12 @@ Example — pool::
 """
 from __future__ import annotations
 
+from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
-from typing import Any, AsyncIterator, Awaitable, Callable, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from ..client import AsyncSteamClient
 from ..pool import AsyncSteamPool
-
 
 if TYPE_CHECKING:
     # ``fastapi.FastAPI`` and ``fastapi.Request`` are only needed
@@ -99,10 +99,10 @@ _STATE_POOL_ATTR = "steam_pool"
 
 @asynccontextmanager
 async def steam_client_lifespan(
-    app: "FastAPI",
+    app: FastAPI,
     client: AsyncSteamClient,
     *,
-    on_start: Optional[Callable[[AsyncSteamClient], Awaitable[Any]]] = None,
+    on_start: Callable[[AsyncSteamClient], Awaitable[Any]] | None = None,
     state_attr: str = _STATE_CLIENT_ATTR,
 ) -> AsyncIterator[AsyncSteamClient]:
     """Start ``client`` at app boot, close it at app shutdown, and
@@ -134,7 +134,7 @@ async def steam_client_lifespan(
 
 @asynccontextmanager
 async def steam_pool_lifespan(
-    app: "FastAPI",
+    app: FastAPI,
     pool: AsyncSteamPool,
     *,
     state_attr: str = _STATE_POOL_ATTR,
@@ -159,7 +159,7 @@ async def steam_pool_lifespan(
 
 
 def get_steam_client(
-    request: "Request",
+    request: Request,
     *,
     state_attr: str = _STATE_CLIENT_ATTR,
 ) -> AsyncSteamClient:
@@ -188,11 +188,15 @@ def get_steam_client(
             "Did you set up ``steam_client_lifespan`` in your "
             "FastAPI lifespan?",
         )
+    # ``app.state`` is typed as ``Any`` by Starlette; the cast is
+    # documentation for the reader (and mypy) that the lifespan
+    # contract guarantees this type.
+    assert isinstance(client, AsyncSteamClient)
     return client
 
 
 def get_steam_pool(
-    request: "Request",
+    request: Request,
     *,
     state_attr: str = _STATE_POOL_ATTR,
 ) -> AsyncSteamPool:
@@ -206,6 +210,7 @@ def get_steam_pool(
             "Did you set up ``steam_pool_lifespan`` in your "
             "FastAPI lifespan?",
         )
+    assert isinstance(pool, AsyncSteamPool)
     return pool
 
 

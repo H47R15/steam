@@ -11,16 +11,17 @@ Pure-Python; no live network.  The shared ``_FakeEmitter`` /
 tests in this file compose with the same test doubles the earlier
 suite established.
 """
+
 from __future__ import annotations
 
 import asyncio
 import time
 import unittest
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 from unittest import mock
 
-from tests.test_aio_client import _FakeEmitter, _OK, _run
-
+from tests.test_aio_client import _OK, _FakeEmitter, _run
 
 # ----------------------------------------------------------------------
 # Status + metrics hook
@@ -189,7 +190,8 @@ class CancellationTests(unittest.TestCase):
                 async with AsyncSteamClient() as client:
                     with self.assertRaises(asyncio.TimeoutError):
                         await asyncio.wait_for(
-                            client.anonymous_login(), timeout=0.1,
+                            client.anonymous_login(),
+                            timeout=0.1,
                         )
                     # Give the kill a moment to land on the runner thread.
                     await asyncio.sleep(0.3)
@@ -197,8 +199,7 @@ class CancellationTests(unittest.TestCase):
         _run(_main())
         self.assertTrue(
             state["killed"],
-            "greenlet was not killed after asyncio cancellation "
-            f"(state={state!r})",
+            "greenlet was not killed after asyncio cancellation " f"(state={state!r})",
         )
         self.assertFalse(state["finished_normally"])
 
@@ -248,11 +249,13 @@ class PoolTests(unittest.TestCase):
 
         async def _main() -> list:
             with mock.patch("steam.client.SteamClient", Stub):
-                pool = AsyncSteamPool([
-                    PoolMember(account_id="alice", login=_login),
-                    PoolMember(account_id="bob", login=_login),
-                    PoolMember(account_id="carol", login=_login),
-                ])
+                pool = AsyncSteamPool(
+                    [
+                        PoolMember(account_id="alice", login=_login),
+                        PoolMember(account_id="bob", login=_login),
+                        PoolMember(account_id="carol", login=_login),
+                    ]
+                )
                 await pool.start()
                 try:
                     return pool.status()
@@ -277,11 +280,13 @@ class PoolTests(unittest.TestCase):
 
         async def _main() -> list:
             with mock.patch("steam.client.SteamClient", Stub):
-                async with AsyncSteamPool([
-                    PoolMember(account_id="a", login=_login),
-                    PoolMember(account_id="b", login=_login),
-                    PoolMember(account_id="c", login=_login),
-                ]) as pool:
+                async with AsyncSteamPool(
+                    [
+                        PoolMember(account_id="a", login=_login),
+                        PoolMember(account_id="b", login=_login),
+                        PoolMember(account_id="c", login=_login),
+                    ]
+                ) as pool:
                     picks: list = []
                     for _ in range(6):
                         picks.append(pool.round_robin())
@@ -321,11 +326,13 @@ class PoolTests(unittest.TestCase):
 
         async def _main() -> list:
             with mock.patch("steam.client.SteamClient", Stub):
-                async with AsyncSteamPool([
-                    PoolMember(account_id="good", login=_login_ok),
-                    PoolMember(account_id="bad", login=_login_fail),
-                    PoolMember(account_id="also_good", login=_login_ok),
-                ]) as pool:
+                async with AsyncSteamPool(
+                    [
+                        PoolMember(account_id="good", login=_login_ok),
+                        PoolMember(account_id="bad", login=_login_fail),
+                        PoolMember(account_id="also_good", login=_login_ok),
+                    ]
+                ) as pool:
                     return pool.status()
 
         statuses = _run(_main())
@@ -346,9 +353,11 @@ class PoolTests(unittest.TestCase):
 
         async def _main() -> tuple:
             with mock.patch("steam.client.SteamClient", Stub):
-                async with AsyncSteamPool([
-                    PoolMember(account_id="alice", login=_login),
-                ]) as pool:
+                async with AsyncSteamPool(
+                    [
+                        PoolMember(account_id="alice", login=_login),
+                    ]
+                ) as pool:
                     a = pool.acquire("alice")
                     try:
                         pool.acquire("nobody")
@@ -395,7 +404,9 @@ class FastAPIIntegrationTests(unittest.TestCase):
                     await c.anonymous_login()
 
                 async with steam_client_lifespan(
-                    app, client, on_start=_login,
+                    app,
+                    client,
+                    on_start=_login,
                 ):
                     inside = getattr(app.state, "steam", None)
                     inside_id = id(inside)
@@ -432,7 +443,9 @@ class TaskIQIntegrationTests(unittest.TestCase):
                 self.handlers: dict = {}
 
             def add_event_handler(
-                self, name: str, handler: Callable[..., Any],
+                self,
+                name: str,
+                handler: Callable[..., Any],
             ) -> None:
                 self.handlers[name] = handler
 
@@ -455,11 +468,17 @@ class TaskIQIntegrationTests(unittest.TestCase):
                     await c.anonymous_login()
 
                 dep = register_steam_client(broker, client, on_start=_login)
-                # Startup handler was registered — run it.
-                await broker.handlers["startup"]()
+                # Startup handler was registered — run it.  The key
+                # is the ``TaskiqEvents`` enum (not the bare string
+                # "startup") because that's what the helper feeds
+                # into ``broker.add_event_handler`` — matching what
+                # taskiq itself requires.
+                from taskiq import TaskiqEvents
+
+                await broker.handlers[TaskiqEvents.WORKER_STARTUP]()
                 depped = dep()
                 started = client._sync is not None  # noqa: SLF001
-                await broker.handlers["shutdown"]()
+                await broker.handlers[TaskiqEvents.WORKER_SHUTDOWN]()
                 closed = client._closed  # noqa: SLF001
                 return depped is client, started, closed
 
@@ -547,7 +566,8 @@ class MCPToolTests(unittest.TestCase):
             with mock.patch("steam.client.SteamClient", Stub):
                 async with AsyncSteamClient() as client:
                     return await _tool_get_product_info(
-                        client, GetProductInfoInput(apps=[440]),
+                        client,
+                        GetProductInfoInput(apps=[440]),
                     )
 
         out = _run(_main())
@@ -575,7 +595,8 @@ class MCPToolTests(unittest.TestCase):
             with mock.patch("steam.client.SteamClient", Stub):
                 async with AsyncSteamClient() as client:
                     await _tool_get_product_info(
-                        client, GetProductInfoInput(),
+                        client,
+                        GetProductInfoInput(),
                     )
 
         with self.assertRaises(ValueError):

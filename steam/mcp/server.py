@@ -24,10 +24,12 @@ The FastMCP dependency is imported lazily inside
 :func:`register_steam_tools` — importing :mod:`steam.mcp` on a
 system without FastMCP won't crash.
 """
+
 from __future__ import annotations
 
 import inspect
-from typing import Any, Iterable, List, Optional
+from collections.abc import Iterable
+from typing import Any
 
 from ..aio.client import AsyncSteamClient
 from .tools import (
@@ -42,9 +44,9 @@ def register_steam_tools(
     server: Any,
     client: AsyncSteamClient,
     *,
-    bindings: Optional[Iterable[SteamToolBinding]] = None,
+    bindings: Iterable[SteamToolBinding] | None = None,
     prefix: str = "",
-) -> List[str]:
+) -> list[str]:
     """Bind every tool in ``bindings`` (or the default set) onto
     ``server``.  Returns the list of tool names that were
     registered.
@@ -71,7 +73,7 @@ def register_steam_tools(
     if bindings is None:
         bindings = build_steam_tool_bindings()
 
-    registered: List[str] = []
+    registered: list[str] = []
 
     for binding in bindings:
         _register_one(server, client, binding, prefix)
@@ -104,7 +106,7 @@ def _register_one(
     # dynamically generate positional args.
     async def _tool_impl(
         params: input_model,  # type: ignore[valid-type]
-    ) -> dict:
+    ) -> dict[str, Any]:
         try:
             result = await handler(client, params)
         except SteamToolError:
@@ -115,7 +117,7 @@ def _register_one(
         # ``dict()`` on v1.
         if hasattr(result, "model_dump"):
             return result.model_dump()
-        return result.dict()  # type: ignore[attr-defined]
+        return result.dict()
 
     _tool_impl.__name__ = tool_name.replace(".", "_")
     _tool_impl.__doc__ = binding.description

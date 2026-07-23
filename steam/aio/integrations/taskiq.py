@@ -41,21 +41,21 @@ to install it.
 """
 from __future__ import annotations
 
-from typing import Any, Awaitable, Callable, Optional, TYPE_CHECKING
+from collections.abc import Awaitable, Callable
+from typing import TYPE_CHECKING, Any
 
 from ..client import AsyncSteamClient
 from ..pool import AsyncSteamPool
-
 
 if TYPE_CHECKING:
     from taskiq import AsyncBroker
 
 
 def register_steam_client(
-    broker: "AsyncBroker",
+    broker: AsyncBroker,
     client: AsyncSteamClient,
     *,
-    on_start: Optional[Callable[[AsyncSteamClient], Awaitable[Any]]] = None,
+    on_start: Callable[[AsyncSteamClient], Awaitable[Any]] | None = None,
 ) -> Callable[[], AsyncSteamClient]:
     """Wire ``client`` into the broker's lifecycle and return a
     dependency function suitable for :class:`TaskiqDepends`.
@@ -74,7 +74,7 @@ def register_steam_client(
     than an async one that only reads a captured local.
     """
 
-    async def _startup() -> None:
+    async def _startup(*_a: Any, **_kw: Any) -> None:
         await client.start()
         if on_start is not None:
             try:
@@ -83,11 +83,10 @@ def register_steam_client(
                 await client.close()
                 raise
 
-    async def _shutdown() -> None:
+    async def _shutdown(*_a: Any, **_kw: Any) -> None:
         await client.close()
 
-    broker.add_event_handler("startup", _startup)  # type: ignore[attr-defined]
-    broker.add_event_handler("shutdown", _shutdown)  # type: ignore[attr-defined]
+    _register_lifecycle(broker, _startup, _shutdown)
 
     def _dep() -> AsyncSteamClient:
         return client
@@ -96,7 +95,7 @@ def register_steam_client(
 
 
 def register_steam_pool(
-    broker: "AsyncBroker",
+    broker: AsyncBroker,
     pool: AsyncSteamPool,
 ) -> Callable[[], AsyncSteamPool]:
     """Pool variant of :func:`register_steam_client`.  Members
@@ -105,19 +104,37 @@ def register_steam_pool(
     parameter here.
     """
 
-    async def _startup() -> None:
+    async def _startup(*_a: Any, **_kw: Any) -> None:
         await pool.start()
 
-    async def _shutdown() -> None:
+    async def _shutdown(*_a: Any, **_kw: Any) -> None:
         await pool.close()
 
-    broker.add_event_handler("startup", _startup)  # type: ignore[attr-defined]
-    broker.add_event_handler("shutdown", _shutdown)  # type: ignore[attr-defined]
+    _register_lifecycle(broker, _startup, _shutdown)
 
     def _dep() -> AsyncSteamPool:
         return pool
 
     return _dep
+
+
+def _register_lifecycle(
+    broker: Any,
+    startup: Callable[..., Any],
+    shutdown: Callable[..., Any],
+) -> None:
+    """Attach startup + shutdown handlers to ``broker``.
+
+    ``AsyncBroker.add_event_handler`` wants a ``TaskiqEvents`` enum,
+    not a bare string.  We import the enum lazily inside this
+    helper so ``steam.aio.integrations.taskiq`` stays importable
+    on a system without TaskIQ (the runtime import happens only
+    when a caller actually invokes ``register_steam_*``).
+    """
+    from taskiq import TaskiqEvents
+
+    broker.add_event_handler(TaskiqEvents.WORKER_STARTUP, startup)
+    broker.add_event_handler(TaskiqEvents.WORKER_SHUTDOWN, shutdown)
 
 
 __all__ = [

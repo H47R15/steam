@@ -5,7 +5,7 @@
 # ``steam`` distribution name on PyPI is owned by ValvePython since 2013,
 # so the fork lives under a scoped name here.
 name = "pysteam-client"
-version = "1.7.0"
+version = "1.7.1"
 description = "Module for interacting with various Steam features"
 authors = ["Rossen Georgiev <rossen@rgp.io>"]
 license = "MIT"
@@ -129,6 +129,20 @@ types-protobuf =        ">=4.24"
 # static analysers already expect.
 mypy-protobuf =         ">=3.6"
 
+# ─── quality gates (new in 1.7) ───────────────────────────────────
+#
+# Wired into CI (``.github/workflows/testing_initiative.yml``) and
+# the publish workflow — a release cannot land if any of these
+# fails.  Runnable locally via ``poetry run ruff check .`` /
+# ``poetry run black --check .`` / ``poetry run mypy steam/aio steam/mcp``.
+#
+# See ``[tool.black]``, ``[tool.ruff]``, and ``[tool.mypy]`` below
+# for per-tool scope + rule selection.
+ruff =                  ">=0.7,<1"
+black =                 ">=24,<28"
+mypy =                  ">=1.10,<2"
+pip-audit =             ">=2.7,<3"
+
 # ─── deptry ignores ───────────────────────────────────────────────
 #
 # The client extras are legitimately optional runtime deps that the
@@ -136,11 +150,163 @@ mypy-protobuf =         ">=3.6"
 # would flag them under a default install, so ignore explicitly.
 python-dotenv = "^1.2.2"
 [tool.deptry.per_rule_ignores]
-DEP002 = ["gevent", "protobuf", "gevent-eventemitter", "six", "types-protobuf", "mypy-protobuf"]
+DEP002 = [
+    "gevent", "protobuf", "gevent-eventemitter", "six",
+    "types-protobuf", "mypy-protobuf",
+    # New in 1.7 — declared as dev deps for CI to run them, not
+    # imported from ``steam/``.  Users install / invoke these
+    # themselves; the package doesn't need them at runtime.
+    "ruff", "black", "mypy", "pip-audit",
+    # Pinned as a hard runtime dep to keep the ``<2`` bound —
+    # ``requests`` (which we DO import) picks it up transitively
+    # and would auto-resolve to 2.x otherwise, which broke a few
+    # cert-verification code paths in the fork.  Deptry doesn't
+    # see the transitive-with-pin motivation; ignore here.
+    "urllib3",
+]
+# Optional integrations import their frameworks lazily inside
+# helper functions (``steam.aio.integrations.taskiq``,
+# ``steam.aio.status.prometheus_hook``, ``steam.mcp.tools``).
+# These aren't runtime deps of ``pysteam-client`` — they come in
+# via the caller's own environment when they opt into the
+# integration.  Deptry can't see the ``inside a function``
+# import guard, so flag as intentional here.
+DEP003 = ["taskiq", "prometheus_client", "pydantic"]
+DEP004 = ["dotenv", "vcr"]
 
 [tool.deptry.package_module_name_map]
 # Underscore vs hyphen in the extras names.
 gevent_eventemitter = "gevent-eventemitter"
+
+# ─── black (formatter) ────────────────────────────────────────────
+#
+# Applied to new modules + tests.  Legacy code (``steam.client``,
+# ``steam.core``, ``steam.enums``, generated protobufs) is excluded
+# so we don't rewrite tens of thousands of lines in one go —
+# incremental adoption via a separate cleanup pass, not a mass
+# reformat that would obliterate git-blame.
+[tool.black]
+line-length = 88
+target-version = ["py313"]
+extend-exclude = '''
+(
+  ^/steam/protobufs/
+  | ^/steam/client/
+  | ^/steam/core/
+  | ^/steam/enums/
+  | ^/steam/utils/
+  | ^/steam/webapi\.py$
+  | ^/steam/webauth\.py$
+  | ^/steam/guard\.py$
+  | ^/steam/game_servers\.py$
+  | ^/steam/globalid\.py$
+  | ^/steam/monkey\.py$
+  | ^/steam/steamid\.py$
+  | ^/typings/
+  | ^/vcr/
+  | ^/scripts/
+  | ^/tests/(?!test_aio_)
+)
+'''
+
+# ─── ruff (linter) ────────────────────────────────────────────────
+#
+# Same scope as black — new code + async tests.  Rule set is a
+# curated middle-ground: catches real bugs and simplifications
+# without demanding a stylistic rewrite of the whole codebase.
+#
+# ``select`` categories:
+#   E, W — pycodestyle (indentation, whitespace)
+#   F     — pyflakes (unused imports, redefinitions, undefined names)
+#   I     — isort   (import ordering — same policy as black-compat isort)
+#   B     — flake8-bugbear (common mutable-default-argument-shaped bugs)
+#   UP    — pyupgrade (py3.13-appropriate idioms)
+#   C4    — flake8-comprehensions (dict()/list() -> literal, etc.)
+#   SIM   — flake8-simplify (redundant if/else, boolean logic)
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+extend-exclude = [
+    "steam/protobufs",
+    "steam/client",
+    "steam/core",
+    "steam/enums",
+    "steam/utils",
+    "steam/webapi.py",
+    "steam/webauth.py",
+    "steam/guard.py",
+    "steam/game_servers.py",
+    "steam/globalid.py",
+    "steam/monkey.py",
+    "steam/steamid.py",
+    "steam/exceptions.py",
+    "steam/versions_report",
+    "typings",
+    "vcr",
+    "scripts",
+    # Legacy tests use module-style ``import mock`` etc; ruff would
+    # scream.  Only the new ``test_aio_*.py`` files are in scope.
+    "tests/test_core_cm.py",
+    "tests/test_core_crypto.py",
+    "tests/test_game_servers.py",
+    "tests/test_guard.py",
+    "tests/test_steamid.py",
+    "tests/test_utils.py",
+    "tests/test_webapi.py",
+    "tests/test_webauth.py",
+    "tests/generete_webauth_vcr.py",
+]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "C4", "SIM"]
+# ``SIM105`` (use ``contextlib.suppress``) — the try/except pass
+# idiom is idiomatic in metrics hooks and cross-thread cleanup
+# paths where the exception is genuinely uninteresting; a
+# ``contextlib.suppress`` in a hot loop adds a Python-level
+# frame per call, which we don't want.
+# ``BLE001`` (blind ``except Exception``) — the metrics-hook and
+# runner shutdown paths intentionally catch everything because a
+# broken hook / stale watcher must never take down the RPC path.
+# ``E402`` (import not at top of file) — the lifespan / MCP
+# adapter helpers do lazy framework imports inside functions to
+# keep the module import-cheap; ruff flags the ``from taskiq
+# import ...`` inside ``_register_lifecycle``, which is exactly
+# what we want the shape to be.
+# ``B008`` (function-call in default argument) — ``ReconnectPolicy()``
+# / ``PoolMember()`` defaults are frozen dataclasses; the "shared
+# mutable default" bug this rule guards against doesn't apply.
+# ``UP031`` (format specifiers) — leaves the small handful of
+# ``%``-style formats in cross-file log strings alone; migrating
+# each one is churn without benefit.
+# ``UP038`` (use ``X | Y`` in ``isinstance``) — the tuple form
+# fits multi-target checks better in some spots; unsafe autofix
+# also risks widening to a Union that includes non-types.
+ignore = ["SIM105", "BLE001", "E402", "B008", "UP031", "UP038"]
+# Test files legitimately import at function scope, and pytest
+# collects them by walking classes with side-effect setups —
+# both trip a few rules that don't apply.
+per-file-ignores = { "tests/**" = ["B011", "SIM117"] }
+
+# ─── mypy (type checker) ──────────────────────────────────────────
+#
+# Strict on the new modules only.  Legacy code (``steam.client``,
+# ``steam.core``, generated protobufs) isn't mypy-friendly today
+# and would take a dedicated cleanup pass to bring up; scoped in
+# incrementally as modules get migrated.
+#
+# ``ignore_missing_imports`` covers gevent (untyped) and pydantic
+# / fastapi / taskiq / mcp when the CI environment doesn't install
+# them (they're optional deps of the async layer, not of mypy).
+[tool.mypy]
+python_version = "3.13"
+strict = true
+ignore_missing_imports = true
+files = ["steam/aio", "steam/mcp"]
+# ``no-untyped-call`` is genuine for ``SteamClient()`` (upstream
+# ships no stubs); we ``# type: ignore[no-untyped-call]`` inline
+# at the one call site, but the error would still swamp the
+# report if left unwarned globally.
+show_error_codes = true
 
 # ─── pyright / Pylance ─────────────────────────────────
 #

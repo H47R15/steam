@@ -1,11 +1,28 @@
-# This workflow installs Python dependencies via Poetry and runs the pytest suite.
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+# CI — runs on every push to master and every PR against master.
+#
+# Four independent jobs so a slow / flaky one doesn't block the others
+# and the GitHub UI shows which specific gate failed at a glance:
+#
+#   * lint          — ``ruff check`` + ``ruff format --check`` (or
+#                     ``black --check``) on ``steam.aio`` / ``steam.mcp``
+#                     + async tests.  Legacy code excluded per
+#                     ``[tool.ruff]`` / ``[tool.black]`` in pyproject.
+#   * type-check    — ``mypy --strict`` on ``steam.aio`` / ``steam.mcp``.
+#                     Scoped narrow because the legacy sync client
+#                     isn't mypy-friendly yet; incremental adoption.
+#   * test          — full ``pytest`` suite (~120 tests, ~2s).
+#   * dep-audit     — ``pip-audit`` for CVEs in the resolved lock,
+#                     plus ``deptry`` for unused / undeclared / obsolete
+#                     dependency imports.
+#
+# All four are required-status-checks on the ``publish.yml`` workflow —
+# a broken lint blocks a release.  See ``publish.yml`` for the gate.
 
-name: Tests
+name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
     paths-ignore:
       - '.gitignore'
       - '.env.example'
@@ -16,7 +33,7 @@ on:
       - 'protobufs/**'
       - 'recipes/**'
   pull_request:
-    branches: [ master ]
+    branches: [master]
     paths-ignore:
       - '.gitignore'
       - '.env.example'
@@ -27,21 +44,130 @@ on:
       - 'protobufs/**'
       - 'recipes/**'
 
+# Cancel superseded runs — pushing a fix while an earlier build is
+# still going shouldn't block on the earlier one.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
+  lint:
+    name: Lint (ruff + black)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-          cache: "poetry"
-      - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
-      - name: Install dependencies
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: "1.8.5"
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - name: Cache poetry venv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-py3.13-${{ hashFiles('poetry.lock') }}
+      - name: Install dev dependencies
+        # Skip extras — ruff / black don't need gevent.
+        run: poetry install --with dev
+      - name: ruff check
+        run: poetry run ruff check .
+      - name: black --check
+        run: |
+          poetry run black --check \
+            steam/aio steam/mcp \
+            tests/test_aio_client.py \
+            tests/test_aio_prod.py \
+            tests/test_aio_integration.py
+
+  type-check:
+    name: Type-check (mypy --strict)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: "1.8.5"
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - name: Cache poetry venv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-py3.13-${{ hashFiles('poetry.lock') }}
+      - name: Install dev dependencies (+ client extras for imports)
+        # ``client`` extras give mypy the real gevent / protobuf
+        # modules to introspect; without them ``steam.aio.client``
+        # would fall back to ``ignore_missing_imports`` and hide
+        # real type errors behind unresolved-symbol noise.
+        run: poetry install --with dev --extras client
+      - name: mypy --strict
+        # ``files=`` is set in ``[tool.mypy]`` — scoped to steam.aio
+        # + steam.mcp so this doesn't fail on the legacy code
+        # that hasn't been typed yet.
+        run: poetry run mypy
+
+  test:
+    name: Tests (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: "1.8.5"
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - name: Cache poetry venv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-py3.13-${{ hashFiles('poetry.lock') }}
+      - name: Install dependencies (client extras required for tests)
         run: poetry install --with dev --extras client
       - name: Run tests
-        run: poetry run pytest --tb=short
+        # ``--tb=short`` for readable CI logs; ``--strict-markers``
+        # so a typo in ``@pytest.mark.foo`` fails loudly instead of
+        # silently doing nothing.
+        run: poetry run pytest --tb=short --strict-markers
+
+  dep-audit:
+    name: Dependency audit (pip-audit + deptry)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: "1.8.5"
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - name: Cache poetry venv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-py3.13-${{ hashFiles('poetry.lock') }}
+      - name: Install dev dependencies
+        run: poetry install --with dev --extras client
+      - name: deptry (unused / undeclared / misplaced deps)
+        run: poetry run deptry .
+      - name: pip-audit (CVEs in resolved deps)
+        # Audits the current poetry venv against the OSV / PyPI
+        # advisory database.  ``--ignore-vuln`` accepts specific
+        # CVE ids that we've triaged and know don't apply to us;
+        # add them here (with a comment) rather than silencing
+        # pip-audit wholesale.
+        run: poetry run pip-audit

@@ -37,16 +37,17 @@ Design notes
   the MCP server logs it as an internal error, which is what we
   want.
 """
+
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, Awaitable, Callable, Dict, List, Optional
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 from pydantic import BaseModel, Field
 
 from ..aio.client import AsyncSteamClient
 from ..aio.errors import AsyncSteamError, SteamNotStartedError
-
 
 # ---------------------------------------------------------------------
 # Common types
@@ -83,12 +84,12 @@ class SteamStatusOutput(BaseModel):
     )
     connected: bool
     logged_on: bool
-    username: Optional[str] = None
+    username: str | None = None
     cell_id: int = 0
     reconnect_state: str
     reconnect_attempts: int
-    last_activity_at: Optional[float] = None
-    uptime_seconds: Optional[float] = None
+    last_activity_at: float | None = None
+    uptime_seconds: float | None = None
 
 
 async def _tool_steam_status(
@@ -119,11 +120,11 @@ async def _tool_steam_status(
 class GetProductInfoInput(BaseModel):
     """Look up Steam product metadata for one or more app / package IDs."""
 
-    apps: List[int] = Field(
+    apps: list[int] = Field(
         default_factory=list,
         description="Steam app IDs (e.g. 440 for Team Fortress 2). Empty for none.",
     )
-    packages: List[int] = Field(
+    packages: list[int] = Field(
         default_factory=list,
         description="Steam package IDs. Empty for none.",
     )
@@ -135,8 +136,12 @@ class GetProductInfoInput(BaseModel):
         ),
     )
     timeout_seconds: float = Field(
-        default=15.0, ge=0.5, le=60.0,
-        description="Hard cap on the RPC. Steam typically answers within a second or two.",
+        default=15.0,
+        ge=0.5,
+        le=60.0,
+        description=(
+            "Hard cap on the RPC. Steam typically answers within a second or two."
+        ),
     )
 
     model_config = {"extra": "forbid"}
@@ -148,8 +153,8 @@ class GetProductInfoOutput(BaseModel):
     ``common``, ``config``, ``depots``, and so on are all
     optional and per-app-shaped."""
 
-    apps: Dict[int, dict] = Field(default_factory=dict)
-    packages: Dict[int, dict] = Field(default_factory=dict)
+    apps: dict[int, dict[str, Any]] = Field(default_factory=dict)
+    packages: dict[int, dict[str, Any]] = Field(default_factory=dict)
 
 
 async def _tool_get_product_info(
@@ -166,14 +171,15 @@ async def _tool_get_product_info(
         meta_data_only=inp.meta_data_only,
         timeout=inp.timeout_seconds,
     )
+
     # ``get_product_info`` returns ``{"apps": {id: {...}}, "packages": ...}``
     # where the keys are ints for apps but sometimes strings if the
     # underlying proto decoded them that way — normalise for the
     # typed output.
-    def _int_keys(d: Any) -> Dict[int, dict]:
+    def _int_keys(d: Any) -> dict[int, dict[str, Any]]:
         if not isinstance(d, dict):
             return {}
-        out: Dict[int, dict] = {}
+        out: dict[int, dict[str, Any]] = {}
         for k, v in d.items():
             try:
                 out[int(k)] = v if isinstance(v, dict) else {"value": v}
@@ -204,12 +210,16 @@ class SendUmInput(BaseModel):
         ),
         min_length=3,
     )
-    params: Dict[str, Any] = Field(
+    params: dict[str, Any] = Field(
         default_factory=dict,
-        description="Request parameters — dict keyed by the request proto's field names.",
+        description=(
+            "Request parameters — dict keyed by the request proto's field names."
+        ),
     )
     timeout_seconds: float = Field(
-        default=10.0, ge=0.5, le=60.0,
+        default=10.0,
+        ge=0.5,
+        le=60.0,
         description="Hard cap on the RPC.",
     )
 
@@ -222,7 +232,7 @@ class SendUmOutput(BaseModel):
     without introspecting the body shape."""
 
     ok: bool = True
-    body: Dict[str, Any] = Field(default_factory=dict)
+    body: dict[str, Any] = Field(default_factory=dict)
 
 
 async def _tool_send_um(
@@ -278,7 +288,7 @@ class SteamToolBinding:
     handler: Callable[[AsyncSteamClient, Any], Awaitable[BaseModel]]
 
 
-def build_steam_tool_bindings() -> List[SteamToolBinding]:
+def build_steam_tool_bindings() -> list[SteamToolBinding]:
     """Return the built-in list of Steam MCP tool bindings.
 
     Kept as a function (rather than a module-level constant) so
@@ -361,10 +371,14 @@ def _classify_error(exc: BaseException) -> SteamToolError:
 
 
 __all__ = [
-    "SteamStatusInput", "SteamStatusOutput",
-    "GetProductInfoInput", "GetProductInfoOutput",
-    "SendUmInput", "SendUmOutput",
-    "SteamToolBinding", "SteamToolError",
+    "SteamStatusInput",
+    "SteamStatusOutput",
+    "GetProductInfoInput",
+    "GetProductInfoOutput",
+    "SendUmInput",
+    "SendUmOutput",
+    "SteamToolBinding",
+    "SteamToolError",
     "build_steam_tool_bindings",
     "_classify_error",
 ]

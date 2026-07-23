@@ -42,16 +42,17 @@ Example
     finally:
         await pool.close()
 """
+
 from __future__ import annotations
 
 import asyncio
 import dataclasses
 import itertools
-from typing import Any, Awaitable, Callable, Dict, Iterable, List, Optional
+from collections.abc import Awaitable, Callable, Iterable
+from typing import Any
 
 from .client import AsyncSteamClient, ReconnectPolicy
 from .status import ClientStatus, MetricsHook, _noop_hook
-
 
 #: Signature of a "how to log this member in" callable.  Runs
 #: after ``AsyncSteamClient.start()`` and BEFORE the pool
@@ -94,8 +95,8 @@ class PoolMemberStatus:
 
     account_id: str
     ready: bool
-    failure: Optional[str]
-    client_status: Optional[ClientStatus]
+    failure: str | None
+    client_status: ClientStatus | None
 
 
 class AsyncSteamPool:
@@ -150,7 +151,7 @@ class AsyncSteamPool:
         *,
         metrics_hook: MetricsHook = _noop_hook,
     ) -> None:
-        self._configs: Dict[str, PoolMember] = {}
+        self._configs: dict[str, PoolMember] = {}
         for m in members:
             if m.account_id in self._configs:
                 raise ValueError(
@@ -160,9 +161,9 @@ class AsyncSteamPool:
         if not self._configs:
             raise ValueError("AsyncSteamPool needs at least one member")
         self._default_metrics_hook = metrics_hook
-        self._clients: Dict[str, AsyncSteamClient] = {}
-        self._failures: Dict[str, str] = {}  # account_id → failure repr
-        self._round_robin_cycle: Optional[itertools.cycle] = None
+        self._clients: dict[str, AsyncSteamClient] = {}
+        self._failures: dict[str, str] = {}  # account_id → failure repr
+        self._round_robin_cycle: itertools.cycle[str] | None = None
         self._started = False
         self._closed = False
         self._lock = asyncio.Lock()
@@ -178,7 +179,11 @@ class AsyncSteamPool:
         self._started = True
 
         async def _bring_up_one(cfg: PoolMember) -> None:
-            hook = cfg.metrics_hook if cfg.metrics_hook is not _noop_hook else self._default_metrics_hook
+            hook = (
+                cfg.metrics_hook
+                if cfg.metrics_hook is not _noop_hook
+                else self._default_metrics_hook
+            )
             client = AsyncSteamClient(
                 reconnect=cfg.reconnect,
                 metrics_hook=hook,
@@ -216,12 +221,15 @@ class AsyncSteamPool:
             return_exceptions=True,
         )
 
-    async def __aenter__(self) -> "AsyncSteamPool":
+    async def __aenter__(self) -> AsyncSteamPool:
         await self.start()
         return self
 
     async def __aexit__(
-        self, exc_type: Any, exc: Any, tb: Any,
+        self,
+        exc_type: Any,
+        exc: Any,
+        tb: Any,
     ) -> None:
         await self.close()
 
@@ -261,7 +269,7 @@ class AsyncSteamPool:
                 return client
         raise RuntimeError("no ready pool members")
 
-    def ready_clients(self) -> List[AsyncSteamClient]:
+    def ready_clients(self) -> list[AsyncSteamClient]:
         """Snapshot of every currently-ready client.  Useful for
         ``asyncio.gather`` fan-out."""
         return list(self._clients.values())
@@ -294,7 +302,11 @@ class AsyncSteamPool:
                     await existing.close()
                 except Exception:  # noqa: BLE001
                     pass
-            hook = cfg.metrics_hook if cfg.metrics_hook is not _noop_hook else self._default_metrics_hook
+            hook = (
+                cfg.metrics_hook
+                if cfg.metrics_hook is not _noop_hook
+                else self._default_metrics_hook
+            )
             client = AsyncSteamClient(
                 reconnect=cfg.reconnect,
                 metrics_hook=hook,
@@ -317,20 +329,22 @@ class AsyncSteamPool:
     # Health
     # ------------------------------------------------------------------
 
-    def status(self) -> List[PoolMemberStatus]:
+    def status(self) -> list[PoolMemberStatus]:
         """Per-member snapshot.  Ordered by ``account_id`` for
         stable output (useful for tests and diff-friendly
         ``/health`` responses)."""
-        out: List[PoolMemberStatus] = []
+        out: list[PoolMemberStatus] = []
         for account_id in sorted(self._configs):
             client = self._clients.get(account_id)
             failure = self._failures.get(account_id)
-            out.append(PoolMemberStatus(
-                account_id=account_id,
-                ready=client is not None,
-                failure=failure,
-                client_status=client.status if client is not None else None,
-            ))
+            out.append(
+                PoolMemberStatus(
+                    account_id=account_id,
+                    ready=client is not None,
+                    failure=failure,
+                    client_status=client.status if client is not None else None,
+                )
+            )
         return out
 
 

@@ -32,6 +32,7 @@ compose these pieces):
   loop + event bridge.
 * :mod:`steam.aio.errors` — the typed exception hierarchy.
 """
+
 from .client import AsyncSteamClient, ReconnectPolicy
 from .errors import (
     AsyncSteamError,
@@ -43,11 +44,11 @@ from .errors import (
 )
 from .pool import AsyncSteamPool, PoolLogin, PoolMember, PoolMemberStatus
 from .status import (
-    ClientStatus,
-    MetricsHook,
     RECONNECT_FAILED,
     RECONNECT_IDLE,
     RECONNECT_RECONNECTING,
+    ClientStatus,
+    MetricsHook,
     prometheus_hook,
 )
 

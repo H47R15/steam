@@ -17,11 +17,12 @@ Neither module pulls in any framework; anyone can import
 :mod:`steam.aio.status` from a request handler without adding
 Prometheus to the process's dependency graph.
 """
+
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, Callable, Optional
-
+from collections.abc import Callable
+from typing import Any
 
 # ---------------------------------------------------------------------
 # Status snapshot
@@ -81,12 +82,12 @@ class ClientStatus:
     closed: bool
     connected: bool
     logged_on: bool
-    username: Optional[str]
+    username: str | None
     cell_id: int
     reconnect_state: str
     reconnect_attempts: int
-    last_activity_at: Optional[float]
-    uptime_seconds: Optional[float]
+    last_activity_at: float | None
+    uptime_seconds: float | None
 
 
 # ---------------------------------------------------------------------
@@ -125,17 +126,17 @@ class ClientStatus:
 #: Hooks MUST be non-blocking (no network / disk / long CPU);
 #: they run inline in the coroutine that logs them, so a slow
 #: hook slows every request.
-MetricsHook = Callable[[str, dict], None]
+MetricsHook = Callable[[str, "dict[str, Any]"], None]
 
 
-def _noop_hook(event: str, tags: dict) -> None:  # noqa: ARG001
+def _noop_hook(event: str, tags: dict[str, Any]) -> None:  # noqa: ARG001
     """Default hook — does nothing.  Named so it's visible in
     ``client._metrics_hook`` when debugging (``<function _noop_hook>``
     beats ``<lambda>``)."""
     return None
 
 
-def _invoke_hook(hook: MetricsHook, event: str, tags: dict) -> None:
+def _invoke_hook(hook: MetricsHook, event: str, tags: dict[str, Any]) -> None:
     """Call ``hook(event, tags)`` and swallow any exception — a
     broken metrics implementation must never take down the RPC
     path.  Errors are logged at debug level (higher would flood
@@ -149,7 +150,9 @@ def _invoke_hook(hook: MetricsHook, event: str, tags: dict) -> None:
         import logging
 
         logging.getLogger(__name__).debug(
-            "metrics hook raised for event %r", event, exc_info=True,
+            "metrics hook raised for event %r",
+            event,
+            exc_info=True,
         )
 
 
@@ -185,7 +188,7 @@ def prometheus_hook(
     *,
     namespace: str = "pysteam",
     subsystem: str = "aio",
-    registry: Optional[Any] = None,
+    registry: Any | None = None,
 ) -> MetricsHook:
     """Return a :data:`MetricsHook` backed by ``prometheus_client``
     counters + histograms.  Import happens inside this function so
@@ -211,28 +214,35 @@ def prometheus_hook(
             "install it or wire your own MetricsHook",
         ) from e
 
-    kw: dict = {"namespace": namespace, "subsystem": subsystem}
+    kw: dict[str, Any] = {"namespace": namespace, "subsystem": subsystem}
     if registry is not None:
         kw["registry"] = registry
 
     rpc_total = Counter(
-        "rpc_total", "pysteam.aio RPC calls",
-        ["method", "outcome"], **kw,
+        "rpc_total",
+        "pysteam.aio RPC calls",
+        ["method", "outcome"],
+        **kw,
     )
     rpc_duration = Histogram(
-        "rpc_duration_seconds", "pysteam.aio RPC latency",
-        ["method", "outcome"], **kw,
+        "rpc_duration_seconds",
+        "pysteam.aio RPC latency",
+        ["method", "outcome"],
+        **kw,
     )
     connect_events = Counter(
-        "connect_events_total", "pysteam.aio CM connection events",
-        ["event"], **kw,
+        "connect_events_total",
+        "pysteam.aio CM connection events",
+        ["event"],
+        **kw,
     )
     reconnect_gauge = Gauge(
-        "reconnect_attempts", "pysteam.aio reconnect attempts (last)",
+        "reconnect_attempts",
+        "pysteam.aio reconnect attempts (last)",
         **kw,
     )
 
-    def _hook(event: str, tags: dict) -> None:
+    def _hook(event: str, tags: dict[str, Any]) -> None:
         if event == "rpc.succeeded":
             method = tags.get("method", "unknown")
             duration = float(tags.get("duration_ms", 0)) / 1000.0
