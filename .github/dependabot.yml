@@ -1,0 +1,59 @@
+# Dependabot — automated dependency-update PRs.
+#
+# Runs weekly.  Groups by ecosystem so the notification volume stays
+# sane (one PR per ecosystem per week, not one per dep).  Security
+# updates are still filed separately whenever a CVE lands, regardless
+# of the schedule — that's the whole point.
+#
+# GitHub Actions and Python (poetry) both scanned; add ``docker``
+# if / when the package grows a container.
+
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    groups:
+      # Bundle all Actions bumps into one PR — otherwise a weekly
+      # bump of ``actions/checkout``, ``actions/setup-python``, and
+      # ``actions/cache`` produces three separate PRs every week
+      # for what is essentially the same change.
+      gh-actions:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "chore(ci)"
+      include: "scope"
+
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    groups:
+      # Group patches + minors — a weekly wave of "bump pytest from
+      # 8.4.1 to 8.4.2" style PRs is pure noise otherwise.
+      dev-deps:
+        dependency-type: "development"
+        update-types:
+          - "patch"
+          - "minor"
+      runtime-deps:
+        dependency-type: "production"
+        update-types:
+          - "patch"
+          - "minor"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    # Major bumps stay as individual PRs — those need a manual look
+    # (breaking-change reading) before merging, so batching would
+    # obscure the review.

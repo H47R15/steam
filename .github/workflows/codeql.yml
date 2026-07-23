@@ -1,0 +1,68 @@
+# CodeQL — GitHub-native semantic SAST.
+#
+# Runs on every push to master, every PR against master, and once
+# a week (Monday 04:00 UTC) so newly-published queries against
+# already-merged code still catch issues.  Results appear in the
+# repo's Security tab under "Code scanning alerts".
+#
+# CodeQL complements bandit (in ``testing_initiative.yml``) with
+# cross-file dataflow analysis — bandit sees pattern-level issues
+# in a single file; CodeQL follows tainted values across module
+# boundaries.  Both are cheap; there's no reason to pick.
+#
+# Free for public repos.  Requires ``security-events: write``
+# permission to upload alerts to the Security tab.
+
+name: CodeQL
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  schedule:
+    # Once a week — new CodeQL queries land regularly and a
+    # cron re-scan surfaces issues that were previously undetectable.
+    - cron: "0 4 * * 1"
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      # Required to upload results to the Security tab.
+      security-events: write
+      # Required for private repos (no-op on public).
+      actions: read
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["python"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          # ``security-and-quality`` = default security queries +
+          # additional code-quality queries.  Costs a bit more scan
+          # time; catches more.  If a query becomes noisy for our
+          # codebase, replace with ``security-extended``.
+          queries: security-and-quality
+
+      # No custom build step needed for Python — CodeQL auto-detects
+      # the source tree.  For a compiled language we'd add
+      # ``autobuild`` here.
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"

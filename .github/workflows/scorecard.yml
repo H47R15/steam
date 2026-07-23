@@ -1,0 +1,71 @@
+# OpenSSF Scorecard — automated repository security-posture scoring.
+#
+# Measures ~18 dimensions (branch protection, code review, CI tests,
+# CII best practices, dangerous workflows, dependency-update tools,
+# fuzzing, license, maintained, packaging, pinned dependencies,
+# SAST, security policy, signed releases, token permissions,
+# vulnerability disclosure, web hooks, workflows).  Score visible
+# in the repo's Security tab AND surfaced as a badge in the README
+# so downstream users can see the maintenance / security posture
+# at a glance.
+#
+# Free for public repos.  Publishes results as SARIF to the Security
+# tab.  Also uploads to the OpenSSF public dataset at
+# https://api.securityscorecards.dev/projects/github.com/H47R15/steam
+# which is what the badge renders from.
+#
+# Runs weekly on schedule + on every push to master.  The scheduled
+# run is what keeps the badge fresh even during quiet periods.
+
+name: Scorecard
+
+on:
+  branch_protection_rule:
+  schedule:
+    - cron: "30 4 * * 1"
+  push:
+    branches: [master]
+
+permissions: read-all
+
+jobs:
+  analysis:
+    name: Scorecard analysis
+    runs-on: ubuntu-latest
+    permissions:
+      # Required for uploading SARIF results to the Security tab.
+      security-events: write
+      # Required for publishing results to the OpenSSF public
+      # scorecard.dev dataset — that's what the README badge reads.
+      id-token: write
+      contents: read
+      actions: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Run OpenSSF Scorecard
+        uses: ossf/scorecard-action@v2.4.0
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          # ``publish_results: true`` uploads to the OpenSSF public
+          # dataset — required for the README badge to update.
+          # Only works on public repos with a truthful oidc token,
+          # which the ``id-token: write`` permission above provides.
+          publish_results: true
+
+      - name: Upload artifact (retention: 5 days)
+        uses: actions/upload-artifact@v4
+        with:
+          name: SARIF file
+          path: results.sarif
+          retention-days: 5
+
+      - name: Upload SARIF to code scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif

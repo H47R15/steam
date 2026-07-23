@@ -2,6 +2,24 @@
    :alt: pysteam-client
    :align: center
 
+|ci-badge| |codeql-badge| |scorecard-badge| |pypi-badge| |python-badge|
+
+.. |ci-badge| image:: https://github.com/H47R15/steam/actions/workflows/testing_initiative.yml/badge.svg?branch=master
+   :alt: CI status
+   :target: https://github.com/H47R15/steam/actions/workflows/testing_initiative.yml
+.. |codeql-badge| image:: https://github.com/H47R15/steam/actions/workflows/codeql.yml/badge.svg?branch=master
+   :alt: CodeQL SAST
+   :target: https://github.com/H47R15/steam/actions/workflows/codeql.yml
+.. |scorecard-badge| image:: https://api.securityscorecards.dev/projects/github.com/H47R15/steam/badge
+   :alt: OpenSSF Scorecard
+   :target: https://api.securityscorecards.dev/projects/github.com/H47R15/steam
+.. |pypi-badge| image:: https://img.shields.io/pypi/v/pysteam-client.svg
+   :alt: PyPI version
+   :target: https://pypi.org/project/pysteam-client/
+.. |python-badge| image:: https://img.shields.io/pypi/pyversions/pysteam-client.svg
+   :alt: Python versions
+   :target: https://pypi.org/project/pysteam-client/
+
 steam
 =====
 
@@ -272,6 +290,42 @@ Upstream links (reference only — refer to this fork for maintained code):
   Python-runtime and protobuf-vintage baseline)
 * Command-line companion (unmaintained upstream):
   https://github.com/ValvePython/steamctl
+
+Security
+--------
+
+We take security seriously — this package sits on the network path
+between your app and Steam, handles credentials, and is embedded
+inside FastAPI / TaskIQ / MCP servers by downstream users.
+
+**Report a vulnerability**: use `GitHub Security Advisories
+<https://github.com/H47R15/steam/security/advisories/new>`_
+(preferred, private, coordinated-disclosure workflow).  Full policy
++ report template in `SECURITY.md
+<https://github.com/H47R15/steam/blob/master/SECURITY.md>`_.
+
+**Do NOT open a public GitHub issue for security reports** — public
+disclosure before a fix ships puts every user at risk.
+
+**Automated checks** run on every push, PR, and release before any
+wheel ships to PyPI:
+
+* ``pip-audit`` — every declared runtime + dev dep scanned against
+  the OSV / PyPI advisory database.
+* ``bandit`` — Python-native SAST on ``steam.aio`` and ``steam.mcp``
+  at medium severity and above.
+* **CodeQL** — GitHub-native semantic SAST with cross-file dataflow
+  analysis.  Results in the repo's `Security tab
+  <https://github.com/H47R15/steam/security/code-scanning>`_.
+* **OpenSSF Scorecard** — automated repository-posture scoring;
+  badge above.
+* **Dependabot** — weekly grouped dep-update PRs plus immediate
+  security-update PRs whenever a CVE lands.
+
+Every gate blocks the PyPI publish step — a failing scan means
+no release.
+
+Layout after ``SECURITY.md``: see the source tree above.
 
 License
 -------

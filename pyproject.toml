@@ -5,7 +5,7 @@
 # ``steam`` distribution name on PyPI is owned by ValvePython since 2013,
 # so the fork lives under a scoped name here.
 name = "pysteam-client"
-version = "1.7.4"
+version = "1.7.5"
 description = "Module for interacting with various Steam features"
 authors = ["Rossen Georgiev <rossen@rgp.io>"]
 license = "MIT"
@@ -157,6 +157,16 @@ ruff =                  ">=0.7,<1"
 black =                 ">=24,<28"
 mypy =                  ">=1.10,<2"
 pip-audit =             ">=2.7,<3"
+# ``bandit`` — Python-specific SAST (Static Application Security
+# Testing).  Scans for common security anti-patterns: hardcoded
+# credentials, weak crypto, SSL verification disabled, unsafe
+# ``yaml.load``, ``eval`` / ``exec`` misuse, shell injection via
+# ``subprocess`` with ``shell=True``, XML parsing without
+# ``defusedxml``, etc.  Scoped to medium+ severity via
+# ``[tool.bandit]`` below so the low-severity intentional patterns
+# (try/except/pass in cleanup paths, assert in type-narrowing
+# Depends providers) don't cause noise.
+bandit =                ">=1.7,<2"
 
 # ─── deptry ignores ───────────────────────────────────────────────
 #
@@ -171,7 +181,7 @@ DEP002 = [
     # New in 1.7 — declared as dev deps for CI to run them, not
     # imported from ``steam/``.  Users install / invoke these
     # themselves; the package doesn't need them at runtime.
-    "ruff", "black", "mypy", "pip-audit",
+    "ruff", "black", "mypy", "pip-audit", "bandit",
     # Declared as a hard runtime dep to keep an explicit version
     # range under our control (see ``[tool.poetry.dependencies]``
     # for the constraint + rationale).  We don't import it directly
@@ -335,6 +345,34 @@ files = ["steam/aio", "steam/mcp"]
 # at the one call site, but the error would still swamp the
 # report if left unwarned globally.
 show_error_codes = true
+
+# ─── bandit (SAST) ────────────────────────────────────────────────
+#
+# Scans for security anti-patterns.  Report at ``medium`` severity
+# and above — the ``low`` bucket is dominated by two rules that
+# fire on intentional patterns in ``steam.aio``:
+#
+#   * ``B110`` (try/except/pass) — used in cleanup / shutdown paths
+#     where the exception is genuinely uninteresting (e.g. best-
+#     effort ``sync.disconnect()`` during ``close()`` — a failure
+#     there shouldn't mask the primary error).
+#   * ``B101`` (assert used) — the FastAPI ``Depends`` providers do
+#     ``assert isinstance(client, AsyncSteamClient)`` as a type-
+#     narrowing helper (mypy needs it; the assert is only reached
+#     after a truthy check).  Assert-in-production works even under
+#     ``python -O`` here because the assertion runs during type
+#     narrowing, not as the primary guard.
+#
+# ``targets`` matches the mypy scope — bandit sweeps every module
+# we consider "modern" and lets legacy code (steam.client,
+# steam.core, generated protobufs) sit outside the scan for now.
+# Add legacy modules incrementally as they get an audit pass.
+[tool.bandit]
+targets = ["steam/aio", "steam/mcp"]
+# skips already covered by the medium-severity filter, listed here
+# for readability (if a future rule triggers at medium+ we DO want
+# to see it — this list is intentional-anti-pattern only).
+skips = ["B101", "B110"]
 
 # ─── pyright / Pylance ─────────────────────────────────
 #

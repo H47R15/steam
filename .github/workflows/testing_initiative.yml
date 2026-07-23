@@ -171,3 +171,32 @@ jobs:
         # add them here (with a comment) rather than silencing
         # pip-audit wholesale.
         run: poetry run pip-audit
+
+  security:
+    name: Security scan (bandit SAST)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: "1.8.5"
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - name: Cache poetry venv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-py3.13-${{ hashFiles('poetry.lock') }}
+      - name: Install dev dependencies
+        # Bandit is a pure static analyser — no need for client extras.
+        run: poetry install --with dev
+      - name: bandit (Python SAST)
+        # Config comes from ``[tool.bandit]`` in ``pyproject.toml`` —
+        # scope + skips are documented there.  Medium severity and
+        # above; anything low is intentional pattern we've audited
+        # (see SECURITY.md).
+        run: poetry run bandit -c pyproject.toml -r steam/aio steam/mcp -ll

@@ -80,6 +80,12 @@ jobs:
         run: poetry run deptry .
       - name: pip-audit
         run: poetry run pip-audit
+      - name: bandit (Python SAST)
+        # Same scope + config as the standalone security job in
+        # ``testing_initiative.yml``.  Duplicated inline here so a
+        # tag-driven release re-runs it as a gate, not just a PR-time
+        # check.
+        run: poetry run bandit -c pyproject.toml -r steam/aio steam/mcp -ll
 
   build:
     name: Build wheel + sdist

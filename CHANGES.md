@@ -1,3 +1,41 @@
+## 1.7.5
+
+### Fixed
+- **``poetry.lock`` regenerated with ``--regenerate``** so
+  ``urllib3`` moves to 2.7.0 — 1.7.4's plain ``poetry lock``
+  preserved 1.26.20 (still satisfied the new ">=1.26,<3"
+  constraint) and CI failed on the same five CVEs a second
+  time.  Every release from here on uses ``--regenerate`` when
+  a constraint changes.
+
+### Added
+- **``SECURITY.md``** — vulnerability reporting policy with a
+  copy-paste report template, supported-versions table, response
+  commitments (48 h ack, 5 business-day triage, 30/60/90-day fix
+  per severity, 90-day coordinated-disclosure embargo),
+  safe-harbour clause for good-faith researchers, and explicit
+  in-scope / out-of-scope lists.
+- **``bandit``** Python-native SAST wired into CI as a fifth
+  quality gate (``[tool.bandit]`` in ``pyproject.toml``; scoped
+  to ``steam.aio`` + ``steam.mcp``; medium severity and above;
+  ``B101`` / ``B110`` skipped for documented intentional patterns
+  in cleanup paths + type-narrowing asserts).  Runs on every push,
+  PR, and release.
+- **CodeQL** workflow (``.github/workflows/codeql.yml``) —
+  GitHub-native semantic SAST with cross-file dataflow analysis.
+  Runs on push + PR + weekly cron.  Results in the repo's
+  Security tab.  Complements bandit's single-file pattern scan.
+- **OpenSSF Scorecard** workflow — automated repository-posture
+  scoring; badge in ``README.rst`` renders the public score from
+  ``api.securityscorecards.dev``.
+- **Dependabot** config (``.github/dependabot.yml``) — weekly
+  grouped dep-update PRs for pip + GitHub Actions, plus immediate
+  security-update PRs whenever a CVE lands on a dep.
+- **README security section + badges** — CI, CodeQL, OpenSSF
+  Scorecard, PyPI version, supported Python versions.
+- **Publish workflow gated on ``bandit`` too** — a failing SAST
+  finding blocks the PyPI upload.
+
 ## 1.7.4
 
 ### Fixed
