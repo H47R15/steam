@@ -1,3 +1,22 @@
+## 1.7.8
+
+### Changed
+- Reverted README format ``.md`` → ``.rst``.  1.7.7's markdown
+  conversion was done for the mermaid diagram (Markdown renders
+  it natively on GitHub, RST doesn't), but the format switch
+  lost more than it gained.  ``.rst`` stays the canonical Python
+  README; if we want the architecture diagram back, we'll render
+  mermaid to SVG and reference the image, not swap the whole
+  file format.
+- ``pyproject.toml`` ``readme = "README.rst"`` restored.
+
+### Added
+- **MCP tools badge** in the README badge row —
+  ``[MCP tools included]`` in Anthropic-purple, linking to the
+  `MCP wiki page
+  <https://github.com/H47R15/steam/wiki/MCP>`_.  Sits between
+  the Python-versions and License badges.
+
 ## 1.7.7
 
 ### Changed
