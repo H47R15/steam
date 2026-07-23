@@ -1,3 +1,34 @@
+## 1.7.7
+
+### Changed
+- **README rewritten** — smaller, focused on architecture +
+  quick-start.  Everything detailed now lives in the
+  [Wiki](https://github.com/H47R15/steam/wiki) with an organised
+  link tree in the README so users find the right page fast.
+- **README format ``.rst`` → ``.md``** so GitHub renders the new
+  architecture diagram natively (mermaid).  PyPI accepts markdown
+  too — verified via ``readme_renderer[md]``.
+- ``pyproject.toml`` ``readme = "README.md"`` updated to match.
+
+### Added
+- Mermaid architecture diagram at the top of the README showing
+  the two-thread model (asyncio-side ``steam.aio`` / ``steam.mcp``
+  vs. the background gevent-hub daemon thread running the sync
+  ``SteamClient``), the libev async-watcher bridge between them,
+  and the outbound CM / WebAPI / CDN paths.  Renders natively on
+  GitHub; PyPI shows the mermaid source as a code block (still
+  readable) with a click-through to the GitHub view.
+
+### Fixed
+- ``.github/workflows/scorecard.yml`` — the step name ``Upload
+  artifact (retention: 5 days)`` had a second colon inside the
+  parenthetical that YAML parsed as a nested mapping-value
+  marker.  Result: "workflow file issue" — the run failed
+  instantly at parse time with zero logs and the OpenSSF
+  Scorecard workflow never got to score the repo.  Quoted the
+  name so the colon is a literal character; all four workflow
+  files now parse clean.
+
 ## 1.7.6
 
 ### Fixed
