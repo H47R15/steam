@@ -210,46 +210,67 @@ def prometheus_hook(
     # ``prometheus_client`` is absent from the type-check environment;
     # the runtime ``ImportError`` guard below is the real safety net.
     try:
-        # ``import-not-found`` covers the case where
-        # ``prometheus_client`` isn't in the Pylance-visible env;
-        # ``unused-ignore`` silences mypy when it CAN see the module
-        # (dev machines that installed prometheus_client for other
-        # reasons).  One pragma keeps both toolchains quiet.
-        from prometheus_client import (  # type: ignore[import-not-found, unused-ignore]
-            Counter,
-            Gauge,
-            Histogram,
-        )
+        # Module-attribute access (not ``from prometheus_client
+        # import Counter, Gauge, Histogram``) so Pylance / mypy
+        # treat the symbols as ``Any`` — the top-level stubs
+        # inconsistently export ``Gauge`` across versions, so a
+        # per-symbol ``from ... import`` line trips
+        # ``reportAttributeAccessIssue`` on ``Gauge`` alone.  The
+        # ``type: ignore`` covers ``prometheus_client`` being
+        # entirely absent from the type-check env;
+        # ``unused-ignore`` silences mypy when it CAN see the
+        # module (dev machines that installed prometheus_client
+        # for other reasons).
+        import prometheus_client as _pc  # type: ignore[import-not-found, unused-ignore]
     except ImportError as e:  # pragma: no cover
         raise RuntimeError(
             "prometheus_hook requires ``prometheus_client``; "
             "install it or wire your own MetricsHook",
         ) from e
 
+    # ``getattr`` (not ``_pc.Counter`` / ``_pc.Gauge`` etc.) so
+    # Pylance treats each lookup as a fully dynamic access — its
+    # per-symbol stub check trips on ``_pc.Gauge`` in particular
+    # (the top-level ``prometheus_client`` stub inconsistently
+    # re-exports ``Gauge`` across versions).  ``getattr`` returns
+    # ``Any`` uniformly and sidesteps the whole class of stub
+    # bugs.  Errors here are impossible at runtime: if
+    # ``prometheus_client`` is importable, all four factories
+    # exist on it (they're built-in metric classes since 0.0.x).
+    # ``noqa: B009`` — ruff wants ``_pc.Counter`` (constant attr =
+    # use attribute access, not getattr), but that's exactly what
+    # Pylance is complaining about.  The two linters disagree; the
+    # getattr form wins because it's the only spelling that keeps
+    # BOTH quiet.
+    Counter: Any = getattr(_pc, "Counter")  # noqa: B009
+    Gauge: Any = getattr(_pc, "Gauge")  # noqa: B009
+    Histogram: Any = getattr(_pc, "Histogram")  # noqa: B009
+
     kw: dict[str, Any] = {"namespace": namespace, "subsystem": subsystem}
     if registry is not None:
         kw["registry"] = registry
 
-    # ``labelnames=`` (kwarg) is the stable spelling across
-    # prometheus_client 0.x → 0.19+.  Older stubs (which some IDE
-    # setups still carry) mistype the third positional arg as
-    # something other than a ``list[str]``, so pass by name.
+    # ``labelnames=`` is the stable kwarg spelling across
+    # prometheus_client 0.x → 0.19+.  Pass as a TUPLE — the newer
+    # stubs annotate the parameter as ``Tuple[str, ...]`` and
+    # a ``list[str]`` trips ``reportArgumentType``.  Tuples
+    # accept in both the old and new stubs.
     rpc_total = Counter(
         "rpc_total",
         "pysteam.aio RPC calls",
-        labelnames=["method", "outcome"],
+        labelnames=("method", "outcome"),
         **kw,
     )
     rpc_duration = Histogram(
         "rpc_duration_seconds",
         "pysteam.aio RPC latency",
-        labelnames=["method", "outcome"],
+        labelnames=("method", "outcome"),
         **kw,
     )
     connect_events = Counter(
         "connect_events_total",
         "pysteam.aio CM connection events",
-        labelnames=["event"],
+        labelnames=("event",),
         **kw,
     )
     reconnect_gauge = Gauge(

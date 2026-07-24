@@ -30,8 +30,19 @@ import time
 from collections.abc import AsyncGenerator, Callable
 from concurrent.futures import Future
 from typing import (
+    TYPE_CHECKING,
     Any,
 )
+
+if TYPE_CHECKING:
+    # ``QRLoginSession`` / ``QRLoginResult`` are only referenced in
+    # the method signatures on this class — the actual runtime
+    # import happens inside the methods (see the ``from .qr import
+    # ...`` lines) so the QR module stays lazy-loaded and the two
+    # files don't develop a circular import.  ``TYPE_CHECKING``
+    # gives mypy / Pylance the names they need for annotations
+    # without paying the import cost at module load.
+    from .qr import QRLoginResult, QRLoginSession
 
 from .errors import (
     AsyncSteamError,
@@ -548,6 +559,91 @@ class AsyncSteamClient:
             raise
 
     # ------------------------------------------------------------------
+    # QR sign-in — mirror of the desktop client's "Or sign in with QR"
+    # panel.  See :mod:`steam.aio.qr` for the full flow + design notes.
+    # ------------------------------------------------------------------
+
+    async def begin_qr_login(
+        self,
+        *,
+        device_friendly_name: str = "pysteam-client",
+        website_id: str = "Community",
+    ) -> QRLoginSession:
+        """Start a QR sign-in handshake with Steam.
+
+        Returns a :class:`~steam.aio.qr.QRLoginSession` carrying the
+        ``challenge_url`` you'd render as a QR image plus a
+        ``client_id`` handle to resume the session on subsequent
+        polls.  The client stays connected in its current state
+        during this — no session churn on the CM side, no login
+        state change.
+
+        The default ``device_friendly_name`` shows up in the user's
+        Steam account settings under "Authorized devices"; override
+        with something operator-recognisable if this client is one
+        of many talking to the same account.
+        """
+        self._require_ready()
+        from .qr import _rpc_begin
+
+        return await _rpc_begin(
+            self,
+            device_friendly_name=device_friendly_name,
+            website_id=website_id,
+        )
+
+    async def poll_qr_status(
+        self,
+        session: QRLoginSession,
+    ) -> QRLoginResult | None:
+        """One-shot poll for a QR sign-in session.
+
+        Returns ``None`` while Steam is still waiting for the
+        mobile confirmation, or a :class:`~steam.aio.qr.QRLoginResult`
+        once the mobile app confirms and tokens are ready.  Raises
+        :class:`~steam.aio.qr.QRSignInExpired` if Steam rotates the
+        challenge (call :meth:`begin_qr_login` again).
+
+        Use this when driving the polling loop yourself (e.g.
+        surfacing per-tick progress in a UI); use
+        :meth:`wait_qr_confirmation` for the fire-and-forget
+        version that loops internally.
+        """
+        self._require_ready()
+        from .qr import _rpc_poll
+
+        return await _rpc_poll(self, session=session)
+
+    async def wait_qr_confirmation(
+        self,
+        session: QRLoginSession,
+        *,
+        timeout: float | None = None,
+        interval_override: float | None = None,
+    ) -> QRLoginResult:
+        """Poll ``PollAuthSessionStatus`` at ``session.interval``
+        until the mobile app confirms or ``timeout`` elapses.
+
+        ``timeout`` defaults to
+        :data:`~steam.aio.qr.DEFAULT_QR_TIMEOUT_SECONDS` (120s) —
+        matches the desktop Steam client's own "generate new code"
+        cutoff.  Raises :class:`~steam.aio.qr.QRSignInExpired` when
+        the deadline passes without a mobile confirmation.
+        """
+        self._require_ready()
+        from .qr import (
+            DEFAULT_QR_TIMEOUT_SECONDS,
+            _wait_for_confirmation,
+        )
+
+        return await _wait_for_confirmation(
+            self,
+            session=session,
+            timeout=timeout if timeout is not None else DEFAULT_QR_TIMEOUT_SECONDS,
+            interval_override=interval_override,
+        )
+
+    # ------------------------------------------------------------------
     # Event bridge — asyncio-side subscribers on top of the sync
     # client's gevent EventEmitter.
     # ------------------------------------------------------------------
@@ -591,7 +687,7 @@ class AsyncSteamClient:
         self,
         *names: str,
         buffer_size: int = _EVENT_QUEUE_MAX,
-    ) -> AsyncGenerator[tuple[str, tuple[Any, ...]]]:
+    ) -> AsyncGenerator[tuple[str, tuple[Any, ...]], None]:  # noqa: UP043
         """Async iterator over the given event names.  Yields
         ``(name, args_tuple)`` pairs.  Loop teardown detaches the
         listeners.

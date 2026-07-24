@@ -5,7 +5,7 @@
 # ``steam`` distribution name on PyPI is owned by ValvePython since 2013,
 # so the fork lives under a scoped name here.
 name = "pysteam-client"
-version = "1.7.9"
+version = "1.7.10"
 description = "Module for interacting with various Steam features"
 authors = ["Rossen Georgiev <rossen@rgp.io>"]
 license = "MIT"
@@ -294,8 +294,6 @@ extend-exclude = [
     "tests/test_webauth.py",
     "tests/generete_webauth_vcr.py",
 ]
-
-[tool.ruff.lint]
 select = ["E", "W", "F", "I", "B", "UP", "C4", "SIM"]
 # ``SIM105`` (use ``contextlib.suppress``) — the try/except pass
 # idiom is idiomatic in metrics hooks and cross-thread cleanup
@@ -316,14 +314,15 @@ select = ["E", "W", "F", "I", "B", "UP", "C4", "SIM"]
 # ``UP031`` (format specifiers) — leaves the small handful of
 # ``%``-style formats in cross-file log strings alone; migrating
 # each one is churn without benefit.
-# ``UP038`` (use ``X | Y`` in ``isinstance``) — the tuple form
-# fits multi-target checks better in some spots; unsafe autofix
-# also risks widening to a Union that includes non-types.
-ignore = ["SIM105", "BLE001", "E402", "B008", "UP031", "UP038"]
+# ``UP031`` (format specifiers) — leaves the small handful of
+# ``%``-style formats in cross-file log strings alone; migrating
+# each one is churn without benefit.
+ignore = ["SIM105", "BLE001", "E402", "B008", "UP031"]
 # Test files legitimately import at function scope, and pytest
 # collects them by walking classes with side-effect setups —
 # both trip a few rules that don't apply.
-per-file-ignores = { "tests/**" = ["B011", "SIM117"] }
+[tool.ruff.per-file-ignores]
+"tests/**" = ["B011", "SIM117"]
 
 # ─── mypy (type checker) ──────────────────────────────────────────
 #
