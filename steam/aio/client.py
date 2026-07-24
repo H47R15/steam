@@ -941,7 +941,7 @@ class AsyncSteamClient:
                 # ``max_attempts=None`` policy.  Bail out fast so the
                 # error surfaces to the caller instead of stalling
                 # the runner thread.
-                if isinstance(e, (AttributeError, TypeError)):
+                if isinstance(e, AttributeError | TypeError):
                     self._reconnect_state = RECONNECT_FAILED
                     sync.emit("aio.reconnect_failed", attempt, e)
                     _invoke_hook(

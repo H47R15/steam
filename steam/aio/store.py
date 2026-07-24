@@ -158,18 +158,19 @@ def _fetch_upcoming_games(
     passed_window = False
 
     for _request_index in range(max_requests):
+        params: dict[str, str | int] = {
+            "filter": source_filter,
+            "category1": "998",
+            "ignore_preferences": "1",
+            "start": source_start,
+            "count": 100,
+            "cc": country_code.upper(),
+            "l": language.lower(),
+            "infinite": "1",
+        }
         response = requests.get(
             "https://store.steampowered.com/search/results/",
-            params={
-                "filter": source_filter,
-                "category1": "998",
-                "ignore_preferences": "1",
-                "start": source_start,
-                "count": 100,
-                "cc": country_code.upper(),
-                "l": language.lower(),
-                "infinite": "1",
-            },
+            params=params,
             headers=_BROWSER_HEADERS,
             timeout=timeout,
         )

@@ -39,6 +39,7 @@ the same way but yields the pool.
 TaskIQ is imported lazily so users who don't have it aren't forced
 to install it.
 """
+
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable

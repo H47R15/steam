@@ -71,6 +71,7 @@ Example — pool::
     ):
         return await pool.round_robin().get_product_info(apps=[app_id])
 """
+
 from __future__ import annotations
 
 from collections.abc import AsyncIterator, Awaitable, Callable
