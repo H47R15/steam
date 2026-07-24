@@ -29,7 +29,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Optional
 
-from steam.core.msg import MsgProto, get_um
+# ``get_um`` re-exported at package level for backwards
+# compatibility, but Pylance's ``reportPrivateImportUsage`` prefers
+# the canonical submodule.  Importing from ``steam.core.msg.unified``
+# directly makes the source visible to type-checkers without
+# breaking the runtime behaviour.
+from steam.core.msg import MsgProto
+from steam.core.msg.unified import get_um
 from steam.enums.emsg import EMsg
 from steam.utils.proto import proto_fill_from_dict
 

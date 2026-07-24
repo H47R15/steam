@@ -43,6 +43,12 @@ from .errors import (
     SteamRPCTimeoutError,
 )
 from .pool import AsyncSteamPool, PoolLogin, PoolMember, PoolMemberStatus
+from .qr import (
+    DEFAULT_QR_TIMEOUT_SECONDS,
+    QRLoginResult,
+    QRLoginSession,
+    QRSignInExpired,
+)
 from .status import (
     RECONNECT_FAILED,
     RECONNECT_IDLE,
@@ -71,4 +77,8 @@ __all__ = [
     "PoolMember",
     "PoolLogin",
     "PoolMemberStatus",
+    "QRLoginSession",
+    "QRLoginResult",
+    "QRSignInExpired",
+    "DEFAULT_QR_TIMEOUT_SECONDS",
 ]

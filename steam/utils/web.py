@@ -1,6 +1,12 @@
 import requests
 from binascii import hexlify
-from steam.core.crypto import sha1_hash, random_bytes
+from os import urandom
+# ``random_bytes`` used to come from ``steam.core.crypto``, which
+# only re-exports it as ``from os import urandom as random_bytes``.
+# Pylance's ``reportPrivateImportUsage`` refuses to see re-imported
+# aliases as public exports; importing ``os.urandom`` directly gets
+# the same bytes without the private-import complaint.
+from steam.core.crypto import sha1_hash
 
 def make_requests_session():
     """
@@ -21,4 +27,4 @@ def generate_session_id():
     :returns: session id
     :rtype: :class:`str`
     """
-    return hexlify(sha1_hash(random_bytes(32)))[:32].decode('ascii')
+    return hexlify(sha1_hash(urandom(32)))[:32].decode('ascii')

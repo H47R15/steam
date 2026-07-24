@@ -43,7 +43,13 @@ from eventemitter import EventEmitter
 from steam.utils.proto import set_proto_bit, clear_proto_bit, is_proto
 from steam.enums.emsg import EMsg
 from steam.enums import EResult
-from steam.core.msg import GCMsgHdr, GCMsgHdrProto, MsgProto
+# ``GCMsgHdr`` / ``GCMsgHdrProto`` are re-exported at
+# ``steam.core.msg`` for backwards compatibility, but Pylance's
+# ``reportPrivateImportUsage`` prefers the canonical submodule.
+# Importing from ``steam.core.msg.headers`` directly makes the
+# source visible to type-checkers without changing runtime.
+from steam.core.msg import MsgProto
+from steam.core.msg.headers import GCMsgHdr, GCMsgHdrProto
 from steam.client import SteamClient
 
 
