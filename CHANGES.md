@@ -1,3 +1,11 @@
+
+## 1.8.2
+
+### Fixed
+- Fixed the `requests.get()` parameter typing in the upcoming-games store client.
+- Completed the lint, mypy, and test quality gates required for package publishing.
+
+
 ## 1.8.1
 
 ### Added
