@@ -389,7 +389,8 @@ def build_steam_tool_bindings() -> list[SteamToolBinding]:
                 "Return one paginated page of upcoming Steam games as compact, "
                 "table-ready rows. Supports today, this/next week, this/next "
                 "month, and this year's hot 100. Calendar periods use the "
-                "date-ordered catalogue and return up to 100 rows. Use page/next_page to "
+                "date-ordered catalogue and return up to 100 rows. Use "
+                "page/next_page to "
                 "continue; do not re-fetch product details merely to format "
                 "the result."
             ),
