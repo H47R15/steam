@@ -240,6 +240,25 @@ class AsyncSteamClientTests(unittest.TestCase):
         self.assertTrue(received["meta_data_only"])
         self.assertEqual(received["timeout"], 7.5)
 
+    def test_get_player_count_forwards_app_id_and_timeout(self) -> None:
+        received: dict = {}
+
+        class Stub(_FakeEmitter):
+            def get_player_count(self, app_id: int, timeout: float) -> int:
+                received["app_id"] = app_id
+                received["timeout"] = timeout
+                return 123_456
+
+            def disconnect(self) -> None:
+                pass
+
+        async def _do(c: Any) -> int:
+            return await c.get_player_count(730, timeout=7.5)
+
+        result = self._run_with_stub(_do, Stub)
+        self.assertEqual(result, 123_456)
+        self.assertEqual(received, {"app_id": 730, "timeout": 7.5})
+
     def test_send_um_and_wait_forwards_kwargs(self) -> None:
         received: dict = {}
 

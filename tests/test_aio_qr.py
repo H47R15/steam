@@ -27,7 +27,10 @@ class _Body(dict):
         return self
 
 
-def _make_client_with_scripted_um(responses: list[Any]):
+def _make_client_with_scripted_um(
+    responses: list[Any],
+    captured_calls: list[tuple[str, dict[str, Any]]] | None = None,
+):
     """Return an async context manager that yields an AsyncSteamClient
     whose ``send_um_and_wait`` pops from a fixed list of scripted
     responses.  ``responses`` may hold ``_Body`` dicts, ``None``
@@ -54,6 +57,8 @@ def _make_client_with_scripted_um(responses: list[Any]):
             timeout: float = 10.0,
             raises: bool = False,
         ) -> Any:
+            if captured_calls is not None:
+                captured_calls.append((method_name, params or {}))
             if not responses:
                 raise AssertionError(
                     f"scripted responses exhausted — extra call to {method_name!r}",
@@ -70,6 +75,32 @@ def _make_client_with_scripted_um(responses: list[Any]):
 
 
 class QRLoginSessionTests(unittest.TestCase):
+    def test_begin_requests_a_steam_client_token(self) -> None:
+        calls: list[tuple[str, dict[str, Any]]] = []
+        make = _make_client_with_scripted_um(
+            [
+                _Body(
+                    {
+                        "client_id": 1,
+                        "request_id": b"x",
+                        "challenge_url": "steam://qr/x",
+                    }
+                ),
+            ],
+            calls,
+        )
+
+        async def _main():
+            client = await make()
+            try:
+                await client.begin_qr_login()
+            finally:
+                await client.close()
+
+        _run(_main())
+        self.assertEqual(calls[0][0], "Authentication.BeginAuthSessionViaQR#1")
+        self.assertEqual(calls[0][1]["platform_type"], 1)
+
     def test_begin_returns_session_populated_from_response(self) -> None:
         raw_request_id = b"\x01\x02\x03\x04"
         make = _make_client_with_scripted_um(

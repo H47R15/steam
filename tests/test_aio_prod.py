@@ -513,7 +513,12 @@ class MCPToolTests(unittest.TestCase):
         # rename is a breaking change for existing MCP clients.
         self.assertEqual(
             names,
-            {"steam.status", "steam.get_product_info", "steam.send_um"},
+            {
+                "steam.status",
+                "steam.get_product_info",
+                "steam.send_um",
+                "steam.upcoming_games",
+            },
         )
 
     def test_steam_status_tool_returns_healthy_snapshot(self) -> None:
@@ -635,7 +640,12 @@ class MCPToolTests(unittest.TestCase):
         registered = _run(_main())
         self.assertEqual(
             sorted(registered),
-            ["steam.get_product_info", "steam.send_um", "steam.status"],
+            [
+                "steam.get_product_info",
+                "steam.send_um",
+                "steam.status",
+                "steam.upcoming_games",
+            ],
         )
 
 

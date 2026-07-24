@@ -521,6 +521,58 @@ class AsyncSteamClient:
                 raise SteamRPCTimeoutError(timeout) from e
             raise
 
+    async def get_player_count(
+        self,
+        app_id: int,
+        *,
+        timeout: float = 5.0,
+    ) -> Any:
+        """Return the current concurrent-player count for ``app_id``.
+
+        This is the asyncio facade for
+        :meth:`SteamClient.get_player_count`.  Steam returns an
+        :class:`EResult` value when the request fails, matching the
+        synchronous API.
+        """
+        self._require_ready()
+        sync = self._sync
+
+        def _do_get() -> Any:
+            return sync.get_player_count(app_id, timeout=timeout)
+
+        try:
+            return await self._call(_do_get, method="get_player_count")
+        except BaseException as e:  # noqa: BLE001
+            if _is_gevent_timeout(e):
+                raise SteamRPCTimeoutError(timeout) from e
+            raise
+
+    async def get_upcoming_games(
+        self,
+        *,
+        page: int = 1,
+        per_page: int = 100,
+        country_code: str = "US",
+        language: str = "english",
+        timeout: float = 15.0,
+        period: str = "this_month",
+    ) -> dict[str, Any]:
+        """Return a compact page from Steam's upcoming-games catalogue.
+
+        This public store call does not require a CM login. Results are
+        already projected into table-ready rows for API and MCP consumers.
+        """
+        from .store import get_upcoming_games
+
+        return await get_upcoming_games(
+            page=page,
+            per_page=per_page,
+            country_code=country_code,
+            language=language,
+            timeout=timeout,
+            period=period,
+        )
+
     async def send_um_and_wait(
         self,
         method_name: str,
@@ -566,7 +618,7 @@ class AsyncSteamClient:
     async def begin_qr_login(
         self,
         *,
-        device_friendly_name: str = "pysteam-client",
+        device_friendly_name: str = "pysteam-client MCP",
         website_id: str = "Community",
     ) -> QRLoginSession:
         """Start a QR sign-in handshake with Steam.
@@ -580,8 +632,9 @@ class AsyncSteamClient:
 
         The default ``device_friendly_name`` shows up in the user's
         Steam account settings under "Authorized devices"; override
-        with something operator-recognisable if this client is one
-        of many talking to the same account.
+        it with an honest, operator-recognisable product name.  This
+        is a CM protocol login, not HTTP, so browser User-Agent
+        spoofing is neither applicable nor supported.
         """
         self._require_ready()
         from .qr import _rpc_begin

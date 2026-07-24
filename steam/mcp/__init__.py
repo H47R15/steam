@@ -46,6 +46,8 @@ from .tools import (
     SteamStatusInput,
     SteamStatusOutput,
     SteamToolBinding,
+    UpcomingGamesInput,
+    UpcomingGamesOutput,
     build_steam_tool_bindings,
 )
 
@@ -58,5 +60,7 @@ __all__ = [
     "SendUmInput",
     "SendUmOutput",
     "SteamToolBinding",
+    "UpcomingGamesInput",
+    "UpcomingGamesOutput",
     "build_steam_tool_bindings",
 ]

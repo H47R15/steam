@@ -217,10 +217,11 @@ async def _rpc_begin(
     server's response."""
     params: dict[str, Any] = {
         "device_friendly_name": device_friendly_name,
-        # ``k_EAuthTokenPlatformType_WebBrowser = 2`` — matches the
-        # web-client sign-in flow, which is the closest fit for a
-        # browser-rendered QR panel.
-        "platform_type": 2,
+        # The token is consumed by a CM client, regardless of where
+        # its QR image is rendered.  Asking for a WebBrowser token
+        # produces the wrong token audience for ``login_with_token``.
+        # ``k_EAuthTokenPlatformType_SteamClient = 1``.
+        "platform_type": 1,
         "website_id": website_id,
     }
     response = await client.send_um_and_wait(

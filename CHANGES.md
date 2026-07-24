@@ -1,3 +1,31 @@
+## 1.8.1
+
+### Added
+- Added `AsyncSteamClient.get_player_count()` as an async facade for
+  Steam's concurrent-player count API, including timeout translation
+  consistent with the rest of the async client.
+- Added public upcoming-games catalogue browsing through
+  `AsyncSteamClient.get_upcoming_games()`. Results support calendar
+  periods, country/language selection, stable pagination, and compact
+  table-ready rows containing release, review, price, store URL, and
+  image data.
+- Added the `steam.upcoming_games` MCP tool with validated input and
+  output models. It supports today, this/next week, this/next month,
+  and the current year's popular upcoming games.
+
+### Fixed
+- QR authentication now requests a Steam Client platform token instead
+  of a Web Browser token, matching the token audience required by
+  `login_with_token()`.
+- Changed the default QR authorized-device name to
+  `pysteam-client MCP` and clarified that browser User-Agent spoofing
+  does not apply to the CM protocol login.
+
+### Tests
+- Added coverage for player-count forwarding, upcoming-store parsing
+  and pagination, MCP tool registration, and QR platform-token
+  selection.
+
 ## 1.8.0
 
 ### Added

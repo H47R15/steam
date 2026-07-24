@@ -28,6 +28,7 @@
 !recipes/*/*
 !recipes/*/*/*
 
+RULEBOOK.md
 # ``.github/`` — issue templates, workflows, FUNDING.
 !.github/
 !.github/**
