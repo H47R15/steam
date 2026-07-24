@@ -1,3 +1,11 @@
+## 1.8.0
+
+### Added
+- Steam QR authentication support in the async client flow.
+
+### Fixed
+- Tightened QR/session handling and type-safety fixes for the local async Steam client surface.
+
 ## 1.7.9
 
 ### Fixed
