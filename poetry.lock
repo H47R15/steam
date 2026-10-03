@@ -2291,5 +2291,5 @@ client = ["gevent", "gevent-eventemitter", "protobuf"]
 
 [metadata]
 lock-version = "2.1"
-python-versions = "^3.13.11"
-content-hash = "c99da2dcd266a8d6890144d64b5ac52636e70ccd4de5412dd73e2342e5190f07"
+python-versions = ">=3.13,<4.0"
+content-hash = "7693823bdcea155644bb88eab88b093e6203e8b7f041ae96656a9ac571ca40e7"

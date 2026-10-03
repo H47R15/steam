@@ -41,7 +41,9 @@ if TYPE_CHECKING:
     # ...`` lines) so the QR module stays lazy-loaded and the two
     # files don't develop a circular import.  ``TYPE_CHECKING``
     # gives mypy / Pylance the names they need for annotations
-    # without paying the import cost at module load.
+    # without paying the import cost at module load.  Same for the
+    # credentials sign-in types from ``.auth``.
+    from .auth import CredentialsLoginSession, SignInResult
     from .qr import QRLoginResult, QRLoginSession
 
 from .errors import (
@@ -113,15 +115,18 @@ class _LastLogin:
     security cost); credentialed logins fall back to
     ``SteamClient.relogin()`` when the CM handed out a
     ``login_key`` — see :attr:`AsyncSteamClient.relogin_available`.
-    Passwords are NEVER cached here.
+    Passwords are NEVER cached here.  A refresh token is: replaying
+    it is what a token login is for, and Steam's own client keeps it
+    the same way.
     """
 
-    kind: str  # "anonymous" | "credentialed"
+    kind: str  # "anonymous" | "credentialed" | "token"
     username: str = ""
     # 2FA / mail codes are one-shot by definition — replaying them
     # doesn't make sense, so we don't cache them either.  If a
     # session dies mid-2FA flow, the caller has to redrive login.
     login_id: int | None = None
+    refresh_token: str = dataclasses.field(default="", repr=False)
 
 
 class AsyncSteamClient:
@@ -435,6 +440,49 @@ class AsyncSteamClient:
         self._raise_login_if_needed(result, raise_on_error)
         return result
 
+    async def login_with_token(
+        self,
+        account_name: str,
+        refresh_token: str,
+        *,
+        login_id: int | None = None,
+        raise_on_error: bool = True,
+    ) -> Any:
+        """Log in with a refresh token — how Steam's own client logs
+        on since 2023.
+
+        The token comes from a sign-in through Steam's
+        ``Authentication`` service: :meth:`begin_credentials_login`
+        for a username and password, :meth:`begin_qr_login` for the
+        mobile app's QR scan.  It stays valid for about 200 days, so
+        store it and log in with it on every run; the password is
+        needed only to get a new one.
+
+        The token is kept in memory for the auto-reconnect loop to
+        replay, which makes this the credentialed login that survives
+        a dropped connection.  See ``SteamClient.login_with_token`` for
+        the returned ``EResult``.
+        """
+        self._require_ready()
+        sync = self._sync
+
+        def _do_login() -> Any:
+            return sync.login_with_token(
+                account_name,
+                refresh_token,
+                login_id=login_id,
+            )
+
+        result = await self._call(_do_login, method="login_with_token")
+        self._last_login = _LastLogin(
+            kind="token",
+            username=account_name,
+            login_id=login_id,
+            refresh_token=refresh_token,
+        )
+        self._raise_login_if_needed(result, raise_on_error)
+        return result
+
     def _raise_login_if_needed(self, result: Any, raise_on_error: bool) -> None:
         if not raise_on_error:
             return
@@ -694,6 +742,110 @@ class AsyncSteamClient:
             session=session,
             timeout=timeout if timeout is not None else DEFAULT_QR_TIMEOUT_SECONDS,
             interval_override=interval_override,
+        )
+
+    # ------------------------------------------------------------------
+    # Username + password sign-in — the flow Steam's own client uses.
+    # See :mod:`steam.aio.auth` for the steps + design notes.
+    # ------------------------------------------------------------------
+
+    async def begin_credentials_login(
+        self,
+        account_name: str,
+        password: str,
+        *,
+        device_friendly_name: str = "pysteam-client",
+        website_id: str = "Client",
+        guard_data: str | None = None,
+    ) -> CredentialsLoginSession:
+        """Start a sign-in with a username and password.
+
+        Returns a :class:`~steam.aio.auth.CredentialsLoginSession`:
+        its ``guards`` say how Steam wants this sign-in confirmed,
+        ``code_kind`` which code to ask the user for, if any.  Then
+        :meth:`submit_steam_guard_code` when it takes a code, and
+        :meth:`wait_credentials_login` for the tokens.
+
+        Raises :class:`~steam.aio.errors.SteamLoginError` when Steam
+        refuses the sign-in — ``eresult`` is ``InvalidPassword`` for a
+        wrong username or password, ``RateLimitExceeded`` /
+        ``AccountLoginDeniedThrottle`` after too many attempts.
+
+        ``device_friendly_name`` is what the account holder sees in
+        their Steam Guard device list; name the product honestly.
+        ``guard_data`` is the ``guard_data`` an earlier sign-in of this
+        account handed back: passing it lets an account that uses
+        e-mailed codes skip the code on this machine.
+
+        The client must be connected (``anonymous_login`` is enough);
+        the sign-in doesn't change its login state.
+        """
+        self._require_ready()
+        from .auth import _rpc_begin
+
+        return await _rpc_begin(
+            self,
+            account_name=account_name,
+            password=password,
+            device_friendly_name=device_friendly_name,
+            website_id=website_id,
+            guard_data=guard_data,
+        )
+
+    async def submit_steam_guard_code(
+        self,
+        session: CredentialsLoginSession,
+        code: str,
+    ) -> None:
+        """Give Steam the Steam Guard code for a sign-in — the
+        e-mailed one or the mobile app's, whichever
+        ``session.code_kind`` names.
+
+        Raises :class:`~steam.aio.errors.SteamLoginError` for a code
+        Steam doesn't accept (``InvalidLoginAuthCode`` for an e-mailed
+        one, ``TwoFactorCodeMismatch`` for the app's) and
+        :class:`~steam.aio.auth.SignInExpired` once the session is
+        closed.  A code submitted twice is not an error.
+        """
+        self._require_ready()
+        from .auth import _rpc_submit_code
+
+        await _rpc_submit_code(self, session=session, code=code)
+
+    async def poll_credentials_login(
+        self,
+        session: CredentialsLoginSession,
+    ) -> SignInResult | None:
+        """Ask once whether the sign-in is through: its tokens if so,
+        ``None`` while it still waits on a code or a confirmation."""
+        self._require_ready()
+        from .auth import _rpc_poll
+
+        return await _rpc_poll(self, session=session)
+
+    async def wait_credentials_login(
+        self,
+        session: CredentialsLoginSession,
+        *,
+        timeout: float | None = None,
+    ) -> SignInResult | None:
+        """Poll at ``session.interval`` until Steam hands over the
+        tokens — after a code went in, or the user approved the
+        sign-in in the mobile app or through the e-mailed link.
+
+        ``None`` when ``timeout`` (default
+        :data:`~steam.aio.auth.DEFAULT_SIGN_IN_WAIT_SECONDS`) passes
+        first: Steam's session is still open, so waiting again carries
+        on.  Raises :class:`~steam.aio.auth.SignInExpired` once Steam
+        has closed it.
+        """
+        self._require_ready()
+        from .auth import DEFAULT_SIGN_IN_WAIT_SECONDS, _wait
+
+        return await _wait(
+            self,
+            session=session,
+            timeout=timeout if timeout is not None else DEFAULT_SIGN_IN_WAIT_SECONDS,
         )
 
     # ------------------------------------------------------------------
@@ -987,7 +1139,8 @@ class AsyncSteamClient:
     def _replay_login(self) -> None:
         """Runs on the runner thread inside the reconnect loop.
         Replays the last login using the safest available path:
-        anonymous → ``anonymous_login``; credentialed →
+        anonymous → ``anonymous_login``; token → ``login_with_token``
+        with the cached refresh token; credentialed →
         ``relogin()`` if the sync client cached a ``login_key``,
         else no-op (caller must re-authenticate — password isn't
         cached here for security).
@@ -998,6 +1151,13 @@ class AsyncSteamClient:
             return
         if last.kind == "anonymous":
             sync.anonymous_login()
+            return
+        if last.kind == "token":
+            sync.login_with_token(
+                last.username,
+                last.refresh_token,
+                login_id=last.login_id,
+            )
             return
         if last.kind == "credentialed":
             if getattr(sync, "relogin_available", False):
@@ -1011,9 +1171,13 @@ class AsyncSteamClient:
 
     @property
     def relogin_available(self) -> bool:
-        """Whether the sync client has a cached ``login_key`` that
-        auto-reconnect can use to replay a credentialed login
-        without needing the password again."""
+        """Whether auto-reconnect can replay a credentialed login
+        without needing the password again: a token login (its
+        refresh token is cached), or a sync client holding a
+        ``login_key``."""
+        last = self._last_login
+        if last is not None and last.kind == "token":
+            return True
         return bool(getattr(self._sync, "relogin_available", False))
 
     # ------------------------------------------------------------------

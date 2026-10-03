@@ -5,7 +5,7 @@
 # ``steam`` distribution name on PyPI is owned by ValvePython since 2013,
 # so the fork lives under a scoped name here.
 name = "pysteam-client"
-version = "1.8.2"
+version = "1.9.0"
 description = "Module for interacting with various Steam features"
 authors = ["Rossen Georgiev <rossen@rgp.io>"]
 license = "MIT"
@@ -47,8 +47,11 @@ vcr-webapi   = "scripts.vcr_webapi:main"    # regen vcr/webapi.yaml (needs STEAM
 vcr-webauth  = "scripts.vcr_webauth:main"   # regen vcr/webauth_*.yaml (interactive)
 
 [tool.poetry.dependencies]
-# Pinned to Python 3.13.11.
-python =                "^3.13.11"
+# Any 3.13+.  The floor used to be 3.13.11, a local interpreter's
+# patch level rather than a requirement: nothing here needs a
+# 3.13 patch release, and the pin kept 3.13.x projects on an older
+# patch from resolving the package at all.
+python =                ">=3.13,<4.0"
 
 # ─── runtime deps (from the original setup.py) ────────────────────
 #

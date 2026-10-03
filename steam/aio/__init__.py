@@ -33,6 +33,14 @@ compose these pieces):
 * :mod:`steam.aio.errors` — the typed exception hierarchy.
 """
 
+from .auth import (
+    DEFAULT_SIGN_IN_WAIT_SECONDS,
+    CredentialsLoginSession,
+    GuardOption,
+    SignInExpired,
+    SignInResult,
+    SteamGuard,
+)
 from .client import AsyncSteamClient, ReconnectPolicy
 from .errors import (
     AsyncSteamError,
@@ -81,4 +89,10 @@ __all__ = [
     "QRLoginResult",
     "QRSignInExpired",
     "DEFAULT_QR_TIMEOUT_SECONDS",
+    "CredentialsLoginSession",
+    "GuardOption",
+    "SteamGuard",
+    "SignInResult",
+    "SignInExpired",
+    "DEFAULT_SIGN_IN_WAIT_SECONDS",
 ]

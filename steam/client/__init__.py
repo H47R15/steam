@@ -536,22 +536,7 @@ class SteamClient(CMClient, BuiltinBase):
 
         self.username = username
 
-        message = MsgProto(EMsg.ClientLogon)
-        message.header.steamid = SteamID(type='Individual', universe='Public')
-        message.body.protocol_version = 65580
-        message.body.client_package_version = 1561159470
-        message.body.client_os_type = EOSType.Windows10
-        message.body.client_language = "english"
-        message.body.should_remember_password = True
-        message.body.supports_rate_limit_response = True
-        message.body.chat_mode = self.chat_mode
-
-        if login_id is None:
-            message.body.obfuscated_private_ip.v4 = ip4_to_int(self.connection.local_address) ^ 0xF00DBAAD
-        else:
-            message.body.obfuscated_private_ip.v4 = login_id
-
-        message.body.account_name = username
+        message = self._logon_message(username, login_id)
 
         if login_key:
             message.body.login_key = login_key
@@ -570,6 +555,72 @@ class SteamClient(CMClient, BuiltinBase):
         if two_factor_code:
             message.body.two_factor_code = two_factor_code
 
+        return self._send_logon(message)
+
+    def login_with_token(self, username, refresh_token, login_id=None):
+        """Login with a refresh token from Steam's ``Authentication`` service
+
+        This is how Steam's own client logs on since 2023. Steam no longer
+        hands out the :attr:`login_key` that :meth:`relogin` replays, and
+        logging on with a password is going away with it; the refresh token
+        is what "Remember me" keeps now. It stays valid for about 200 days,
+        so a session that has to survive restarts stores the token and calls
+        this, and never needs the password again.
+
+        Get a token by signing in through the ``Authentication`` service:
+        :meth:`steam.aio.AsyncSteamClient.begin_credentials_login` for a
+        username and password, or ``begin_qr_login`` for the mobile app's QR
+        scan. It has to be issued for the Steam Client platform, which both
+        of those ask for: a web browser token is refused here.
+
+        :param username: account name the token was issued to
+        :type  username: :class:`str`
+        :param refresh_token: refresh token (a JWT)
+        :type  refresh_token: :class:`str`
+        :param login_id: number used for identifying logon session
+        :type  login_id: :class:`int`
+        :return: logon result, see `CMsgClientLogonResponse.eresult <https://github.com/ValvePython/steam/blob/513c68ca081dc9409df932ad86c66100164380a6/protobufs/steammessages_clientserver.proto#L95-L118>`_
+        :rtype: :class:`.EResult`
+
+        .. note::
+            A revoked or expired token is refused with a non-OK result, and
+            the only way on is to sign in again for a new one.
+        """
+        self._LOG.debug("Attempting token login")
+
+        eresult = self._pre_login()
+
+        if eresult != EResult.OK:
+            return eresult
+
+        self.username = username
+
+        message = self._logon_message(username, login_id)
+        message.body.access_token = refresh_token
+
+        return self._send_logon(message)
+
+    def _logon_message(self, username, login_id):
+        """The ``ClientLogon`` every credentialed login sends, minus what proves who is logging on"""
+        message = MsgProto(EMsg.ClientLogon)
+        message.header.steamid = SteamID(type='Individual', universe='Public')
+        message.body.protocol_version = 65580
+        message.body.client_package_version = 1561159470
+        message.body.client_os_type = EOSType.Windows10
+        message.body.client_language = "english"
+        message.body.should_remember_password = True
+        message.body.supports_rate_limit_response = True
+        message.body.chat_mode = self.chat_mode
+
+        if login_id is None:
+            message.body.obfuscated_private_ip.v4 = ip4_to_int(self.connection.local_address) ^ 0xF00DBAAD
+        else:
+            message.body.obfuscated_private_ip.v4 = login_id
+
+        message.body.account_name = username
+        return message
+
+    def _send_logon(self, message):
         self.send(message)
 
         resp = self.wait_msg(EMsg.ClientLogOnResponse, timeout=30)

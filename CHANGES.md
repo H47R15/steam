@@ -1,4 +1,43 @@
 
+## 1.9.0
+
+### Added
+- Username + password sign-in through Steam's `Authentication` service,
+  the flow Steam's own client uses since 2023:
+  `AsyncSteamClient.begin_credentials_login()` encrypts the password
+  with the account's RSA key and opens an auth session;
+  `submit_steam_guard_code()` answers an e-mailed or mobile-app code;
+  `poll_credentials_login()` / `wait_credentials_login()` collect the
+  refresh token once the sign-in is confirmed (by code, in the mobile
+  app, or through the e-mailed link).  `CredentialsLoginSession`
+  round-trips through JSON, so each step may run in a different
+  process.  Refusals raise `SteamLoginError` with Steam's `EResult`
+  (`InvalidPassword`, `TwoFactorCodeMismatch`, `RateLimitExceeded`, ...);
+  a session Steam has closed raises `SignInExpired`.
+- `SteamClient.login_with_token()` and
+  `AsyncSteamClient.login_with_token()`: log on with a refresh token
+  from either sign-in (credentials or QR), the method the QR docs
+  already pointed at.  The async client replays it after a reconnect,
+  so a token login survives a dropped connection without the password.
+- `SignInResult`, the general name for what a finished sign-in returns
+  (`QRLoginResult` is the same class).
+
+### Changed
+- The Python requirement is `>=3.13` instead of `^3.13.11`.  The patch
+  floor was a local interpreter's version rather than a requirement,
+  and it stopped projects on an earlier 3.13 patch from resolving the
+  package.
+
+### Fixed
+- `QRLoginResult` no longer shows its refresh token, access token or
+  guard data in `repr()`, so logging a result doesn't log a login.
+
+### Tests
+- Credentials sign-in against scripted CM replies built from the real
+  `steammessages_auth` protos, including decrypting the sent password
+  with a locally generated key; token logon message contents; token
+  replay after reconnect.
+
 ## 1.8.2
 
 ### Fixed

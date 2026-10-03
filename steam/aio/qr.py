@@ -139,12 +139,15 @@ class QRLoginResult:
         get here (a poll that returns tokens without a
         confirmation would only happen on a machine already
         trusted by Steam).
+
+    The tokens and guard data stay out of ``repr``: a result that
+    ends up in a log line must not put a login in it.
     """
 
-    refresh_token: str
-    access_token: str
+    refresh_token: str = dataclasses.field(repr=False)
+    access_token: str = dataclasses.field(repr=False)
     account_name: str
-    guard_data: str | None = None
+    guard_data: str | None = dataclasses.field(default=None, repr=False)
     had_remote_interaction: bool = True
 
 
