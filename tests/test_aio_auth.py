@@ -54,7 +54,9 @@ def _key_reply() -> _Reply:
     )
 
 
-def _begin_reply(*kinds: int, hint: str = "") -> _Reply:
+def _begin_reply(
+    *kinds: auth_pb2.EAuthSessionGuardType.ValueType, hint: str = ""
+) -> _Reply:
     return _Reply(
         auth_pb2.CAuthentication_BeginAuthSessionViaCredentials_Response(
             client_id=4242,
@@ -115,7 +117,7 @@ class BeginCredentialsLoginTests(unittest.TestCase):
     def test_encrypts_the_password_with_the_accounts_key(self) -> None:
         calls: list[tuple[str, dict[str, Any]]] = []
         _drive(
-            [_key_reply(), _begin_reply(1)],
+            [_key_reply(), _begin_reply(auth_pb2.k_EAuthSessionGuardType_None)],
             lambda c: c.begin_credentials_login("gaben", _PASSWORD),
             calls,
         )
@@ -136,7 +138,7 @@ class BeginCredentialsLoginTests(unittest.TestCase):
     def test_asks_for_a_remembered_steam_client_token(self) -> None:
         calls: list[tuple[str, dict[str, Any]]] = []
         _drive(
-            [_key_reply(), _begin_reply(1)],
+            [_key_reply(), _begin_reply(auth_pb2.k_EAuthSessionGuardType_None)],
             lambda c: c.begin_credentials_login(
                 "gaben", _PASSWORD, device_friendly_name="shop sync"
             ),
@@ -155,7 +157,7 @@ class BeginCredentialsLoginTests(unittest.TestCase):
     def test_passes_guard_data_from_an_earlier_sign_in(self) -> None:
         calls: list[tuple[str, dict[str, Any]]] = []
         _drive(
-            [_key_reply(), _begin_reply(6)],
+            [_key_reply(), _begin_reply(auth_pb2.k_EAuthSessionGuardType_MachineToken)],
             lambda c: c.begin_credentials_login("gaben", _PASSWORD, guard_data="blob"),
             calls,
         )
@@ -165,7 +167,12 @@ class BeginCredentialsLoginTests(unittest.TestCase):
         from steam.aio import GuardOption, SteamGuard
 
         session = _drive(
-            [_key_reply(), _begin_reply(2, hint="gmail.com")],
+            [
+                _key_reply(),
+                _begin_reply(
+                    auth_pb2.k_EAuthSessionGuardType_EmailCode, hint="gmail.com"
+                ),
+            ],
             lambda c: c.begin_credentials_login("gaben", _PASSWORD),
         )
         self.assertEqual(session.client_id, 4242)
@@ -181,7 +188,13 @@ class BeginCredentialsLoginTests(unittest.TestCase):
 
     def test_the_session_never_holds_the_password(self) -> None:
         session = _drive(
-            [_key_reply(), _begin_reply(3, 4)],
+            [
+                _key_reply(),
+                _begin_reply(
+                    auth_pb2.k_EAuthSessionGuardType_DeviceCode,
+                    auth_pb2.k_EAuthSessionGuardType_DeviceConfirmation,
+                ),
+            ],
             lambda c: c.begin_credentials_login("gaben", _PASSWORD),
         )
         self.assertNotIn(_PASSWORD, json.dumps(session.to_dict()))

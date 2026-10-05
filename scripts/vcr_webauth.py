@@ -236,11 +236,10 @@ def main() -> int:
                     raise SystemExit(1)
                 raise
 
-    @anon_vcr.use_cassette('webauth_user_pass_only_success.yaml')
     def _rec_success(u: str, p: str) -> None:
-        _login_with_guard_prompts(u, p, expect_success=True)
+        with anon_vcr.use_cassette('webauth_user_pass_only_success.yaml'):
+            _login_with_guard_prompts(u, p, expect_success=True)
 
-    @anon_vcr.use_cassette('webauth_user_pass_only_fail.yaml')
     def _rec_fail(u: str, p: str) -> None:
         # The FAIL cassette records "login rejected" — Steam can reject in
         # multiple shapes: ``LoginIncorrect`` (wrong password), ``HTTPError``
@@ -249,12 +248,13 @@ def main() -> int:
         # "expected failure" for the fixture, so catch broadly.  If the
         # unexpected happens (e.g. Steam accepts the wrong password —
         # shouldn't but not our bug), we let it propagate.
-        try:
-            _login_with_guard_prompts(u, p, expect_success=False)
-        except (wa.LoginIncorrect, wa.HTTPError, wa.TwoFactorCodeRequired,
-                wa.EmailCodeRequired, wa.CaptchaRequired,
-                wa.CaptchaRequiredLoginIncorrect):
-            pass
+        with anon_vcr.use_cassette('webauth_user_pass_only_fail.yaml'):
+            try:
+                _login_with_guard_prompts(u, p, expect_success=False)
+            except (wa.LoginIncorrect, wa.HTTPError, wa.TwoFactorCodeRequired,
+                    wa.EmailCodeRequired, wa.CaptchaRequired,
+                    wa.CaptchaRequiredLoginIncorrect):
+                pass
 
     print('\n--- recording SUCCESS cassette (login with valid credentials) ---')
     _rec_success(username, password)
