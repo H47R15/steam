@@ -48,7 +48,9 @@ jobs:
           persist-credentials: false
 
       - name: Run OpenSSF Scorecard
-        uses: ossf/scorecard-action@v2.4.0
+        # v2.4.1+ pull their image from ghcr.io; v2.4.0's gcr.io image is no
+        # longer served ("requires billing to be enabled").
+        uses: ossf/scorecard-action@v2.4.4
         with:
           results_file: results.sarif
           results_format: sarif
